@@ -25,7 +25,7 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
   const [newResetPassword, setNewResetPassword] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotError, setForgotError] = useState('');
-  
+
   const [regStep, setRegStep] = useState(1);
   const [regCode, setRegCode] = useState('');
   const [success, setSuccess] = useState('');
@@ -129,16 +129,16 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         {/* Doodle Pattern Layer */}
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.07] dark:opacity-[0.12] pointer-events-none transition-opacity duration-1000"
-          style={{ 
+          style={{
             backgroundImage: `url('/finance-doodle.png')`,
             backgroundSize: '320px',
             backgroundRepeat: 'repeat',
             filter: isDark ? 'invert(1) brightness(2)' : 'none'
           }}
         />
-        
+
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-accent/10 rounded-full blur-[120px] animate-pulse" />
         <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-accent/5 rounded-full blur-[150px]" />
@@ -159,7 +159,7 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
               <h1 className="text-2xl font-extrabold text-text-primary tracking-tight">Vinance</h1>
             </div>
             <h2 className="text-2xl xl:text-3xl font-bold text-text-primary leading-tight mb-2">
-              Kelola Keuangan Keluarga <br />
+              Kelola Keuangan<br />
               <span className="text-accent">Lebih Cerdas & Transparan.</span>
             </h2>
             <p className="text-sm text-text-secondary leading-relaxed max-w-sm">
@@ -209,7 +209,7 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
                 <img src="/Logo-Vinance.png" alt="Vinance Logo" className="w-full h-full object-contain" />
               </div>
               <h1 className="text-2xl font-bold text-text-primary">Vinance</h1>
-              <p className="text-sm text-text-secondary mt-1">Manajemen Keuangan Keluarga</p>
+              <p className="text-sm text-text-secondary mt-1">Manajemen Keuangan</p>
               <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-secondary/10 border border-secondary/20 rounded-full">
                 <Sparkles className="w-3 h-3 text-secondary" />
                 <span className="text-[10px] font-bold text-secondary uppercase tracking-wider">Dukung Database Sheets Pribadi</span>
@@ -223,8 +223,8 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
                   onClick={() => setIsLogin(true)}
                   className={cn(
                     "flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300",
-                    isLogin 
-                      ? "bg-card-bg text-accent shadow-[0_4px_12px_rgba(0,0,0,0.1)] scale-[1.02]" 
+                    isLogin
+                      ? "bg-card-bg text-accent shadow-[0_4px_12px_rgba(0,0,0,0.1)] scale-[1.02]"
                       : "text-text-secondary hover:text-text-primary hover:bg-white/40 dark:hover:bg-white/5"
                   )}
                 >
@@ -234,8 +234,8 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
                   onClick={() => setIsLogin(false)}
                   className={cn(
                     "flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300",
-                    !isLogin 
-                      ? "bg-card-bg text-accent shadow-[0_4px_12px_rgba(0,0,0,0.1)] scale-[1.02]" 
+                    !isLogin
+                      ? "bg-card-bg text-accent shadow-[0_4px_12px_rgba(0,0,0,0.1)] scale-[1.02]"
                       : "text-text-secondary hover:text-text-primary hover:bg-white/40 dark:hover:bg-white/5"
                   )}
                 >
@@ -308,9 +308,9 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
                             />
                           </div>
                         </div>
-                        <button 
-                          type="button" 
-                          onClick={() => setRegStep(1)} 
+                        <button
+                          type="button"
+                          onClick={() => setRegStep(1)}
                           className="text-[10px] font-bold text-accent hover:underline w-full text-center"
                         >
                           Ganti email atau kirim ulang
@@ -337,8 +337,8 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
                           <div className="flex justify-between items-center ml-1">
                             <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">Kata Sandi</label>
                             {isLogin && (
-                              <button 
-                                type="button" 
+                              <button
+                                type="button"
                                 onClick={() => setShowForgotModal(true)}
                                 className="text-[10px] font-bold text-accent hover:underline"
                               >
@@ -442,12 +442,12 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
             </div>
             <h3 className="text-xl font-bold text-text-primary mb-2">Lupa Kata Sandi?</h3>
             <p className="text-xs text-text-secondary leading-relaxed mb-5">
-              {forgotStep === 1 
+              {forgotStep === 1
                 ? "Masukkan email Anda untuk menerima kode verifikasi pengaturan ulang kata sandi."
                 : `Masukkan kode 6 digit yang dikirim ke email ${forgotEmail}.`
               }
             </p>
-            
+
             {forgotStep === 1 ? (
               <form onSubmit={handleSendResetCode} className="space-y-4">
                 <div className="relative group text-left">
@@ -512,9 +512,9 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
                 >
                   {forgotLoading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : "Simpan Sandi Baru"}
                 </button>
-                <button 
-                  type="button" 
-                  onClick={() => setForgotStep(1)} 
+                <button
+                  type="button"
+                  onClick={() => setForgotStep(1)}
                   className="text-[10px] font-bold text-accent hover:underline"
                 >
                   Ganti email atau kirim ulang
