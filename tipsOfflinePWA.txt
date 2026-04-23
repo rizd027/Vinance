@@ -1,0 +1,9 @@
+Atur agar aplikasi Anda tetap berjalan saat offline
+1. Service Worker
+2. Caching Strategy: Pre-caching
+2. TWA atau WebView
+3. Data Dinamis (API)
+a. IndexedDB.
+b. library seperti Workbox untuk offline requests
+4. Konfigurasi Capacitor (capacitor.config.json): Pastikan nilai webDir mengarah ke folder hasil build (misalnya dist atau build) yang berisi file manifest.json dan skrip Service Worker Anda.
+5. Sinkronisasi Aset: Setiap kali Anda melakukan perubahan pada logika offline di kode web, jangan lupa jalankan npx cap copy agar aset terbaru masuk ke dalam build Android.

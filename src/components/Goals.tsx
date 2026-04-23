@@ -1,0 +1,371 @@
+import React, { useState } from 'react';
+import { 
+  Target, Plus, Trash2, Edit2, X, CheckCircle2, Clock, TrendingUp, PiggyBank,
+  Home, Car, Plane, Smartphone, GraduationCap, HeartPulse, ShoppingBag, Gamepad2, Camera, Globe, Briefcase, Coffee,
+  Calendar as CalendarIcon, ChevronLeft, ChevronRight, ArrowUpRight
+} from 'lucide-react';
+import { Goal } from '../types';
+import { formatCurrency, cn } from '../lib/utils';
+import { format, differenceInDays, parseISO } from 'date-fns';
+import { id as localeId } from 'date-fns/locale';
+import DatePicker from './UI/DatePicker';
+
+
+interface GoalsProps {
+  goals: Goal[];
+  onAdd: (goal: Omit<Goal, 'id'>) => void;
+  onUpdate: (goal: Goal) => void;
+  onDelete: (id: string) => void;
+  onAddSavings: (goalId: string, amount: number) => void;
+  userId: string;
+}
+
+const GOAL_ICONS = [
+  { id: 'home', icon: Home },
+  { id: 'car', icon: Car },
+  { id: 'plane', icon: Plane },
+  { id: 'phone', icon: Smartphone },
+  { id: 'edu', icon: GraduationCap },
+  { id: 'health', icon: HeartPulse },
+  { id: 'shop', icon: ShoppingBag },
+  { id: 'game', icon: Gamepad2 },
+  { id: 'camera', icon: Camera },
+  { id: 'world', icon: Globe },
+  { id: 'work', icon: Briefcase },
+  { id: 'coffee', icon: Coffee },
+];
+
+export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavings, userId }: GoalsProps) {
+  const [showModal, setShowModal] = useState(false);
+  const [showSavingsModal, setShowSavingsModal] = useState<Goal | null>(null);
+  const [editGoal, setEditGoal] = useState<Goal | null>(null);
+  const [savingsAmount, setSavingsAmount] = useState('');
+
+  const [form, setForm] = useState({
+    name: '', targetAmount: '', savedAmount: '0', deadline: '', icon: 'home', color: '#8b5cf6',
+  });
+
+  const getIconById = (id: string) => {
+    return GOAL_ICONS.find(i => i.id === id)?.icon || Target;
+  };
+
+  const openAdd = () => {
+    setEditGoal(null);
+    setForm({ name: '', targetAmount: '', savedAmount: '0', deadline: '', icon: 'home', color: '#8b5cf6' });
+    setShowModal(true);
+  };
+
+  const openEdit = (g: Goal) => {
+    setEditGoal(g);
+    setForm({
+      name: g.name,
+      targetAmount: String(g.targetAmount),
+      savedAmount: String(g.savedAmount),
+      deadline: g.deadline || '',
+      icon: g.icon,
+      color: g.color,
+    });
+    setShowModal(true);
+  };
+
+  const handleSubmit = () => {
+    if (!form.name || !form.targetAmount) return;
+    const payload = {
+      userId,
+      name: form.name,
+      targetAmount: Number(form.targetAmount),
+      savedAmount: Number(form.savedAmount) || 0,
+      deadline: form.deadline || undefined,
+      icon: form.icon,
+      color: form.color,
+    };
+    if (editGoal) {
+      onUpdate({ ...editGoal, ...payload });
+    } else {
+      onAdd(payload);
+    }
+    setShowModal(false);
+  };
+
+  const handleAddSavings = () => {
+    if (!showSavingsModal || !savingsAmount) return;
+    onAddSavings(showSavingsModal.id, Number(savingsAmount));
+    setSavingsAmount('');
+    setShowSavingsModal(null);
+  };
+
+  const totalTarget = (goals || []).reduce((s, g) => s + g.targetAmount, 0);
+  const totalSaved = (goals || []).reduce((s, g) => s + g.savedAmount, 0);
+  const completedGoals = (goals || []).filter(g => g.savedAmount >= g.targetAmount).length;
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="group lg:hidden">
+          <h2 className="text-2xl font-bold text-text-primary tracking-tight">Tujuan</h2>
+          <p className="text-[10px] sm:text-[11px] text-text-secondary font-medium mt-1 uppercase tracking-widest">Target & Progres Tabungan</p>
+          <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-80 group-hover:w-20 transition-all duration-500" />
+        </div>
+        <button
+          onClick={openAdd}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl text-xs font-black shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+        >
+          <Plus className="w-4 h-4" />
+          Tambah Tujuan
+        </button>
+      </div>
+
+      {/* Summary Cards */}
+      {goals && goals.length > 0 && (
+        <div className="flex overflow-x-auto sm:grid sm:grid-cols-3 gap-3 sm:gap-4 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 pb-2 sm:pb-0">
+          {[
+            { label: 'Total Target', value: formatCurrency(totalTarget), icon: <Target className="w-3.5 h-3.5" />, color: 'text-accent', bg: 'bg-accent/5' },
+            { label: 'Total Terkumpul', value: formatCurrency(totalSaved), icon: <PiggyBank className="w-3.5 h-3.5" />, color: 'text-success', bg: 'bg-success/5' },
+            { label: 'Tujuan Tercapai', value: `${completedGoals} / ${goals.length}`, icon: <CheckCircle2 className="w-3.5 h-3.5" />, color: 'text-emerald-500', bg: 'bg-emerald-500/5' },
+
+          ].map((s, i) => (
+            <div key={i} className="flex-shrink-0 w-[150px] sm:w-auto bg-card-bg p-3.5 rounded-2xl border border-border-ui shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <div className={cn("p-1.5 rounded-lg", s.bg)}>
+                  <span className={s.color}>{s.icon}</span>
+                </div>
+                <p className="text-[8px] font-medium text-text-secondary uppercase tracking-widest truncate">{s.label}</p>
+              </div>
+              <div className="flex items-center gap-1">
+                {s.label === 'Total Terkumpul' && <ArrowUpRight className="w-3 h-3 text-success" />}
+                <p className={cn("text-sm sm:text-base font-bold tracking-tight currency-font", s.color)}>{s.value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Goals Grid */}
+      {!goals || goals.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 gap-4">
+          <div className="w-16 h-16 rounded-3xl bg-accent/10 flex items-center justify-center text-3xl">🎯</div>
+          <p className="text-sm font-bold text-text-secondary">Belum ada tujuan tabungan</p>
+          <button onClick={openAdd} className="px-4 py-2 bg-accent/10 text-accent rounded-xl text-xs font-black hover:bg-accent/20 transition-colors">
+            Buat Tujuan Pertama
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {goals.map((goal, i) => {
+              const pct = Math.min((goal.savedAmount / goal.targetAmount) * 100, 100);
+              const remaining = goal.targetAmount - goal.savedAmount;
+              const isComplete = pct >= 100;
+              const daysLeft = goal.deadline ? differenceInDays(new Date(goal.deadline), new Date()) : null;
+
+              return (
+                <div
+                  key={goal.id}
+                  className="bg-card-bg rounded-3xl border border-border-ui overflow-hidden shadow-sm hover:shadow-md hover:border-accent/30 transition-all"
+                >
+                  {/* Card Header */}
+                  <div className="p-4 sm:p-5 relative" style={{ background: `linear-gradient(135deg, ${goal.color}, ${goal.color}dd)` }}>
+                    <div className="flex justify-between items-start">
+                      <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
+                        {React.createElement(getIconById(goal.icon), { className: "w-6 h-6" })}
+                      </div>
+                      <div className="flex gap-1">
+                        <button onClick={() => openEdit(goal)} className="p-2.5 bg-white/20 hover:bg-white/30 rounded-xl transition-colors">
+                          <Edit2 className="w-4 h-4 text-white" />
+                        </button>
+                        <button onClick={() => onDelete(goal.id)} className="p-2.5 bg-white/20 hover:bg-red-500/50 rounded-xl transition-colors">
+                          <Trash2 className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
+                    </div>
+                    <h3 className="text-base font-bold text-white mt-3 leading-tight">{goal.name}</h3>
+                    {isComplete && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                        <span className="text-[10px] font-bold text-white uppercase tracking-wide">Tercapai!</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Card Body */}
+                  <div className="p-3.5 sm:p-4 space-y-3">
+                    {/* Progress */}
+                    <div>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-[10px] font-medium text-text-secondary">Progress</span>
+                        <span className="text-[10px] font-bold currency-font" style={{ color: goal.color }}>
+                          {pct > 0 && pct < 1 ? '< 1' : Math.round(pct)}%
+                        </span>
+
+                      </div>
+                      <div className="h-2 bg-bg-main rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: goal.color, width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Amounts */}
+                    <div className="flex justify-between">
+                      <div>
+                        <p className="text-[9px] text-text-secondary uppercase tracking-widest font-medium">Terkumpul</p>
+                        <div className="flex items-center gap-1">
+                          <ArrowUpRight className="w-3 h-3 text-success" />
+                          <p className="text-sm font-bold text-success currency-font">{formatCurrency(goal.savedAmount)}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[9px] text-text-secondary uppercase tracking-widest font-medium">Target</p>
+                        <p className="text-sm font-bold text-text-primary currency-font">{formatCurrency(goal.targetAmount)}</p>
+                      </div>
+                    </div>
+
+                    {/* Remaining + Deadline */}
+                    <div className="flex items-center justify-between text-[9px]">
+                      {remaining > 0 ? (
+                        <span className="text-text-secondary">Sisa Target: <span className="font-bold text-warning currency-font">{formatCurrency(remaining)}</span></span>
+
+                      ) : (
+                        <span className="text-success font-bold">✅ Sudah tercapai!</span>
+                      )}
+                      {daysLeft !== null && (
+                        <span className={cn("flex items-center gap-1 font-bold", daysLeft < 30 ? 'text-danger' : 'text-text-secondary')}>
+                          <Clock className="w-2.5 h-2.5" />
+                          {daysLeft > 0 ? `${daysLeft} hari lagi` : 'Kedaluwarsa'}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Add Savings Button */}
+                    {!isComplete && (
+                      <button
+                        onClick={() => setShowSavingsModal(goal)}
+                        className="w-full py-3 bg-linear-to-r from-accent to-secondary text-white rounded-xl text-[10px] font-black shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                      >
+                        + TAMBAH TABUNGAN
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      )}
+           {/* Add/Edit Goal Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)} />
+          <div className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-md p-6 mt-4 sm:mt-0">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-black text-text-primary">{editGoal ? 'Edit Tujuan' : 'Tambah Tujuan'}</h3>
+              <button onClick={() => setShowModal(false)} className="p-2 hover:bg-bg-main rounded-lg transition-colors">
+                <X className="w-4 h-4 text-text-secondary" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Icon Picker */}
+              <div>
+                <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-2 block">Ikon Tujuan</label>
+                <div className="grid grid-cols-6 gap-2">
+                  {GOAL_ICONS.map(i => (
+                    <button 
+                      key={i.id} 
+                      onClick={() => setForm(f => ({ ...f, icon: i.id }))} 
+                      className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center transition-all", 
+                        form.icon === i.id ? 'bg-accent/20 scale-110 ring-2 ring-accent text-accent' : 'bg-bg-main text-text-secondary hover:bg-border-ui hover:text-text-primary'
+                      )}
+                    >
+                      <i.icon className="w-5 h-5" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Color Picker */}
+              <div>
+                <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-2 block">Pilih Warna</label>
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap gap-2 flex-1">
+                    {['#8b5cf6', '#f43f5e', '#f59e0b', '#10b981', '#0ea5e9', '#d946ef'].map(c => (
+                      <button 
+                        key={c} 
+                        onClick={() => setForm(f => ({ ...f, color: c }))} 
+                        className={cn("w-8 h-8 rounded-full transition-all hover:scale-110", form.color === c && 'ring-2 ring-offset-2 ring-accent ring-offset-card-bg scale-110')}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
+                  <div className="relative group">
+                    <input 
+                      type="color" 
+                      value={form.color} 
+                      onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
+                      className="w-10 h-10 rounded-xl bg-bg-main border border-border-ui p-1 cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Nama Tujuan</label>
+                <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Contoh: Tabungan Rumah" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Target (Rp)</label>
+                  <input type="number" value={form.targetAmount} onChange={e => setForm(f => ({ ...f, targetAmount: e.target.value }))} placeholder="500000000" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Sudah Terkumpul</label>
+                  <input type="number" value={form.savedAmount} onChange={e => setForm(f => ({ ...f, savedAmount: e.target.value }))} placeholder="0" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Target Tanggal (Opsional)</label>
+                <DatePicker value={form.deadline} onChange={v => setForm(f => ({ ...f, deadline: v }))} dropUp placeholder="dd/mm/yyyy" />
+              </div>
+
+              <button onClick={handleSubmit} disabled={!form.name || !form.targetAmount} className="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100">
+                {editGoal ? 'Simpan Perubahan' : 'Tambah Tujuan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Savings Modal */}
+      {showSavingsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowSavingsModal(null)} />
+          <div className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-sm p-6">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: showSavingsModal.color }}>
+                  {React.createElement(getIconById(showSavingsModal.icon), { className: "w-5 h-5" })}
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-text-primary">{showSavingsModal.name}</h3>
+                  <p className="text-[10px] text-text-secondary">Tambah jumlah tabungan</p>
+                </div>
+              </div>
+              <button onClick={() => setShowSavingsModal(null)} className="p-2 hover:bg-bg-main rounded-lg transition-colors">
+                <X className="w-4 h-4 text-text-secondary" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <input type="number" value={savingsAmount} onChange={e => setSavingsAmount(e.target.value)} placeholder="Masukkan jumlah (Rp)" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" autoFocus />
+              <button onClick={handleAddSavings} disabled={!savingsAmount || Number(savingsAmount) <= 0} className="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50">
+                Tambah {savingsAmount ? formatCurrency(Number(savingsAmount)) : ''}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

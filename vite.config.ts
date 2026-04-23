@@ -1,0 +1,75 @@
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import {defineConfig, loadEnv} from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
+
+export default defineConfig(({mode}) => {
+  const env = loadEnv(mode, '.', '');
+  return {
+    plugins: [
+      react(), 
+      tailwindcss(),
+      VitePWA({
+        // ── Use injectManifest so our custom sw.ts handles Background Sync ──
+        strategies: 'injectManifest',
+        srcDir: 'src',
+        filename: 'sw.ts',
+        registerType: 'autoUpdate',
+        injectRegister: 'auto',
+
+        devOptions: {
+          enabled: true,
+          type: 'module',
+          // In dev mode, point to src/sw.ts so HMR works
+          navigateFallback: 'index.html',
+        },
+
+        includeAssets: ['pwa-192x192.png', 'pwa-512x512.png'],
+        manifest: {
+          name: 'Vinance',
+          short_name: 'Vinance',
+          description: 'Aplikasi Manajemen Keuangan Keluarga Premium',
+          theme_color: '#6366f1',
+          background_color: '#0f172a',
+          display: 'standalone',
+          orientation: 'portrait',
+          scope: '/',
+          start_url: '/',
+          icons: [
+            {
+              src: 'pwa-192x192.png',
+              sizes: '192x192',
+              type: 'image/png'
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable'
+            }
+          ]
+        },
+
+        // injectManifest mode: workbox config controls injection of __WB_MANIFEST
+        injectManifest: {
+          maximumFileSizeToCacheInBytes: 4000000,
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,json}'],
+        },
+      })
+    ],
+    define: {
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '.'),
+      },
+    },
+    server: {
+      // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      // Do not modify—file watching is disabled to prevent flickering during agent edits.
+      hmr: process.env.DISABLE_HMR !== 'true',
+    },
+  };
+});

@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  /* Light Theme (Clean & High Contrast) */
+  --color-bg-main: #f1f5f9; /* Slate 100 */
+  --color-sidebar-bg: #f8fafc; /* Slate 50 - clean sidebar */
+  --color-sidebar-text-primary: #0f172a; /* Slate 900 */
+  --color-sidebar-text-secondary: #64748b; /* Slate 500 */
+  --color-sidebar-border: #e2e8f0; /* Slate 200 */
+  --color-card-bg: #ffffff;
+  --color-accent: #059669; /* Emerald 600 */
+  --color-secondary: #0d9488; /* Teal 600 */
+  --color-success: #059669; /* Emerald 600 */
+  --color-danger: #dc2626; /* Red 600 */
+  --color-warning: #d97706; /* Amber 600 */
+  --color-text-primary: #0f172a; /* Slate 900 */
+  --color-text-secondary: #475569; /* Slate 600 - sharper reading */
+  --color-border-ui: #cbd5e1; /* Slate 300 - clearly visible borders */
+
+  /* Dark Theme (Blue Moon & Purple/Pink Accents) */
+  --color-dark-bg-main: #020617; /* Deep Dark */
+  --color-dark-sidebar-bg: #020617; /* Same as main for seamless look or #000000 */
+  --color-dark-sidebar-text-primary: #f1f5f9; /* Slate 100 */
+  --color-dark-sidebar-text-secondary: #94a3b8; /* Slate 400 */
+  --color-dark-sidebar-border: #1e293b; /* Slate 800 */
+  --color-dark-card-bg: #111827; /* Slightly brighter card to pop from background */
+  --color-dark-accent: #059669; /* Emerald 600 - darker green for dark mode */
+  --color-dark-secondary: #0d9488; /* Teal 600 */
+  --color-dark-text-primary: #ffffff; /* Max contrast text */
+  --color-dark-text-secondary: #cbd5e1; /* Brighter grey for readable secondary text */
+  --color-dark-border-ui: #334155; /* Distinct border to separate elements */
+}
+
+.dark {
+  --color-bg-main: var(--color-dark-bg-main);
+  --color-sidebar-bg: var(--color-dark-sidebar-bg);
+  --color-sidebar-text-primary: var(--color-dark-sidebar-text-primary);
+  --color-sidebar-text-secondary: var(--color-dark-sidebar-text-secondary);
+  --color-sidebar-border: var(--color-dark-sidebar-border);
+  --color-card-bg: var(--color-dark-card-bg);
+  --color-accent: var(--color-dark-accent);
+  --color-secondary: var(--color-dark-secondary);
+  --color-text-primary: var(--color-dark-text-primary);
+  --color-text-secondary: var(--color-dark-text-secondary);
+  --color-border-ui: var(--color-dark-border-ui);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-main);
+  color: var(--color-text-primary);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 
+ * Optimized Theme Transition
+ * We use the modern View Transitions API (in App.tsx) for perfectly smooth, 
+ * zero-lag hardware-accelerated theme switching on mobile. 
+ * Therefore, CSS color transitions are disabled to prevent conflicts and CPU bottlenecking.
+ */
+body,
+aside,
+header,
+.bg-card-bg,
+.bg-bg-main,
+.bg-sidebar-bg,
+.text-text-primary,
+.text-text-secondary {
+  /* No transitions here! Snapping instantly allows View Transitions to handle the crossfade perfectly. */
+}
+
+
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-ui);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-ui) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  display: block;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-border-ui);
+  border-radius: 10px;
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* High Density Theme Overrides */
+.card-ui {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-ui);
+  border-radius: 8px;
+}
+
+.btn-accent {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.text-accent { color: var(--color-accent); }
+.text-success { color: var(--color-success); }
+.text-danger { color: var(--color-danger); }
+.text-warning { color: var(--color-warning); }
+
+/* Recharts Focus Fix - aggressive wildcard to prevent any click outlines */
+.recharts-wrapper,
+.recharts-wrapper *,
+.recharts-wrapper *:focus,
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Custom Typography Utilities */
+.currency-font {
+  letter-spacing: 0.5px;
+}
+
+.text-timestamp {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  opacity: 0.8;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.animate-shine {
+  animation: shine 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
