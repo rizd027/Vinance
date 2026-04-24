@@ -22,9 +22,12 @@ function doGet(e) {
 function doPost(e) {
   let data;
   try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return createResponse({ error: 'Data POST kosong. Apakah Anda menjalankan script ini dari dalam Editor Apps Script?' });
+    }
     data = JSON.parse(e.postData.contents);
   } catch (err) {
-    return createResponse({ error: 'Invalid JSON' });
+    return createResponse({ error: 'Invalid JSON: ' + err.message });
   }
 
   const action = data.action;

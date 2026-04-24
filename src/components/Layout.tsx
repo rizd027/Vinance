@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, List, PieChart, Target, User, LogOut, Moon, Sun, Plus, RefreshCw, TrendingUp, Wallet, StickyNote, Flag, Cloud, CloudOff, LayoutGrid, X } from 'lucide-react';
+import { Home, List, PieChart, Target, User, LogOut, Moon, Sun, Plus, RefreshCw, TrendingUp, Wallet, StickyNote, Flag, Cloud, CloudOff, LayoutGrid, X, Bell, AlertCircle, CheckCircle2, AlertOctagon, AlertTriangle, Info } from 'lucide-react';
 
 import { cn, formatCurrency } from '../lib/utils';
 import { Transaction, Budget, User as UserType } from '../types';
