@@ -142,7 +142,9 @@ export default function ExportImportModal({ isOpen, onClose, transactions, onImp
               onClick={onClose}
               className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
-            <div className="relative w-full max-w-lg bg-card-bg rounded-2xl shadow-2xl border border-border-ui overflow-hidden flex flex-col transition-colors mt-4 mx-auto mb-auto">
+            <div 
+              className="relative w-full max-w-lg bg-card-bg rounded-2xl shadow-2xl border border-border-ui overflow-hidden flex flex-col transition-colors mt-4 mx-auto mb-auto z-10"
+            >
               <ExportImportContent 
                 activeTab={activeTab} 
                 setActiveTab={setActiveTab} 
@@ -164,7 +166,9 @@ export default function ExportImportModal({ isOpen, onClose, transactions, onImp
               onClick={onClose}
               className="fixed inset-0 bg-black/80"
             />
-            <div className="relative w-full bg-card-bg rounded-2xl shadow-xl border border-border-ui overflow-hidden flex flex-col mt-4 mx-auto mb-auto">
+            <div 
+              className="relative w-full bg-card-bg rounded-2xl shadow-xl border border-border-ui overflow-hidden flex flex-col mt-4 mx-auto mb-auto z-10"
+            >
               <ExportImportContent 
                 activeTab={activeTab} 
                 setActiveTab={setActiveTab} 

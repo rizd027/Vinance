@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Lock, Delete, Fingerprint, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -60,8 +59,7 @@ export default function PinLock({
 
   return (
     <div className={cn(
-      "fixed inset-0 z-[100] bg-bg-main flex flex-col items-center justify-center p-6 text-text-primary transition-opacity duration-200",
-      "animate-in fade-in"
+      "fixed inset-0 z-[100] bg-bg-main flex flex-col items-center justify-center p-6 text-text-primary",
     )}>
       {mode === 'setup' && (
         <button

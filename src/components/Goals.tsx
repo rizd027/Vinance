@@ -9,6 +9,7 @@ import { formatCurrency, cn } from '../lib/utils';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import DatePicker from './UI/DatePicker';
+import { motion, AnimatePresence } from 'framer-motion';
 
 
 interface GoalsProps {
@@ -102,10 +103,10 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="group lg:hidden">
-          <h2 className="text-2xl font-bold text-text-primary tracking-tight">Tujuan</h2>
-          <p className="text-[10px] sm:text-[11px] text-text-secondary font-medium mt-1 uppercase tracking-widest">Target & Progres Tabungan</p>
-          <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-80 group-hover:w-20 transition-all duration-500" />
+        <div className="flex flex-col gap-1 lg:hidden">
+          <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Target & Tujuan</h2>
+          <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Perencanaan & Progres Tabungan</p>
+          <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
         </div>
         <button
           onClick={openAdd}
@@ -255,8 +256,13 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
            {/* Add/Edit Goal Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-          <div className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-md p-6 mt-4 sm:mt-0">
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
+            onClick={() => setShowModal(false)} 
+          />
+          <div 
+            className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-md p-6 mt-4 sm:mt-0 z-10"
+          >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-black text-text-primary">{editGoal ? 'Edit Tujuan' : 'Tambah Tujuan'}</h3>
               <button onClick={() => setShowModal(false)} className="p-2 hover:bg-bg-main rounded-lg transition-colors">
@@ -341,8 +347,13 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
       {/* Add Savings Modal */}
       {showSavingsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowSavingsModal(null)} />
-          <div className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-sm p-6">
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
+            onClick={() => setShowSavingsModal(null)} 
+          />
+          <div 
+            className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-sm p-6 z-10"
+          >
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: showSavingsModal.color }}>

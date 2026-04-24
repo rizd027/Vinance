@@ -56,21 +56,19 @@ body {
 }
 
 /* 
- * Optimized Theme Transition
- * We use the modern View Transitions API (in App.tsx) for perfectly smooth, 
- * zero-lag hardware-accelerated theme switching on mobile. 
- * Therefore, CSS color transitions are disabled to prevent conflicts and CPU bottlenecking.
+ * Smooth Theme Transition
+ * Using lightweight CSS transitions instead of heavy JS-based animations 
+ * to ensure maximum performance across all devices.
  */
-body,
-aside,
-header,
-.bg-card-bg,
-.bg-bg-main,
-.bg-sidebar-bg,
-.text-text-primary,
-.text-text-secondary {
-  /* No transitions here! Snapping instantly allows View Transitions to handle the crossfade perfectly. */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease, box-shadow 0.2s ease;
 }
+
+/* Specific overrides to prevent transition on layout-critical properties if needed */
+.no-transition {
+  transition: none !important;
+}
+
 
 
 

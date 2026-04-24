@@ -134,10 +134,10 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div className="group lg:hidden">
-          <h2 className="text-2xl font-bold text-text-primary tracking-tight">Anggaran</h2>
-          <p className="text-[10px] sm:text-[11px] text-text-secondary font-medium mt-1 uppercase tracking-widest">Perencanaan & Batas Pengeluaran</p>
-          <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-80 group-hover:w-20 transition-all duration-500" />
+        <div className="flex flex-col gap-1 lg:hidden">
+          <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Manajemen Anggaran</h2>
+          <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Perencanaan & Batas Pengeluaran</p>
+          <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
         </div>
         <button
           onClick={() => setShowAddModal(true)}
@@ -422,8 +422,7 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
       </div>
 
       {/* Add Category Modal */}
-      <>
-        {showAddModal && (
+      {showAddModal && (
           <div className="fixed inset-0 z-50 flex p-4 overflow-y-auto">
             <div 
               onClick={() => setShowAddModal(false)} 
@@ -432,7 +431,9 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
                 !isMobile && "backdrop-blur-sm"
               )} 
             />
-            <div className="relative bg-card-bg p-8 rounded-3xl border border-border-ui shadow-2xl w-full max-w-sm mt-4 mx-auto mb-auto">
+            <div 
+              className="relative bg-card-bg p-8 rounded-3xl border border-border-ui shadow-2xl w-full max-w-sm mt-4 mx-auto mb-auto z-10"
+            >
               <h3 className="text-lg font-bold text-text-primary mb-6">Tambah Kategori Anggaran</h3>
               <div className="space-y-4">
                 <input
@@ -460,7 +461,6 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
             </div>
           </div>
         )}
-      </>
 
       {/* Tips Section */}
       <div className="bg-card-bg p-6 rounded-3xl border border-border-ui flex flex-col md:flex-row gap-6 items-center shadow-sm relative z-10">
@@ -479,43 +479,22 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
       </div>
 
       {/* 50/30/20 Info Modal */}
-      {!isMobile ? (
-        <AnimatePresence>
-          {showInfoModal && (
-            <div className="fixed inset-0 z-50 flex p-4 items-center justify-center">
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                onClick={() => setShowInfoModal(false)} 
-                className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" 
-              />
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-4xl mx-auto z-10 overflow-hidden flex flex-col max-h-[90vh]"
-              >
-                <InfoModalContent onClose={() => setShowInfoModal(false)} />
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-      ) : (
-        showInfoModal && (
+      {showInfoModal && (
           <div className="fixed inset-0 z-50 flex p-4 items-center justify-center">
             <div 
               onClick={() => setShowInfoModal(false)} 
-              className="fixed inset-0 bg-black/80" 
+              className={cn(
+                "fixed inset-0",
+                isMobile ? "bg-black/80" : "bg-slate-900/60 backdrop-blur-sm"
+              )} 
             />
-            <div className="relative bg-card-bg rounded-3xl border border-border-ui shadow-xl w-full mx-auto z-10 overflow-hidden flex flex-col max-h-[90vh]">
+            <div 
+              className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-4xl mx-auto z-10 overflow-hidden flex flex-col max-h-[90vh]"
+            >
               <InfoModalContent onClose={() => setShowInfoModal(false)} />
             </div>
           </div>
-        )
-      )}
+        )}
     </div>
   );
 }

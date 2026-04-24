@@ -20,6 +20,7 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
   const [error, setError] = useState('');
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotStep, setForgotStep] = useState(1);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotCode, setForgotCode] = useState('');
   const [newResetPassword, setNewResetPassword] = useState('');
@@ -128,16 +129,7 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
 
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        {/* Doodle Pattern Layer */}
-        <div
-          className="absolute inset-0 opacity-[0.07] dark:opacity-[0.12] pointer-events-none transition-opacity duration-1000"
-          style={{
-            backgroundImage: `url('/finance-doodle.png')`,
-            backgroundSize: '320px',
-            backgroundRepeat: 'repeat',
-            filter: isDark ? 'invert(1) brightness(2)' : 'none'
-          }}
-        />
+        {/* Background blobs remain for premium feel, but pattern is removed */}
 
         <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-accent/10 rounded-full blur-[120px] animate-pulse" />
         <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
@@ -386,18 +378,16 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
                     <button
                       type="submit"
                       disabled={loading}
-                      onClick={() => setSuccess('')}
-                      className="w-full py-4 rounded-2xl bg-gradient-to-r from-accent to-secondary text-white text-sm font-bold shadow-lg shadow-accent/25 hover:shadow-accent/40 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 mt-4"
+                      className="w-full py-4 bg-accent hover:bg-accent/90 text-white font-bold rounded-2xl shadow-lg shadow-accent/20 active:scale-[0.98] transition-all disabled:opacity-50"
                     >
-                      {loading ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <>
-                          {isLogin ? 'Masuk Sekarang' : (regStep === 1 ? 'Lanjut Daftar' : 'Verifikasi & Buat Akun')}
-                          <ArrowRight className="w-4 h-4" />
-                        </>
-                      )}
+                      {loading ? 'Memproses...' : (isLogin ? 'Masuk' : (regStep === 1 ? 'Lanjutkan' : 'Verifikasi & Daftar'))}
                     </button>
+
+                    {!isLogin && regStep === 1 && (
+                      <p className="text-[10px] text-text-secondary text-center leading-relaxed">
+                        Dengan mendaftar, Anda menyetujui <button type="button" onClick={() => setShowTermsModal(true)} className="text-accent font-bold hover:underline">Syarat & Ketentuan</button> layanan kami.
+                      </p>
+                    )}
                   </form>
                 </motion.div>
               </AnimatePresence>
@@ -405,7 +395,7 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
               <div className="mt-6 text-center">
                 <p className="text-[11px] text-text-secondary leading-relaxed">
                   Dengan melanjutkan, Anda menyetujui <br />
-                  <button className="text-accent font-bold hover:underline">Syarat & Ketentuan</button> kami.
+                  <button type="button" onClick={() => setShowTermsModal(true)} className="text-accent font-bold hover:underline">Syarat & Ketentuan</button> Vinance
                 </p>
               </div>
             </div>
@@ -529,9 +519,83 @@ export default function Auth({ onLogin, isDark, toggleTheme }: AuthProps) {
             >
               Tutup
             </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+        {showTermsModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6">
+            <div
+              onClick={() => setShowTermsModal(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <div
+              className="relative w-full max-w-lg bg-card-bg rounded-[32px] border border-border-ui shadow-2xl overflow-hidden flex flex-col max-h-[80vh] z-10"
+            >
+              <div className="p-6 border-b border-border-ui flex items-center justify-between bg-bg-main/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-text-primary uppercase tracking-wider">Syarat & Ketentuan</h3>
+                    <p className="text-[10px] text-text-secondary font-bold uppercase tracking-widest mt-0.5">Kebijakan Layanan Vinance</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowTermsModal(false)}
+                  className="p-2 hover:bg-bg-main rounded-xl text-text-secondary transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto custom-scrollbar space-y-6 text-sm text-text-secondary leading-relaxed">
+                <section className="space-y-3">
+                  <h4 className="text-xs font-black text-text-primary uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                    1. Kepemilikan Data
+                  </h4>
+                  <p>Vinance adalah aplikasi yang menggunakan <strong>Google Sheets pribadi Anda</strong> sebagai database utama. Seluruh data transaksi, anggaran, dan catatan keuangan disimpan di dalam file Sheets di akun Google Anda sendiri.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h4 className="text-xs font-black text-text-primary uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                    2. Keamanan & Privasi
+                  </h4>
+                  <p>Kami tidak mengumpulkan, menyimpan, atau menjual data keuangan Anda ke pihak ketiga. Vinance hanya bertindak sebagai antarmuka (interface) untuk mengelola data di Sheets Anda. Kata sandi akun Vinance Anda dienkripsi secara aman.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h4 className="text-xs font-black text-text-primary uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                    3. Tanggung Jawab Pengguna
+                  </h4>
+                  <p>Anda bertanggung jawab penuh atas keamanan akun Google Anda dan akses ke file Google Sheets yang digunakan oleh aplikasi ini. Pastikan untuk tidak membagikan kredensial login Anda kepada siapapun.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h4 className="text-xs font-black text-text-primary uppercase tracking-widest flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                    4. Batasan Layanan
+                  </h4>
+                  <p>Vinance disediakan "apa adanya" tanpa jaminan ketersediaan layanan 100%. Kami terus berusaha meningkatkan performa dan fitur aplikasi demi kenyamanan pengelolaan keuangan Anda.</p>
+                </section>
+              </div>
+
+              <div className="p-6 bg-bg-main/50 border-t border-border-ui">
+                <button
+                  type="button"
+                  onClick={() => setShowTermsModal(false)}
+                  className="w-full py-3.5 rounded-2xl bg-accent text-white text-xs font-bold shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                  Saya Mengerti
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 }

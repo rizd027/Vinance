@@ -76,7 +76,7 @@ function getSheet(name) {
   if (!sheet) {
     sheet = ss.insertSheet(name);
     if (name === 'Users') {
-      sheet.appendRow(['id', 'name', 'email', 'password', 'createdAt', 'photoUrl']);
+      sheet.appendRow(['id', 'name', 'email', 'password', 'createdAt', 'photoUrl', 'coverUrl', 'wallpaper']);
     } else if (name === 'Transactions') {
       sheet.appendRow(['id', 'userId', 'type', 'category', 'amount', 'date', 'note']);
     } else if (name === 'Budgets') {
@@ -100,8 +100,18 @@ function handleRegister(data) {
   if (existing) return createResponse({ error: 'Email already registered' });
 
   const id = Utilities.getUuid();
-  sheet.appendRow([id, data.name, data.email, data.password, new Date(), data.photoUrl || '']);
-  return createResponse({ success: true, user: { id, name: data.name, email: data.email, photoUrl: data.photoUrl || '' } });
+  sheet.appendRow([id, data.name, data.email, data.password, new Date(), data.photoUrl || '', data.coverUrl || '', data.wallpaper || '']);
+  return createResponse({ 
+    success: true, 
+    user: { 
+      id, 
+      name: data.name, 
+      email: data.email, 
+      photoUrl: data.photoUrl || '',
+      coverUrl: data.coverUrl || '',
+      wallpaper: data.wallpaper || ''
+    } 
+  });
 }
 
 function handleLogin(data) {
@@ -112,7 +122,14 @@ function handleLogin(data) {
 
   return createResponse({
     success: true,
-    user: { id: user[0], name: user[1], email: user[2], photoUrl: user[5] || '' }
+    user: { 
+      id: user[0], 
+      name: user[1], 
+      email: user[2], 
+      photoUrl: user[5] || '',
+      coverUrl: user[6] || '',
+      wallpaper: user[7] || ''
+    }
   });
 }
 
@@ -143,6 +160,8 @@ function handleUpdateUser(data) {
       if (data.email) sheet.getRange(i + 1, 3).setValue(data.email);
       if (data.password) sheet.getRange(i + 1, 4).setValue(data.password);
       if (data.photoUrl !== undefined) sheet.getRange(i + 1, 6).setValue(data.photoUrl);
+      if (data.coverUrl !== undefined) sheet.getRange(i + 1, 7).setValue(data.coverUrl);
+      if (data.wallpaper !== undefined) sheet.getRange(i + 1, 8).setValue(data.wallpaper);
       return createResponse({ success: true });
     }
   }
@@ -316,13 +335,13 @@ function handleVerifyRegisterAndCreate(data) {
   if (existing) return createResponse({ error: 'Email sudah terdaftar.' });
 
   const id = Utilities.getUuid();
-  sheet.appendRow([id, data.name, data.email.toLowerCase(), data.password, new Date(), '']);
+  sheet.appendRow([id, data.name, data.email.toLowerCase(), data.password, new Date(), '', '', '']);
 
   codeSheet.deleteRow(codeIndex); // Clean up
 
   return createResponse({
     success: true,
-    user: { id, name: data.name, email: data.email, photoUrl: '' }
+    user: { id, name: data.name, email: data.email, photoUrl: '', coverUrl: '', wallpaper: '' }
   });
 }
 

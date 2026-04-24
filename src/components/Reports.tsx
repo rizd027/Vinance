@@ -6,7 +6,8 @@ import {
 import {
   TrendingUp, TrendingDown, Wallet,
   ArrowUpRight, ArrowDownRight, ShieldCheck, Award, BarChart2,
-  Utensils, Car, ShoppingBag, Receipt, Gamepad2, HeartPulse
+  Utensils, Car, ShoppingBag, Receipt, Gamepad2, HeartPulse,
+  Download, X
 } from 'lucide-react';
 import { Transaction } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
@@ -33,7 +34,7 @@ import {
 } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { exportReportPDF, exportReportExcel, exportReportCSV, exportReportDocx } from '../lib/exportUtils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FileSpreadsheet, FileText } from 'lucide-react';
 
 interface ReportsProps {
@@ -65,6 +66,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function Reports({ transactions }: ReportsProps) {
   const [period, setPeriod] = useState<Period>('month');
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -170,10 +172,10 @@ export default function Reports({ transactions }: ReportsProps) {
     <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto">
       {/* Header & Filter */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="group lg:hidden">
-          <h2 className="text-2xl font-bold text-text-primary tracking-tight">Laporan</h2>
-          <p className="text-[10px] sm:text-[11px] text-text-secondary font-medium mt-1 uppercase tracking-widest">Analisis & Kesehatan Finansial</p>
-          <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-80 group-hover:w-20 transition-all duration-500" />
+        <div className="flex flex-col gap-1 lg:hidden">
+          <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Analisis Laporan</h2>
+          <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Ringkasan & Kesehatan Finansial</p>
+          <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
         </div>
 
         <div className="flex items-center gap-2 bg-card-bg/50 p-1 rounded-xl border border-border-ui w-full sm:w-auto overflow-x-auto no-scrollbar">
@@ -192,18 +194,14 @@ export default function Reports({ transactions }: ReportsProps) {
             </button>
           ))}
           <div className="w-px h-6 bg-border-ui mx-1 hidden sm:block" />
-          <div className="flex items-center gap-1.5 px-1.5">
-            <button onClick={() => handleExport('xlsx')} className="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-colors" title="Export Excel">
-              <FileSpreadsheet className="w-4 h-4" />
-            </button>
-            <button onClick={() => handleExport('csv')} className="p-2 text-slate-400 hover:bg-slate-500/10 rounded-lg transition-colors" title="Export CSV">
-              <FileText className="w-4 h-4" />
-            </button>
-            <button onClick={() => handleExport('pdf')} className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors" title="Export PDF">
-              <FileText className="w-4 h-4" />
-            </button>
-            <button onClick={() => handleExport('docx')} className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors" title="Export Word">
-              <FileText className="w-4 h-4" />
+          <div className="flex items-center px-1.5">
+            <button 
+              onClick={() => setShowExportModal(true)} 
+              className="flex items-center gap-1.5 px-3 py-2 text-accent bg-accent/10 hover:bg-accent/20 rounded-lg transition-colors font-bold text-xs" 
+              title="Export Laporan"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">Export</span>
             </button>
           </div>
         </div>
@@ -455,6 +453,70 @@ export default function Reports({ transactions }: ReportsProps) {
           )}
         </div>
       </div>
+
+      {/* Export Modal */}
+      {showExportModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              onClick={() => setShowExportModal(false)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <div
+              className="relative w-full max-w-sm bg-card-bg rounded-[24px] shadow-2xl border border-border-ui overflow-hidden z-10"
+            >
+              <div className="flex items-center justify-between p-5 border-b border-border-ui/50">
+                <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
+                  <Download className="w-4 h-4 text-accent" />
+                  Export Laporan
+                </h3>
+                <button
+                  onClick={() => setShowExportModal(false)}
+                  className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-main rounded-xl transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="p-5 grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => { handleExport('xlsx'); setShowExportModal(false); }}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border-ui hover:border-emerald-500 hover:bg-emerald-500/5 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                    <FileSpreadsheet className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-bold text-text-primary">Excel</span>
+                </button>
+                <button
+                  onClick={() => { handleExport('csv'); setShowExportModal(false); }}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border-ui hover:border-slate-500 hover:bg-slate-500/5 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-full bg-slate-500/10 flex items-center justify-center text-slate-500 group-hover:scale-110 transition-transform">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-bold text-text-primary">CSV</span>
+                </button>
+                <button
+                  onClick={() => { handleExport('pdf'); setShowExportModal(false); }}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border-ui hover:border-rose-500 hover:bg-rose-500/5 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-bold text-text-primary">PDF</span>
+                </button>
+                <button
+                  onClick={() => { handleExport('docx'); setShowExportModal(false); }}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border-ui hover:border-blue-500 hover:bg-blue-500/5 transition-all group"
+                >
+                  <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <span className="text-xs font-bold text-text-primary">Word</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 }

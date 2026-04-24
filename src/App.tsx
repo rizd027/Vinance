@@ -16,7 +16,7 @@ import { User, Transaction, Budget, Goal, Note, AppData } from './types';
 import { api } from './lib/api';
 import { storage } from './lib/storage';
 import { cn } from './lib/utils';
-import { LogOut, Settings, Shield, Bell, Database, ExternalLink, Info, X, Copy, Check, Lock, AlertCircle, CheckCircle2, AlertTriangle, AlertOctagon, ArrowRight, RefreshCw, User as UserIcon, Mail, ShieldCheck, MessageSquare, Send, Coffee } from 'lucide-react';
+import { LogOut, Settings, Shield, Bell, Database, ExternalLink, Info, X, Copy, Check, Lock, AlertCircle, CheckCircle2, AlertTriangle, AlertOctagon, ArrowRight, RefreshCw, User as UserIcon, Mail, ShieldCheck, MessageSquare, Send, Coffee, ChevronRight, Image, Palette, Phone, Instagram, Github, MessageCircle, Globe, ArrowLeft, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Toast {
@@ -60,6 +60,23 @@ export default function App() {
     const saved = localStorage.getItem('kb_theme');
     return saved === 'dark';
   });
+  const [isChangingTheme, setIsChangingTheme] = useState(false);
+
+  const toggleTheme = () => {
+    setIsChangingTheme(true);
+    const nextDark = !isDark;
+    
+    // Increase initial delay to ensure the overlay is 100% opaque before the "big flip"
+    setTimeout(() => {
+      setIsDark(nextDark);
+      localStorage.setItem('kb_theme', nextDark ? 'dark' : 'light');
+      
+      // Keep it a bit longer to hide the browser's layout recalculation stutter
+      setTimeout(() => {
+        setIsChangingTheme(false);
+      }, 500);
+    }, 250); // Increased from 80ms to ensure fade-in completes
+  };
 
   const [appPin, setAppPin] = useState(() => localStorage.getItem('kb_pin') || null);
   const [isUnlocked, setIsUnlocked] = useState(!localStorage.getItem('kb_pin'));
@@ -73,7 +90,6 @@ export default function App() {
   const [showNotifSettings, setShowNotifSettings] = useState(false);
   const [showGenSettings, setShowGenSettings] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
-  const [showEditProfile, setShowEditProfile] = useState(false);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
   useEffect(() => {
@@ -92,6 +108,26 @@ export default function App() {
   const [editCode, setEditCode] = useState('');
   const [feedback, setFeedback] = useState('');
   const [sendingFeedback, setSendingFeedback] = useState(false);
+  const [showScriptInfo, setShowScriptInfo] = useState(false);
+  const [profileView, setProfileView] = useState<'main' | 'wallpaper' | 'contact' | 'edit'>('main');
+  const [wallpaper, setWallpaper] = useState(() => {
+    const saved = localStorage.getItem('kb_wallpaper');
+    if (saved) return saved;
+    // Fallback to user preference if available
+    const savedUser = localStorage.getItem('kb_user');
+    if (savedUser) {
+      const u = JSON.parse(savedUser);
+      return u.wallpaper || 'none';
+    }
+    return 'none';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('kb_wallpaper', wallpaper);
+    if (user && user.wallpaper !== wallpaper) {
+      api.updateUser(user.id, { wallpaper }).catch(() => {});
+    }
+  }, [wallpaper, user]);
 
   // App Settings
   const [appSettings, setAppSettings] = useState(() => {
@@ -106,6 +142,12 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('kb_settings', JSON.stringify(appSettings));
   }, [appSettings]);
+
+  useEffect(() => {
+    if (activeTab !== 'profile') {
+      setProfileView('main');
+    }
+  }, [activeTab]);
 
   // Toast helpers
   const showToast = (message: string, type: Toast['type'] = 'info', category?: 'sync' | 'budget') => {
@@ -791,7 +833,7 @@ function handleDeleteNote(data) {
         setUser(updatedUser);
         localStorage.setItem('kb_user', JSON.stringify(updatedUser));
         showToast('Profil berhasil diperbaharui', 'success');
-        setShowEditProfile(false);
+        setProfileView('main');
         setEditStep(1);
         setEditCode('');
       } else {
@@ -865,15 +907,40 @@ function handleDeleteNote(data) {
     reader.readAsDataURL(file);
   };
 
+  const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('Ukuran sampul maksimal 2MB', 'warning');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const dataUrl = event.target?.result as string;
+      const updatedUser = { ...user, coverUrl: dataUrl };
+      setUser(updatedUser);
+      localStorage.setItem('kb_user', JSON.stringify(updatedUser));
+      
+      try {
+        await api.updateUser(user.id, { coverUrl: dataUrl });
+        showToast('Sampul profil diperbarui & tersimpan', 'success');
+      } catch (err) {
+        showToast('Sampul tersimpan lokal (gagal sinkron)', 'info');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const openEditProfile = () => {
     if (!user) return;
     setEditName(user.name);
     setEditEmail(user.email);
     setEditPassword('');
     setEditPhoto(user.photoUrl || '');
-    setEditStep(1);
     setEditCode('');
-    setShowEditProfile(true);
+    setProfileView('edit');
   };
 
   const handleClearData = async () => {
@@ -975,6 +1042,24 @@ function handleDeleteNote(data) {
     }
   };
 
+  const handleWallpaperUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('Ukuran file maksimal 2MB', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        setWallpaper(dataUrl);
+        localStorage.setItem('kb_wallpaper', dataUrl);
+        showToast('Wallpaper kustom diterapkan', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddGoal = async (g: Omit<Goal, 'id'>) => {
     const newGoal = { ...g, id: 'goal-' + Date.now() };
     setData(prev => ({ ...prev, goals: [...(prev.goals || []), newGoal] }));
@@ -1041,20 +1126,34 @@ function handleDeleteNote(data) {
         <Auth
           onLogin={handleLogin}
           isDark={isDark}
-          toggleTheme={() => {
-            if (!document.startViewTransition) {
-              setIsDark(!isDark);
-              return;
-            }
-            document.startViewTransition(() => {
-              import('react-dom').then(({ flushSync }) => {
-                flushSync(() => {
-                  setIsDark(!isDark);
-                });
-              });
-            });
-          }}
+          toggleTheme={toggleTheme}
         />
+
+        {/* Theme Switching Loading Overlay */}
+        <AnimatePresence>
+          {isChangingTheme && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: "linear" }}
+              className={cn(
+                "fixed inset-0 z-[9999] flex flex-col items-center justify-center will-change-opacity",
+                isDark ? "bg-[#020617]" : "bg-[#f1f5f9]" // Use hardcoded colors to avoid CSS variable flipping flicker
+              )}
+            >
+              <div className="relative mb-6">
+                <div className="w-12 h-12 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                   <div className="w-6 h-6 bg-white dark:bg-slate-800 rounded-lg shadow-sm flex items-center justify-center p-1 border border-border-ui/30">
+                     <img src="/Logo-Vinance.png" alt="Logo" className="w-full h-full object-contain" />
+                   </div>
+                </div>
+              </div>
+              <p className="text-[9px] font-black text-accent uppercase tracking-[0.5em] opacity-80">Syncing Theme</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
@@ -1086,6 +1185,8 @@ function handleDeleteNote(data) {
             budgets={data.budgets}
             onAddClick={() => { setActiveTab('transactions'); setShowAddModal(true); }}
             onViewAll={() => setActiveTab('transactions')}
+            onNavigateToBudget={() => setActiveTab('budgets')}
+            userName={user.name}
           />
         );
       case 'transactions':
@@ -1109,193 +1210,720 @@ function handleDeleteNote(data) {
       case 'notes':
         return <Notes notes={data.notes} onAdd={handleAddNote} onUpdate={handleUpdateNote} onDelete={handleDeleteNote} userId={user.id} />;
       case 'profile':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-xl font-bold text-text-primary lg:hidden">Profil & Pengaturan</h2>
-
-            <div className="bg-card-bg rounded-3xl p-6 shadow-sm border border-border-ui space-y-6 transition-colors">
-              <div className="flex items-center gap-5 pb-6 border-b border-border-ui relative group">
-                <div className="relative">
-                  <div className="w-16 h-16 bg-linear-to-br from-accent to-secondary p-0.5 rounded-2xl shadow-lg rotate-2 group-hover:rotate-6 transition-transform">
-                    <div className="w-full h-full bg-card-bg rounded-[14px] overflow-hidden flex items-center justify-center -rotate-2 group-hover:-rotate-6 transition-transform">
-                      {user.photoUrl ? (
-                        <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-2xl font-black text-accent">{user.name[0].toUpperCase()}</span>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    onClick={openEditProfile}
-                    className="absolute -bottom-1 -right-1 p-1.5 bg-card-bg border border-border-ui rounded-xl shadow-lg hover:bg-bg-main transition-all scale-90 hover:scale-100"
-                  >
-                    <Settings className="w-3.5 h-3.5 text-accent" />
-                  </button>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-bold text-text-primary tracking-tight">{user.name}</h3>
-                      <p className="text-xs font-medium text-text-secondary">{user.email}</p>
-                    </div>
-                    <button
-                      onClick={openEditProfile}
-                      className="px-3 py-1.5 bg-bg-main hover:bg-border-ui rounded-lg text-[10px] font-bold text-text-secondary transition-colors"
-                    >
-                      EDIT PROFIL
-                    </button>
-                  </div>
+        if (profileView === 'edit') {
+          return (
+            <div className="space-y-6 pb-4">
+              <div className="flex items-center gap-4 mb-2">
+                <button
+                  onClick={() => {
+                    setProfileView('main');
+                    setEditStep(1);
+                  }}
+                  className="w-10 h-10 rounded-2xl bg-bg-main border border-border-ui flex items-center justify-center hover:bg-border-ui transition-colors shadow-sm"
+                >
+                  <ArrowLeft className="w-5 h-5 text-text-primary" />
+                </button>
+                <div>
+                  <h2 className="text-xl font-black text-text-primary tracking-tight">Edit Profil</h2>
+                  <p className="text-[10px] font-bold text-accent uppercase tracking-widest mt-0.5">Pengaturan Akun & Keamanan</p>
                 </div>
               </div>
 
-              {/* Database Configuration */}
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-sm font-bold text-text-primary uppercase tracking-tight">
-                    <Database className="w-5 h-5 text-accent" />
-                    Konfigurasi Database <span className="text-secondary tracking-tighter">(Google Sheets)</span>
+              <div className="bg-card-bg rounded-[32px] border border-border-ui p-6 shadow-sm space-y-8">
+                {editStep === 1 ? (
+                  <>
+                    {/* Photo Upload Section */}
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="relative group">
+                        <div className="w-24 h-24 rounded-[32px] overflow-hidden border-4 border-bg-main bg-bg-main shadow-xl">
+                          {editPhoto ? (
+                            <img src={editPhoto} alt="Preview" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center">
+                              <span className="text-3xl font-black text-white">{editName[0]?.toUpperCase() || '?'}</span>
+                            </div>
+                          )}
+                          {savingProfile && (
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                              <RefreshCw className="w-6 h-6 text-white animate-spin" />
+                            </div>
+                          )}
+                        </div>
+                        <label className="absolute -bottom-2 -right-2 w-10 h-10 bg-accent rounded-2xl flex items-center justify-center border-4 border-card-bg shadow-lg cursor-pointer hover:scale-110 active:scale-95 transition-all">
+                          <Palette className="w-5 h-5 text-white" />
+                          <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={savingProfile} />
+                        </label>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-bold text-text-primary">Foto Profil</p>
+                        <p className="text-[10px] text-text-secondary mt-1">PNG, JPG up to 2MB</p>
+                      </div>
+                    </div>
+
+                    {/* Form Fields */}
+                    <div className="space-y-5">
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">Informasi Dasar</span>
+                        <div className="relative">
+                          <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-text-secondary" />
+                          <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="w-full pl-12 pr-4 py-4 bg-bg-main/50 rounded-2xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all"
+                            placeholder="Nama Lengkap"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">Keamanan & Akses</span>
+                        <div className="space-y-3">
+                          <div className="relative">
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-text-secondary" />
+                            <input
+                              type="email"
+                              value={editEmail}
+                              onChange={(e) => setEditEmail(e.target.value)}
+                              className="w-full pl-12 pr-4 py-4 bg-bg-main/50 rounded-2xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all"
+                              placeholder="Email Baru"
+                            />
+                          </div>
+                          <div className="relative">
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-text-secondary" />
+                            <input
+                              type="password"
+                              value={editPassword}
+                              onChange={(e) => setEditPassword(e.target.value)}
+                              className="w-full pl-12 pr-4 py-4 bg-bg-main/50 rounded-2xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all"
+                              placeholder="Password Baru (Opsional)"
+                            />
+                          </div>
+                        </div>
+                        {(editEmail !== user.email || editPassword !== '') && (
+                          <div className="mt-4 p-4 bg-secondary/10 rounded-2xl border border-secondary/20 flex items-start gap-3">
+                            <ShieldCheck className="w-5 h-5 text-secondary shrink-0" />
+                            <p className="text-[11px] text-secondary font-bold leading-relaxed">
+                              Perubahan email atau password membutuhkan verifikasi kode OTP yang akan dikirim ke email lama Anda.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-4 space-y-6">
+                    <div className="text-center space-y-3">
+                      <div className="w-16 h-16 bg-accent/10 rounded-[24px] flex items-center justify-center mx-auto border border-accent/20">
+                        <ShieldCheck className="w-8 h-8 text-accent" />
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-text-primary tracking-tight">Verifikasi OTP</h4>
+                        <p className="text-[11px] text-text-secondary font-medium leading-relaxed max-w-[200px] mx-auto mt-1">
+                          Kode 6-digit telah dikirim ke <span className="text-accent font-bold">{user.email}</span>
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <input
+                        type="text"
+                        maxLength={6}
+                        value={editCode}
+                        onChange={(e) => setEditCode(e.target.value.replace(/\D/g, ''))}
+                        className="w-full py-5 bg-bg-main rounded-2xl border-2 border-border-ui focus:border-accent outline-none text-2xl font-black tracking-[0.6em] text-center text-text-primary transition-all"
+                        placeholder="••••••"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => setEditStep(1)}
+                        className="w-full text-[11px] font-black text-text-secondary hover:text-accent uppercase tracking-[0.2em] transition-colors"
+                      >
+                        ← Ganti Email/Nama
+                      </button>
+                    </div>
                   </div>
-                  <span className="px-3 py-1 bg-accent/10 text-[9px] font-bold text-accent rounded-full border border-accent/20 uppercase tracking-widest self-start sm:self-auto">
-                    Data Keuangan
-                  </span>
+                )}
+
+                <button
+                  onClick={handleUpdateProfile}
+                  disabled={savingProfile || !editName || !editEmail || (editStep === 2 && editCode.length < 6)}
+                  className="w-full py-4.5 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl font-black shadow-lg shadow-accent/20 hover:shadow-accent/40 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-3 text-sm"
+                >
+                  {savingProfile ? (
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <span>
+                        {editStep === 1 ? (
+                          (editEmail !== user.email || editPassword !== '') ? 'Lanjut ke Verifikasi' : 'Simpan Perubahan'
+                        ) : 'Verifikasi & Perbarui'}
+                      </span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        if (profileView === 'wallpaper') {
+          const wallpapers = [
+            { id: 'none', name: 'Default', class: 'bg-bg-main' },
+            { id: 'sunset', name: 'Sunset Glow', class: 'bg-gradient-to-br from-orange-400 to-rose-500' },
+            { id: 'ocean', name: 'Deep Ocean', class: 'bg-gradient-to-br from-blue-600 to-cyan-500' },
+            { id: 'forest', name: 'Emerald Forest', class: 'bg-gradient-to-br from-emerald-600 to-teal-500' },
+            { id: 'royal', name: 'Royal Purple', class: 'bg-gradient-to-br from-violet-600 to-fuchsia-500' },
+            { id: 'midnight', name: 'Midnight', class: 'bg-gradient-to-br from-slate-800 to-slate-900' },
+            { id: 'aurora', name: 'Aurora', class: 'bg-gradient-to-tr from-green-300 via-blue-500 to-purple-600' },
+            { id: 'mesh', name: 'Mesh Gradient', class: 'bg-[radial-gradient(at_top_left,_var(--tw-gradient-stops))] from-yellow-200 via-emerald-200 to-yellow-200' },
+            { id: 'doodle', name: 'Doodle Classic', class: 'bg-slate-900 bg-[url("/doodle_wallpaper.png")] bg-repeat bg-[length:400px_400px] bg-blend-soft-light' },
+            { id: 'doodle2', name: 'Growth Doodle', class: 'bg-slate-900 bg-[url("/doodle_2.png")] bg-repeat bg-[length:350px_350px] bg-blend-soft-light' },
+            { id: 'doodle3', name: 'Abstract Flow', class: 'bg-[#020617] bg-[url("/doodle_3.png")] bg-repeat bg-[length:500px_500px] bg-blend-soft-light' },
+          ];
+
+          return (
+            <div className="space-y-6 pb-4">
+              <div className="flex items-center gap-4 mb-2">
+                <button
+                  onClick={() => setProfileView('main')}
+                  className="w-10 h-10 rounded-2xl bg-bg-main border border-border-ui flex items-center justify-center hover:bg-border-ui transition-colors shadow-sm"
+                >
+                  <ArrowLeft className="w-5 h-5 text-text-primary" />
+                </button>
+                <div>
+                  <h2 className="text-xl font-black text-text-primary tracking-tight">Wallpaper</h2>
+                  <p className="text-[10px] font-bold text-accent uppercase tracking-widest mt-0.5">Kustomisasi Latar Belakang</p>
                 </div>
-                <div className="space-y-4">
-                  <div className="bg-bg-main/40 p-4 rounded-2xl border border-border-ui/50 space-y-3">
-                    <p className="text-xs text-text-secondary leading-relaxed font-medium">
-                      Hubungkan Google Sheets pribadi Anda untuk menyimpan <span className="text-text-primary font-bold">data keuangan</span> (transaksi, anggaran, tujuan, dan catatan).
-                      <br /><br />
-                      <span className="text-accent font-bold">Penting:</span> Database mandiri ini khusus untuk pengelolaan data keuangan. <span className="text-text-primary font-bold">Data akun & sistem (Login, Password, Profil)</span> akan tetap dikelola dan disimpan secara aman di database sistem pusat Vinance.
-                      <br /><br />
-                      Kosongkan jika ingin menggunakan database sistem secara penuh. Setup ini hanya bagi Anda yang ingin fleksibilitas mengelola data keuangan via spreadsheet sendiri.
-                    </p>
+              </div>
+
+              {/* Preset Wallpapers */}
+              <div className="grid grid-cols-2 gap-4">
+                {wallpapers.map((wp) => (
+                  <button
+                    key={wp.id}
+                    onClick={() => {
+                      setWallpaper(wp.id);
+                      localStorage.setItem('kb_wallpaper', wp.id);
+                      showToast(`Wallpaper ${wp.name} diterapkan`, 'success');
+                    }}
+                    className={cn(
+                      "group relative aspect-[9/16] rounded-[32px] overflow-hidden border-4 transition-all duration-300 active:scale-95",
+                      wallpaper === wp.id ? "border-accent shadow-lg shadow-accent/20 scale-[1.02]" : "border-transparent hover:border-border-ui"
+                    )}
+                  >
+                    <div className={cn("absolute inset-0 transition-transform duration-500 group-hover:scale-110", wp.class)} />
+                    <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                      <p className="text-[11px] font-black text-white tracking-tight">{wp.name}</p>
+                      {wallpaper === wp.id && (
+                        <div className="absolute top-4 right-4 w-6 h-6 bg-accent rounded-full flex items-center justify-center shadow-lg border-2 border-white/20">
+                          <Check className="w-3.5 h-3.5 text-white" />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Custom Options Section */}
+              <div className="space-y-4">
+                <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">Warna & Foto Kustom</p>
+                <div className="bg-card-bg rounded-[32px] border border-border-ui p-6 shadow-sm space-y-6">
+                  
+                  {/* Custom Color Picker */}
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                        <Palette className="w-5 h-5 text-accent" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-text-primary">Warna Solid</p>
+                        <p className="text-[10px] text-text-secondary">Pilih warna favorit Anda</p>
+                      </div>
+                    </div>
+                    <div className="relative group">
+                      <input 
+                        type="color" 
+                        value={wallpaper.startsWith('#') ? wallpaper : '#059669'}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setWallpaper(val);
+                          localStorage.setItem('kb_wallpaper', val);
+                        }}
+                        className="w-12 h-12 rounded-xl cursor-pointer bg-transparent border-0 outline-none overflow-hidden [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch]:rounded-xl shadow-lg"
+                      />
+                    </div>
                   </div>
-                  <div className="flex gap-2">
+
+                  <div className="h-px bg-border-ui/50" />
+
+                  {/* Image Upload */}
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                        <Image className="w-5 h-5 text-blue-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-text-primary">Upload Foto</p>
+                        <p className="text-[10px] text-text-secondary">Gunakan gambar sendiri</p>
+                      </div>
+                    </div>
+                    <label className="px-4 py-2 bg-bg-main hover:bg-border-ui border border-border-ui rounded-xl text-xs font-black text-text-primary cursor-pointer transition-colors active:scale-95">
+                      Pilih File
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handleWallpaperUpload}
+                      />
+                    </label>
+                  </div>
+
+                  {wallpaper.startsWith('data:') && (
+                    <div className="mt-2 p-3 bg-accent/5 rounded-2xl border border-accent/20 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-8 rounded-lg overflow-hidden border border-border-ui">
+                          <img src={wallpaper} className="w-full h-full object-cover" />
+                        </div>
+                        <p className="text-[10px] font-bold text-accent uppercase tracking-widest">Foto Kustom Aktif</p>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setWallpaper('none');
+                          localStorage.setItem('kb_wallpaper', 'none');
+                        }}
+                        className="p-1.5 hover:bg-danger/10 rounded-lg text-danger transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (profileView === 'contact') {
+          return (
+            <div className="space-y-6 pb-4">
+              <div className="flex items-center gap-4 mb-2">
+                <button
+                  onClick={() => setProfileView('main')}
+                  className="w-10 h-10 rounded-2xl bg-bg-main border border-border-ui flex items-center justify-center hover:bg-border-ui transition-colors shadow-sm"
+                >
+                  <ArrowLeft className="w-5 h-5 text-text-primary" />
+                </button>
+                <div>
+                  <h2 className="text-xl font-black text-text-primary tracking-tight">Hubungi Kami</h2>
+                  <p className="text-[10px] font-bold text-teal-500 uppercase tracking-widest mt-0.5">Bantuan & Dukungan Teknis</p>
+                </div>
+              </div>
+
+              <div className="bg-card-bg rounded-[32px] border border-border-ui p-6 shadow-sm space-y-6">
+                <div className="text-center space-y-2">
+                  <div className="w-16 h-16 bg-teal-500/10 rounded-[24px] flex items-center justify-center mx-auto border border-teal-500/20">
+                    <Phone className="w-8 h-8 text-teal-500" />
+                  </div>
+                  <h3 className="text-base font-black text-text-primary tracking-tight">Ada Kendala?</h3>
+                  <p className="text-xs text-text-secondary font-medium leading-relaxed max-w-[240px] mx-auto">
+                    Kami siap membantu Anda mengelola keuangan dengan lebih baik. Silakan hubungi melalui saluran di bawah ini.
+                  </p>
+                </div>
+
+                <div className="grid gap-3">
+                  <a
+                    href="https://wa.me/6285185443576"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 bg-bg-main rounded-2xl border border-border-ui hover:border-emerald-500/50 hover:bg-emerald-500/[0.02] transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <MessageCircle className="w-5 h-5 text-emerald-500" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-text-primary">WhatsApp Support</p>
+                      <p className="text-[10px] text-text-secondary">Respon cepat (6285185443576)</p>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-text-secondary" />
+                  </a>
+
+                  <a
+                    href="mailto:alfarizd027@gmail.com"
+                    className="flex items-center gap-4 p-4 bg-bg-main rounded-2xl border border-border-ui hover:border-blue-500/50 hover:bg-blue-500/[0.02] transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Mail className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-text-primary">Email Official</p>
+                      <p className="text-[10px] text-text-secondary">alfarizd027@gmail.com</p>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-text-secondary" />
+                  </a>
+
+                  <a
+                    href="https://instagram.com/vinance.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 bg-bg-main rounded-2xl border border-border-ui hover:border-rose-500/50 hover:bg-rose-500/[0.02] transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Instagram className="w-5 h-5 text-rose-500" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-text-primary">Instagram</p>
+                      <p className="text-[10px] text-text-secondary">Update fitur & tips keuangan</p>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-text-secondary" />
+                  </a>
+                </div>
+
+                <div className="pt-4 border-t border-border-ui/50">
+                  <div className="flex items-center justify-center gap-6">
+                    <a href="#" className="p-2 hover:bg-bg-main rounded-xl transition-colors text-text-secondary hover:text-text-primary">
+                      <Github className="w-5 h-5" />
+                    </a>
+                    <a href="#" className="p-2 hover:bg-bg-main rounded-xl transition-colors text-text-secondary hover:text-text-primary">
+                      <Globe className="w-5 h-5" />
+                    </a>
+                  </div>
+                  <p className="text-[9px] text-center text-text-secondary font-black uppercase tracking-[0.2em] mt-4">
+                    Vinance v2.4.0 • Made with ❤️
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="space-y-6 pb-4">
+
+            {/* ── Page Title (Desktop only) ── */}
+            <div className="hidden lg:flex flex-col gap-1 mb-2">
+              <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Manajemen Akun</h2>
+              <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Profil & Konfigurasi Sistem</p>
+              <div className="h-1 w-12 bg-gradient-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
+            </div>
+
+            {/* ── Hero Profile Card ── */}
+            <div className="bg-card-bg rounded-3xl border border-border-ui shadow-sm overflow-hidden relative">
+              {/* Global Card Doodle Pattern */}
+              <div className="absolute inset-0 bg-[url('/doodle_wallpaper.png')] bg-repeat bg-[length:250px_250px] opacity-[0.05] pointer-events-none" />
+
+              {/* Gradient Banner with Doodle Art */}
+              <div className="h-20 bg-gradient-to-br from-accent via-emerald-500 to-secondary relative overflow-hidden">
+                {/* Doodle Pattern Overlay */}
+                <div className="absolute inset-0 bg-[url('/doodle_wallpaper.png')] bg-repeat bg-[length:200px_200px] opacity-20 mix-blend-soft-light" />
+                
+                {/* User Cover Image */}
+                {user.coverUrl && (
+                  <img src={user.coverUrl} className="absolute inset-0 w-full h-full object-cover" alt="Cover" />
+                )}
+
+                {/* Edit Sampul Button */}
+                <label className="absolute top-2 right-2 px-2.5 py-1.5 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-xl border border-white/20 text-[9px] font-black text-white uppercase tracking-[0.1em] cursor-pointer transition-all flex items-center gap-1.5 active:scale-95 z-10 group">
+                  <Palette className="w-3 h-3 group-hover:rotate-12 transition-transform" />
+                  Edit Sampul
+                  <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                </label>
+              </div>
+
+              {/* Profile Picture (Outside banner overflow) */}
+              <div className="absolute top-10 left-1/2 -translate-x-1/2 z-10">
+                <div className="w-20 h-20 rounded-full ring-4 ring-card-bg shadow-xl overflow-hidden bg-gradient-to-br from-accent to-secondary flex items-center justify-center relative">
+                  {user.photoUrl ? (
+                    <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-3xl font-black text-white">{user.name[0].toUpperCase()}</span>
+                  )}
+                </div>
+                <button
+                  onClick={openEditProfile}
+                  className="absolute bottom-0 right-0 w-6 h-6 bg-accent rounded-full flex items-center justify-center border-2 border-card-bg shadow-lg hover:scale-110 transition-transform"
+                >
+                  <Camera className="w-3 h-3 text-white" />
+                </button>
+              </div>
+
+              {/* User Info */}
+              <div className="pt-12 pb-5 px-6 text-center">
+                <h3 className="text-lg font-black text-text-primary tracking-tight">{user.name}</h3>
+                <p className="text-xs text-text-secondary mt-0.5 font-medium">{user.email}</p>
+                {/* Member badge */}
+                <div className="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full shadow-md shadow-amber-500/25">
+                  <span className="text-[10px] font-black text-white uppercase tracking-widest">✦ Member Aktif</span>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Settings List ── */}
+            <div>
+              <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-2 px-1">Pengaturan</p>
+              <div className="bg-card-bg rounded-3xl border border-border-ui shadow-sm divide-y divide-border-ui/50 overflow-hidden">
+
+                {/* Edit Profil */}
+                <button
+                  onClick={openEditProfile}
+                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group text-left"
+                >
+                  <div className="w-9 h-9 rounded-2xl bg-accent/10 flex items-center justify-center flex-shrink-0">
+                    <UserIcon className="w-4.5 h-4.5 text-accent" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-text-primary">Edit Profil</p>
+                    <p className="text-[10px] text-text-secondary">Nama, email & kata sandi</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-text-primary transition-colors" />
+                </button>
+
+                {/* URL Script */}
+                <div className="px-5 py-4">
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="w-9 h-9 rounded-2xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
+                      <ExternalLink className="w-4.5 h-4.5 text-violet-500" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-text-primary">URL Apps Script</p>
+                      <p className="text-[10px] text-text-secondary">Endpoint Google Sheets</p>
+                    </div>
+                    <button
+                      onClick={() => setShowScriptInfo(v => !v)}
+                      className={cn(
+                        "w-7 h-7 rounded-full flex items-center justify-center border transition-all flex-shrink-0",
+                        showScriptInfo
+                          ? "bg-accent/15 border-accent/40 text-accent"
+                          : "bg-bg-main border-border-ui text-text-secondary hover:border-accent/40 hover:text-accent"
+                      )}
+                      title="Informasi"
+                    >
+                      <Info className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Collapsible Info Panel */}
+                  {showScriptInfo && (
+                    <div className="pl-[52px] mb-3">
+                      <div className="bg-accent/5 border border-accent/20 rounded-2xl p-4 space-y-2.5">
+                        <p className="text-[11px] text-text-secondary leading-relaxed">
+                          Hubungkan Google Sheets pribadi Anda untuk menyimpan{' '}
+                          <span className="text-text-primary font-bold">data keuangan</span>{' '}
+                          (transaksi, anggaran, tujuan, dan catatan).
+                        </p>
+                        <div className="flex gap-2 p-2.5 bg-warning/5 border border-warning/20 rounded-xl">
+                          <span className="text-warning mt-0.5 flex-shrink-0">⚠</span>
+                          <p className="text-[11px] text-text-secondary leading-relaxed">
+                            <span className="text-warning font-bold">Penting:</span> Database mandiri ini khusus untuk pengelolaan data keuangan.{' '}
+                            <span className="text-text-primary font-bold">Data akun & sistem (Login, Password, Profil)</span>{' '}
+                            akan tetap dikelola dan disimpan secara aman di database sistem pusat Vinance.
+                          </p>
+                        </div>
+                        <p className="text-[11px] text-text-secondary leading-relaxed">
+                          Kosongkan jika ingin menggunakan database sistem secara penuh. Setup ini hanya bagi Anda yang ingin fleksibilitas mengelola data keuangan via spreadsheet sendiri.
+                        </p>
+                        <button
+                          onClick={() => setShowSetupGuide(true)}
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline"
+                        >
+                          <Info className="w-3 h-3" /> Cara setup database sendiri
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 pl-[52px]">
                     <input
                       type="text"
                       defaultValue={user.scriptUrl || ''}
                       placeholder="https://script.google.com/macros/s/.../exec"
-                      className="flex-1 px-4 py-2.5 rounded-xl border border-border-ui bg-bg-main/30 text-xs text-text-primary outline-none focus:ring-2 focus:ring-accent/20"
+                      className="flex-1 px-3 py-2 rounded-xl border border-border-ui bg-bg-main/60 text-[11px] text-text-primary outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all placeholder:text-text-secondary/40"
                       onBlur={(e) => handleUpdateScriptUrl(e.target.value)}
                     />
                     <button
                       onClick={handleTestConnection}
                       disabled={!user.scriptUrl || testingConnection}
-                      className="px-4 py-2.5 bg-linear-to-r from-accent to-secondary text-white rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      className="px-3 py-2 bg-gradient-to-r from-accent to-secondary text-white rounded-xl text-[11px] font-bold hover:shadow-lg hover:shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex-shrink-0"
                     >
                       {testingConnection ? '...' : 'Tes'}
                     </button>
                   </div>
-                  <button
-                    onClick={() => setShowSetupGuide(true)}
-                    className="inline-flex items-center gap-1 text-[10px] font-bold text-accent hover:underline"
-                  >
-                    <Info className="w-3 h-3" /> Cara setup database sendiri
-                  </button>
                 </div>
-              </div>
 
-              <div className="pt-4 border-t border-border-ui space-y-2">
+                {/* Kunci PIN */}
                 <button
                   onClick={handleTogglePin}
-                  className="w-full flex items-center justify-between p-3 hover:bg-bg-main rounded-xl transition-colors"
+                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group"
                 >
-                  <div className="flex items-center gap-3 text-text-primary">
-                    <Lock className="w-5 h-5" />
-                    <span className="font-medium">Kunci PIN Aplikasi</span>
+                  <div className="w-9 h-9 rounded-2xl bg-rose-500/10 flex items-center justify-center flex-shrink-0">
+                    <Lock className="w-4.5 h-4.5 text-rose-500" />
                   </div>
-                  <div className={cn(
-                    "px-3 py-1 text-[10px] font-bold rounded-lg transition-colors",
-                    appPin ? "bg-accent/10 text-accent" : "bg-bg-main text-text-secondary"
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-semibold text-text-primary">Kunci PIN</p>
+                    <p className="text-[10px] text-text-secondary">Keamanan aplikasi</p>
+                  </div>
+                  <span className={cn(
+                    "text-[9px] font-black px-2.5 py-1 rounded-full border",
+                    appPin ? "bg-accent/10 text-accent border-accent/20" : "bg-bg-main text-text-secondary border-border-ui"
                   )}>
                     {appPin ? 'AKTIF' : 'NONAKTIF'}
-                  </div>
+                  </span>
                 </button>
+
+                {/* Notifikasi */}
                 <button
                   onClick={() => setShowNotifSettings(true)}
-                  className="w-full flex items-center justify-between p-3 hover:bg-bg-main rounded-xl transition-colors"
+                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group"
                 >
-                  <div className="flex items-center gap-3 text-text-primary">
-                    <Bell className="w-5 h-5" />
-                    <span className="font-medium">Notifikasi</span>
+                  <div className="w-9 h-9 rounded-2xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                    <Bell className="w-4.5 h-4.5 text-amber-500" />
                   </div>
-                  <div className="text-[10px] font-bold text-accent uppercase tracking-wider">{appSettings.notifBudgets ? 'Aktif' : 'Off'}</div>
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-semibold text-text-primary">Notifikasi</p>
+                    <p className="text-[10px] text-text-secondary">Pengingat & peringatan</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={cn("text-[10px] font-bold", appSettings.notifBudgets ? "text-accent" : "text-text-secondary")}>
+                      {appSettings.notifBudgets ? 'Aktif' : 'Off'}
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-text-primary transition-colors" />
+                  </div>
                 </button>
-              </div>
 
-              {/* Feedback Section */}
-              <div className="pt-6 border-t border-border-ui space-y-4">
-                <div className="flex items-center gap-2 text-sm font-bold text-text-primary uppercase tracking-tight">
-                  <MessageSquare className="w-5 h-5 text-accent" />
-                  Saran & Masukan
-                </div>
-                <div className="space-y-3">
-                  <textarea
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                    placeholder="Tulis saran atau kendala yang Anda alami di sini..."
-                    className="w-full px-4 py-3 bg-bg-main/50 rounded-2xl border border-border-ui focus:border-accent outline-none text-xs font-medium text-text-primary transition-all resize-none min-h-[100px]"
-                  />
-                  <button
-                    onClick={handleSendFeedback}
-                    disabled={!feedback.trim() || sendingFeedback}
-                    className="w-full py-3 bg-accent text-white rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                  >
-                    {sendingFeedback ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    {sendingFeedback ? 'Mengirim...' : 'Kirim Masukan'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Support / Donation Section - Premium & Dynamic */}
-              <div className="pt-6 border-t border-border-ui">
-                <a
-                  href="https://saweria.co/frd027"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full relative overflow-hidden p-5 rounded-[28px] flex items-center justify-between group transition-all duration-500 hover:shadow-[0_20px_50px_-15px_rgba(5,150,105,0.5)] hover:-translate-y-1 active:scale-[0.98]"
+                {/* Wallpaper */}
+                <button
+                  onClick={() => setProfileView('wallpaper')}
+                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group"
                 >
-                  {/* Glassmorphism Background with Dynamic Colors */}
-                  <div className="absolute inset-0 bg-linear-to-br from-accent via-accent to-secondary transition-transform duration-700 group-hover:scale-110" />
-                  
-                  {/* Shine Effect Layer */}
-                  <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-linear-to-r from-transparent via-white/30 to-transparent animate-shine pointer-events-none" />
-
-                  {/* Decorative Elements */}
-                  <div className="absolute -top-4 -right-4 w-20 h-20 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-                  <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-secondary/20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700" />
-
-                  <div className="relative flex items-center gap-4">
-                    <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 overflow-hidden">
-                      <img 
-                        src="/cat-sticker.png" 
-                        alt="Cute Cat" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="text-left">
-                      <h4 className="text-base font-black text-white tracking-tight leading-none">Traktir Eskrim</h4>
-                      <p className="text-[10px] text-white/90 font-bold uppercase tracking-[0.15em] mt-1.5 leading-none">Dukung Developer Lokal</p>
-                    </div>
+                  <div className="w-9 h-9 rounded-2xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                    <Image className="w-4.5 h-4.5 text-emerald-500" />
                   </div>
-
-                  <div className="relative">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 rounded-xl border border-white/20 group-hover:bg-slate-700 transition-colors">
-                      <span className="text-[9px] font-black text-white uppercase tracking-tighter">saweria.co</span>
-                      <ExternalLink className="w-3.5 h-3.5 text-white/70" />
-                    </div>
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-semibold text-text-primary">Wallpaper</p>
+                    <p className="text-[10px] text-text-secondary">Kustomisasi latar belakang</p>
                   </div>
-                </a>
+                  <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-text-primary transition-colors" />
+                </button>
+
+                {/* Theme */}
+                <button
+                  onClick={toggleTheme}
+                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group"
+                >
+                  <div className="w-9 h-9 rounded-2xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                    <Palette className="w-4.5 h-4.5 text-blue-500" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-semibold text-text-primary">Tema</p>
+                    <p className="text-[10px] text-text-secondary">Gelap & Terang</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-text-secondary uppercase">
+                      {isDark ? 'Gelap' : 'Terang'}
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-text-primary transition-colors" />
+                  </div>
+                </button>
+
+                {/* Logout Akun */}
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-danger/5 transition-colors group text-left"
+                >
+                  <div className="w-9 h-9 rounded-2xl bg-danger/10 flex items-center justify-center flex-shrink-0 group-hover:bg-danger/20 transition-colors">
+                    <LogOut className="w-4.5 h-4.5 text-danger" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-danger">Keluar Akun</p>
+                    <p className="text-[10px] text-text-secondary">Selesai sesi ini</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-danger transition-colors" />
+                </button>
+
               </div>
             </div>
 
+            {/* ── Feedback & Support ── */}
+            <div>
+              <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-2 px-1">Bantuan</p>
+              <div className="bg-card-bg rounded-3xl border border-border-ui shadow-sm overflow-hidden">
 
+                {/* Kontak */}
+                <button
+                  onClick={() => setProfileView('contact')}
+                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group text-left border-b border-border-ui/50"
+                >
+                  <div className="w-9 h-9 rounded-2xl bg-teal-500/10 flex items-center justify-center flex-shrink-0">
+                    <Phone className="w-4.5 h-4.5 text-teal-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-text-primary">Hubungi Kami</p>
+                    <p className="text-[10px] text-text-secondary">Bantuan & dukungan teknis</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-text-primary transition-colors" />
+                </button>
 
-            <button
-              onClick={handleLogout}
-              className="w-full bg-danger text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-danger/90 transition-all shadow-lg shadow-danger/20 active:scale-[0.98]"
-            >
-              <LogOut className="w-5 h-5" /> Keluar Akun
-            </button>
+                {/* Feedback */}
+                <div className="px-5 py-4 space-y-3">
+                  <div className="flex items-center gap-4">
+                    <div className="w-9 h-9 rounded-2xl bg-fuchsia-500/10 flex items-center justify-center flex-shrink-0">
+                      <MessageSquare className="w-4.5 h-4.5 text-fuchsia-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-text-primary">Saran & Masukan</p>
+                      <p className="text-[10px] text-text-secondary">Bantu kami berkembang</p>
+                    </div>
+                  </div>
+                  <div className="pl-[52px] space-y-2">
+                    <textarea
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value)}
+                      placeholder="Tulis saran atau kendala yang Anda alami..."
+                      className="w-full px-3 py-2.5 bg-bg-main/60 rounded-2xl border border-border-ui focus:border-accent outline-none text-xs font-medium text-text-primary transition-all resize-none min-h-[80px] placeholder:text-text-secondary/40"
+                    />
+                    <button
+                      onClick={handleSendFeedback}
+                      disabled={!feedback.trim() || sendingFeedback}
+                      className="w-full py-2.5 bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-fuchsia-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                    >
+                      {sendingFeedback ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      {sendingFeedback ? 'Mengirim...' : 'Kirim Masukan'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-border-ui/50" />
+
+                {/* Support Banner */}
+                <div className="p-4">
+                  <a
+                    href="https://saweria.co/frd027"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full relative overflow-hidden p-4 rounded-2xl flex items-center justify-between group transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] block"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-accent via-emerald-500 to-secondary" />
+                    <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shine pointer-events-none" />
+                    <div className="relative flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30 overflow-hidden group-hover:scale-110 transition-transform">
+                        <img src="/cat-sticker.png" alt="Cat" className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white leading-none">Traktir Eskrim 🍦</h4>
+                        <p className="text-[9px] text-white/80 font-bold uppercase tracking-wider mt-0.5">Dukung Developer Lokal</p>
+                      </div>
+                    </div>
+                    <div className="relative flex items-center gap-1.5 px-3 py-1.5 bg-white/20 rounded-xl border border-white/30">
+                      <span className="text-[10px] font-black text-white">saweria</span>
+                      <ExternalLink className="w-3 h-3 text-white/70" />
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+
           </div>
         );
       default:
@@ -1305,6 +1933,8 @@ function handleDeleteNote(data) {
             budgets={data.budgets}
             onAddClick={() => { setActiveTab('transactions'); setShowAddModal(true); }}
             onViewAll={() => setActiveTab('transactions')}
+            onNavigateToBudget={() => setActiveTab('budgets')}
+            userName={user.name}
           />
         );
     }
@@ -1325,17 +1955,8 @@ function handleDeleteNote(data) {
       setActiveTab={setActiveTab}
       user={user}
       isDark={isDark}
-      toggleTheme={() => {
-        if (!document.startViewTransition) {
-          setIsDark(!isDark);
-          return;
-        }
-        document.startViewTransition(() => {
-          flushSync(() => {
-            setIsDark(!isDark);
-          });
-        });
-      }}
+      toggleTheme={toggleTheme}
+      wallpaper={wallpaper}
       transactions={data.transactions || []}
       budgets={data.budgets || []}
       syncing={loading || syncing}
@@ -1343,11 +1964,7 @@ function handleDeleteNote(data) {
       onAddClick={() => { setActiveTab('transactions'); setShowAddModal(true); }}
       onLogout={handleLogout}
     >
-      <AnimatePresence>
-        {/* Loading notification removed as per user request */}
 
-        {/* Offline Banner pill moved to global notification stack below */}
-      </AnimatePresence>
 
       {showSetupGuide && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1359,7 +1976,7 @@ function handleDeleteNote(data) {
             )}
           />
           <div
-            className="relative w-full max-w-2xl bg-card-bg rounded-[32px] shadow-2xl border border-border-ui flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in duration-200"
+            className="relative w-full max-w-2xl bg-card-bg rounded-[32px] shadow-2xl border border-border-ui flex flex-col max-h-[85vh] overflow-hidden z-10"
           >
             {/* Modal Header - Fixed */}
             <div className="flex justify-between items-center px-8 py-6 border-b border-border-ui/50 shrink-0">
@@ -1462,20 +2079,13 @@ function handleDeleteNote(data) {
       </div>
 
       {/* Custom Global Dialog (Alert/Confirm) - Top Right Slide-in */}
-      <AnimatePresence>
         {activeDialog && (
           <div className="fixed inset-0 z-[110] flex p-4 justify-end items-start pointer-events-none">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <div
               className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm pointer-events-auto"
               onClick={() => activeDialog.onCancel()}
             />
-            <motion.div
-              initial={{ opacity: 0, x: 100, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 50, scale: 0.95 }}
+            <div
               className="relative w-full max-w-sm bg-card-bg rounded-[32px] p-8 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] border border-border-ui pointer-events-auto mt-20"
             >
             <div className="flex flex-col items-center text-center space-y-4">
@@ -1509,10 +2119,9 @@ function handleDeleteNote(data) {
                 </button>
               )}
             </div>
-          </motion.div>
+          </div>
         </div>
       )}
-      </AnimatePresence>
 
       {showNotifSettings && (
         <div className="fixed inset-0 z-50 flex p-4 overflow-y-auto">
@@ -1523,7 +2132,7 @@ function handleDeleteNote(data) {
               !isMobile && "backdrop-blur-sm"
             )}
           />
-          <div className="relative bg-card-bg p-8 rounded-3xl border border-border-ui shadow-2xl w-full max-w-sm mt-4 mx-auto mb-auto">
+          <div className="relative bg-card-bg p-8 rounded-3xl border border-border-ui shadow-2xl w-full max-w-sm mt-4 mx-auto mb-auto z-10">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-bold text-text-primary">Notifikasi</h3>
               <button onClick={() => setShowNotifSettings(false)} className="p-2 hover:bg-bg-main rounded-lg transition-colors">
@@ -1562,170 +2171,31 @@ function handleDeleteNote(data) {
         </div>
       )}
 
-      {showEditProfile && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            onClick={() => !savingProfile && setShowEditProfile(false)}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
-          />
-          <div className="relative bg-card-bg rounded-2xl border border-border-ui shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto custom-scrollbar">
-            {/* Header */}
-            <div className="flex justify-between items-center px-6 pt-5 pb-4 border-b border-border-ui/50 sticky top-0 bg-card-bg z-10">
-              <div>
-                <h3 className="text-base font-black text-text-primary tracking-tight">Edit Profil</h3>
-                <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mt-0.5">Pengaturan Akun & Keamanan</p>
+      {/* Theme Switching Loading Overlay (Main App) */}
+      <AnimatePresence>
+        {isChangingTheme && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: "linear" }}
+            className={cn(
+              "fixed inset-0 z-[9999] flex flex-col items-center justify-center will-change-opacity",
+              isDark ? "bg-[#020617]" : "bg-[#f1f5f9]"
+            )}
+          >
+            <div className="relative mb-6">
+              <div className="w-12 h-12 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                 <div className="w-6 h-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center justify-center p-1.5 border border-border-ui/50">
+                   <img src="/Logo-Vinance.png" alt="Logo" className="w-full h-full object-contain" />
+                 </div>
               </div>
-              <button
-                onClick={() => setShowEditProfile(false)}
-                disabled={savingProfile}
-                className="p-1.5 hover:bg-bg-main rounded-lg transition-colors disabled:opacity-50"
-              >
-                <X className="w-4 h-4 text-text-secondary" />
-              </button>
             </div>
-
-            <div className="px-6 py-5 space-y-5">
-              {editStep === 1 ? (
-                <>
-                  {/* Photo */}
-                  <div className="flex items-center gap-4">
-                    <div className="relative shrink-0">
-                      <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-accent to-secondary p-0.5 shadow-lg">
-                        <div className="w-full h-full bg-card-bg rounded-[14px] overflow-hidden flex items-center justify-center relative">
-                          {editPhoto ? (
-                            <img src={editPhoto} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-2xl font-black text-accent">{editName.charAt(0).toUpperCase()}</span>
-                          )}
-                          {savingProfile && (
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                              <RefreshCw className="w-4 h-4 text-white animate-spin" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <label className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-card-bg border border-border-ui rounded-xl shadow flex items-center justify-center cursor-pointer hover:bg-bg-main transition-colors">
-                        <Settings className="w-3 h-3 text-accent" />
-                        <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={savingProfile} />
-                      </label>
-                    </div>
-                    <div>
-                      <p className="text-sm font-black text-text-primary">{editName || 'Nama Pengguna'}</p>
-                      <p className="text-xs text-text-secondary">{editEmail}</p>
-                      <label className="text-[10px] text-accent font-bold cursor-pointer hover:underline mt-1 block">
-                        Ganti foto profil
-                        <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={savingProfile} />
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Basic Info */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 px-1">
-                      <UserIcon className="w-3 h-3 text-text-secondary" />
-                      <span className="text-[9px] font-black text-text-secondary uppercase tracking-widest">Informasi Dasar</span>
-                    </div>
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="w-full px-4 py-3 bg-bg-main/50 rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-colors"
-                      placeholder="Username Baru"
-                    />
-                  </div>
-
-                  {/* Security */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-1.5 px-1">
-                      <Shield className="w-3 h-3 text-secondary" />
-                      <span className="text-[9px] font-black text-secondary uppercase tracking-widest">Keamanan & Akses</span>
-                    </div>
-                    <div className="space-y-2.5">
-                      <div className="relative">
-                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary" />
-                        <input
-                          type="email"
-                          value={editEmail}
-                          onChange={(e) => setEditEmail(e.target.value)}
-                          className="w-full pl-10 pr-4 py-3 bg-bg-main/50 rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-colors"
-                          placeholder="Email Baru"
-                        />
-                      </div>
-                      <div className="relative">
-                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary" />
-                        <input
-                          type="password"
-                          value={editPassword}
-                          onChange={(e) => setEditPassword(e.target.value)}
-                          className="w-full pl-10 pr-4 py-3 bg-bg-main/50 rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-colors"
-                          placeholder="Password Baru (Kosongkan jika tidak ganti)"
-                        />
-                      </div>
-                    </div>
-                    {(editEmail !== user.email || editPassword !== '') && (
-                      <div className="bg-secondary/10 border border-secondary/20 p-2.5 rounded-lg flex items-start gap-2">
-                        <AlertCircle className="w-3 h-3 text-secondary shrink-0 mt-0.5" />
-                        <p className="text-[9px] text-secondary font-bold leading-relaxed">
-                          Perubahan email/password memerlukan verifikasi kode OTP yang akan dikirim ke email lama Anda.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="space-y-5 py-2">
-                  <div className="text-center space-y-2">
-                    <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto border border-accent/20">
-                      <Mail className="w-7 h-7 text-accent" />
-                    </div>
-                    <h4 className="text-sm font-black text-text-primary">Verifikasi Identitas</h4>
-                    <p className="text-xs text-text-secondary font-medium">
-                      Kode 6-digit dikirim ke <span className="text-accent font-bold">{user.email}</span>
-                    </p>
-                  </div>
-                  <div className="space-y-2.5">
-                    <div className="relative">
-                      <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary" />
-                      <input
-                        type="text"
-                        maxLength={6}
-                        value={editCode}
-                        onChange={(e) => setEditCode(e.target.value.replace(/\D/g, ''))}
-                        className="w-full pl-10 pr-4 py-3.5 bg-bg-main/50 rounded-xl border border-border-ui focus:border-accent outline-none text-lg font-black tracking-[0.5em] text-center text-text-primary transition-colors"
-                        placeholder="XXXXXX"
-                        autoFocus
-                      />
-                    </div>
-                    <button
-                      onClick={() => setEditStep(1)}
-                      className="w-full text-[10px] font-black text-text-secondary hover:text-accent uppercase tracking-widest py-1 transition-colors"
-                    >
-                      ← Kembali ke Edit Profil
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={handleUpdateProfile}
-                disabled={savingProfile || !editName || !editEmail || (editStep === 2 && editCode.length < 6)}
-                className="w-full py-3.5 bg-linear-to-r from-accent to-secondary text-white rounded-xl font-black shadow-md shadow-accent/20 hover:shadow-accent/30 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 text-sm"
-              >
-                {savingProfile ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    {editStep === 1 ? (
-                      (editEmail !== user.email || editPassword !== '') ? 'Lanjut Verifikasi' : 'Simpan Perubahan'
-                    ) : 'Verifikasi & Simpan'}
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            <p className="text-[9px] font-black text-accent uppercase tracking-[0.5em] opacity-80">Syncing Theme</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Layout>
   );
 }

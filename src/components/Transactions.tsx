@@ -41,6 +41,7 @@ import {
   isToday
 } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface TransactionsProps {
   transactions: Transaction[];
@@ -187,10 +188,10 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
   return (
     <div className="space-y-6">
       {/* Title Header */}
-      <div className="mb-2 group lg:hidden">
-        <h2 className="text-2xl font-bold text-text-primary tracking-tight">Pencatatan</h2>
-        <p className="text-[10px] sm:text-[11px] text-text-secondary font-medium mt-1 uppercase tracking-widest">Riwayat & Manajemen Transaksi</p>
-        <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-80 group-hover:w-20 transition-all duration-500" />
+      <div className="flex flex-col gap-1 lg:hidden mb-2">
+        <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Riwayat Transaksi</h2>
+        <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Pencatatan & Arus Kas</p>
+        <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
       </div>
 
       <div className="flex flex-col gap-3">
@@ -238,7 +239,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
               className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
             <div
-              className="relative w-full max-w-sm md:max-w-2xl bg-card-bg rounded-[32px] p-6 md:p-8 shadow-2xl border border-border-ui m-auto"
+              className="relative w-full max-w-sm md:max-w-2xl bg-card-bg rounded-[32px] p-6 md:p-8 shadow-2xl border border-border-ui m-auto z-10"
             >
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-2">
@@ -373,13 +374,13 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                   >
                     TERAPKAN
                   </button>
-                </div>
               </div>
             </div>
           </div>
+        </div>
         )}
       </div>
-
+      
       <ExportImportModal
         isOpen={showExportModal}
         onClose={() => setShowExportModal(false)}
@@ -711,11 +712,13 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
 
   return (
     <div className="fixed inset-0 z-50 flex p-4 overflow-y-auto">
-      <div
-        onClick={onClose}
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
-      />
-      <div className="relative w-full max-w-md bg-card-bg rounded-2xl p-6 sm:p-8 shadow-2xl border border-border-ui transition-colors mt-4 mx-auto mb-auto">
+        <div
+          onClick={onClose}
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+        />
+        <div 
+          className="relative w-full max-w-md bg-card-bg rounded-2xl p-6 sm:p-8 shadow-2xl border border-border-ui transition-colors mt-4 mx-auto mb-auto z-10"
+        >
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-bold text-text-primary">{editId ? 'Edit Transaksi' : 'Catat Transaksi Baru'}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-text-primary p-1">
@@ -804,7 +807,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
             {editId ? 'Simpan Perubahan' : 'Simpan Transaksi'}
           </button>
         </form>
-      </div>
-    </div>
-  );
-});
+          </div>
+        </div>
+      );
+    });

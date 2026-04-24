@@ -1,7 +1,7 @@
 import { AppData, Transaction, User } from '../types';
 import { storage } from './storage';
 
-let currentScriptUrl = 'https://script.google.com/macros/s/AKfycbyaTaVeBXX3d5o_SpudUOEIUzwfcXc7nxh7rOKxznk_m6L_mNkguBP2uIi0ivok9UBD/exec';
+let currentScriptUrl = 'https://script.google.com/macros/s/AKfycbxnaIJW7OsWE0bB9VamA-zXr7JKouBfi6YXwQn3Qi1oQ70cqgft5DQ7SU9dFfrs1HLo/exec';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
