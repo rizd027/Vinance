@@ -20,10 +20,12 @@ interface LayoutProps {
   onAddClick: () => void;
   onLogout: () => void;
   wallpaper?: string;
+  toasts?: any[];
+  activeDialog?: any;
 }
 
 export default function Layout({
-  children, activeTab, setActiveTab, user, isDark, toggleTheme, transactions, budgets, syncing, syncStatus, onAddClick, onLogout, wallpaper = 'none'
+  children, activeTab, setActiveTab, user, isDark, toggleTheme, transactions, budgets, syncing, syncStatus, onAddClick, onLogout, wallpaper = 'none', toasts = [], activeDialog
 }: LayoutProps) {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isPending, startTransition] = useTransition();
@@ -77,8 +79,11 @@ export default function Layout({
 
   const activeTabDef = allTabs.find(t => t.id === activeTab);
 
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationCount = (toasts?.length || 0) + (activeDialog ? 1 : 0);
+
   return (
-    <div className="h-screen bg-bg-main flex overflow-hidden relative">
+    <div className="h-screen bg-bg-main flex overflow-hidden relative" onClick={() => setShowNotifications(false)}>
 
       {/* Sidebar for Desktop */}
       <aside className="hidden lg:flex w-64 bg-sidebar-bg flex-col sticky top-0 h-screen border-r border-sidebar-border transition-colors overflow-hidden z-40">
@@ -263,57 +268,165 @@ export default function Layout({
               )}
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              <motion.div
-                layout
-                initial={false}
-                animate={{
-                  width: syncing ? 'auto' : (isMobile ? '28px' : '32px'),
-                  paddingLeft: syncing ? '12px' : '0px',
-                  paddingRight: syncing ? '12px' : '0px'
-                }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className={cn(
-                  "flex items-center justify-center h-8 sm:h-9 rounded-[12px] border transition-all overflow-hidden whitespace-nowrap",
-                  syncing
-                    ? "bg-accent/10 border-accent/30 text-accent"
-                    : isOnline
-                      ? "bg-bg-main border-border-ui text-text-secondary hover:bg-border-ui"
-                      : "bg-danger/10 border-danger/20 text-danger"
-                )}
-                title={syncing ? syncStatus : (isOnline ? 'Online & Terhubung' : 'Offline')}
-              >
-                <div className="flex items-center gap-2">
-                  {syncing ? (
-                    <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin shrink-0" />
-                  ) : isOnline ? (
-                    <Cloud className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                  ) : (
-                    <CloudOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <div className="flex items-center gap-2 sm:gap-2.5 relative">
+              <div className="relative">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowNotifications(!showNotifications);
+                  }}
+                  layout
+                  initial={false}
+                  animate={{
+                    width: syncing ? 'auto' : (isMobile ? '32px' : '36px'),
+                    paddingLeft: syncing ? '12px' : '0px',
+                    paddingRight: syncing ? '12px' : '0px'
+                  }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  className={cn(
+                    "flex items-center justify-center h-8 sm:h-9 rounded-[12px] border transition-all overflow-hidden whitespace-nowrap relative z-30",
+                    syncing
+                      ? "bg-accent/10 border-accent/30 text-accent"
+                      : isOnline
+                        ? "bg-bg-main border-border-ui text-text-secondary hover:bg-border-ui"
+                        : "bg-danger/10 border-danger/20 text-danger",
+                    showNotifications && "ring-2 ring-accent/30 border-accent/50"
                   )}
-
-                  <AnimatePresence mode="wait">
-                    {syncing && (
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest"
-                      >
-                        {syncStatus || 'Sinkronisasi'}
-                      </motion.span>
+                  title={syncing ? syncStatus : (isOnline ? 'Online & Terhubung' : 'Offline')}
+                >
+                  <div className="flex items-center gap-2">
+                    {syncing ? (
+                      <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin shrink-0" />
+                    ) : isOnline ? (
+                      <Cloud className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                    ) : (
+                      <CloudOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                     )}
-                  </AnimatePresence>
-                </div>
-              </motion.div>
+
+                    <AnimatePresence mode="wait">
+                      {syncing && (
+                        <motion.span
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest"
+                        >
+                          {syncStatus || 'Sinkronisasi'}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.button>
+
+                {/* Notification Badge */}
+                <AnimatePresence>
+                  {notificationCount > 0 && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      className="absolute -top-1 -right-1 w-4 h-4 bg-danger text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-card-bg z-40 pointer-events-none"
+                    >
+                      {notificationCount}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Notifications Dropdown Panel */}
+                <AnimatePresence>
+                  {showNotifications && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute right-0 mt-3 w-80 bg-card-bg/95 backdrop-blur-2xl border border-border-ui rounded-[28px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden z-50 p-4"
+                    >
+                      <div className="flex items-center justify-between mb-4 px-2">
+                        <h4 className="text-xs font-black text-text-primary uppercase tracking-widest">Pemberitahuan</h4>
+                        {notificationCount > 0 && (
+                          <span className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full">
+                            {notificationCount} Baru
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar py-1">
+                        {notificationCount === 0 ? (
+                          <div className="flex flex-col items-center justify-center py-10 text-text-secondary/40">
+                            <Bell className="w-8 h-8 mb-2 stroke-[1.5]" />
+                            <p className="text-[10px] font-bold uppercase tracking-widest">Tidak ada notifikasi</p>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Active Dialog (Priority) */}
+                            {activeDialog && (
+                              <div className="p-4 bg-accent/5 border border-accent/20 rounded-2xl space-y-4">
+                                <div className="flex items-start gap-3">
+                                  <div className="w-8 h-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                                    <AlertCircle className="w-4 h-4" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="text-sm font-bold text-text-primary leading-tight">{activeDialog.title}</p>
+                                    <p className="text-[11px] text-text-secondary mt-1 leading-relaxed">{activeDialog.message}</p>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => activeDialog.onConfirm()}
+                                    className="flex-1 py-2.5 bg-accent text-white rounded-xl text-[10px] font-black shadow-lg shadow-accent/20"
+                                  >
+                                    {activeDialog.confirmText?.toUpperCase()}
+                                  </button>
+                                  {activeDialog.type === 'confirm' && (
+                                    <button
+                                      onClick={() => activeDialog.onCancel()}
+                                      className="flex-1 py-2.5 bg-bg-main text-text-secondary rounded-xl text-[10px] font-bold border border-border-ui"
+                                    >
+                                      {activeDialog.cancelText?.toUpperCase()}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Toasts */}
+                            {toasts.map((toast) => (
+                              <div
+                                key={toast.id}
+                                className={cn(
+                                  "p-3 rounded-2xl flex items-center gap-3 border transition-colors",
+                                  toast.type === 'success' && "bg-success/5 border-success/20 text-success",
+                                  toast.type === 'error' && "bg-danger/5 border-danger/20 text-danger",
+                                  toast.type === 'warning' && "bg-warning/5 border-warning/20 text-warning",
+                                  toast.type === 'info' && "bg-accent/5 border-accent/20 text-accent"
+                                )}
+                              >
+                                <div className="shrink-0">
+                                  {toast.type === 'success' && <CheckCircle2 className="w-4 h-4" />}
+                                  {toast.type === 'error' && <AlertOctagon className="w-4 h-4" />}
+                                  {toast.type === 'warning' && <AlertTriangle className="w-4 h-4" />}
+                                  {toast.type === 'info' && <Info className="w-4 h-4" />}
+                                </div>
+                                <p className="text-[11px] font-bold leading-tight flex-1">{toast.message}</p>
+                              </div>
+                            ))}
+                          </>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
                 className={cn(
                   "flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-[12px] transition-all border backdrop-blur-md shadow-inner",
-                  isDark 
-                    ? "bg-white/10 hover:bg-white/20 text-white border-white/20" 
+                  isDark
+                    ? "bg-white/10 hover:bg-white/20 text-white border-white/20"
                     : "bg-bg-main border-border-ui text-text-secondary hover:bg-border-ui"
                 )}
                 title={isDark ? "Mode Terang" : "Mode Gelap"}

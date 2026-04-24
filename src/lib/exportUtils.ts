@@ -309,7 +309,7 @@ export const exportReportPDF = async (transactions: Transaction[], period: strin
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(200, 200, 200);
-  doc.text('ECOSYSTEM FINANSIAL KELUARGA', textX, 28);
+  doc.text('ECOSYSTEM FINANSIAL', textX, 28);
   
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(12);

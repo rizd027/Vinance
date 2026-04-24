@@ -1,5 +1,5 @@
 /**
- * Google Apps Script for Vinance (KeluargaBerkah Finance)
+ * Google Apps Script for Vinance (Berkah Finance)
  * Versi Lengkap: Mendukung Transaksi, Budget, Goals, dan Notes.
  * 
  * Cara Update di Google Apps Script:
@@ -134,38 +134,40 @@ function handleLogin(data) {
 }
 
 function handleUpdateUser(data) {
-  const isSensitive = data.email || data.password;
+  const sheet = getSheet('Users');
+  const rows = sheet.getDataRange().getValues();
+  const userIndex = rows.findIndex(r => r[0] === data.id);
+  
+  if (userIndex === -1) return createResponse({ error: 'User tidak ditemukan.' });
+  
+  const currentUser = rows[userIndex];
+  const currentEmail = currentUser[2];
+  const currentPassword = currentUser[3];
+  
+  const emailChanged = data.email && String(data.email).toLowerCase() !== String(currentEmail).toLowerCase();
+  const passwordChanged = data.password && String(data.password) !== String(currentPassword);
+  const isSensitive = emailChanged || passwordChanged;
   
   if (isSensitive) {
+    if (!data.oldPassword) return createResponse({ error: 'Password lama diperlukan untuk konfirmasi keamanan.' });
+    if (String(data.oldPassword) !== String(currentPassword)) {
+      return createResponse({ error: 'Password lama salah.' });
+    }
     if (!data.code) return createResponse({ error: 'Kode verifikasi diperlukan untuk merubah email/password.' });
-    
-    // Check code against current email
-    const usersSheet = getSheet('Users');
-    const usersRows = usersSheet.getDataRange().getValues();
-    const currentUser = usersRows.find(u => u[0] === data.id);
-    
-    if (!currentUser) return createResponse({ error: 'User tidak ditemukan.' });
-    
-    const currentEmail = currentUser[2];
     if (!verifyCode(currentEmail, data.code)) {
       return createResponse({ error: 'Kode verifikasi salah atau kedaluwarsa.' });
     }
   }
 
-  const sheet = getSheet('Users');
-  const rows = sheet.getDataRange().getValues();
-  for (let i = 1; i < rows.length; i++) {
-    if (rows[i][0] === data.id) {
-      if (data.name) sheet.getRange(i + 1, 2).setValue(data.name);
-      if (data.email) sheet.getRange(i + 1, 3).setValue(data.email);
-      if (data.password) sheet.getRange(i + 1, 4).setValue(data.password);
-      if (data.photoUrl !== undefined) sheet.getRange(i + 1, 6).setValue(data.photoUrl);
-      if (data.coverUrl !== undefined) sheet.getRange(i + 1, 7).setValue(data.coverUrl);
-      if (data.wallpaper !== undefined) sheet.getRange(i + 1, 8).setValue(data.wallpaper);
-      return createResponse({ success: true });
-    }
-  }
-  return createResponse({ error: 'User not found' });
+  const i = userIndex;
+  if (data.name) sheet.getRange(i + 1, 2).setValue(data.name);
+  if (data.email) sheet.getRange(i + 1, 3).setValue(data.email);
+  if (data.password) sheet.getRange(i + 1, 4).setValue(data.password);
+  if (data.photoUrl !== undefined) sheet.getRange(i + 1, 6).setValue(data.photoUrl);
+  if (data.coverUrl !== undefined) sheet.getRange(i + 1, 7).setValue(data.coverUrl);
+  if (data.wallpaper !== undefined) sheet.getRange(i + 1, 8).setValue(data.wallpaper);
+  
+  return createResponse({ success: true });
 }
 
 // Helper to verify code (generic)
@@ -535,7 +537,7 @@ function handleSendFeedback(data) {
   try {
     MailApp.sendEmail({
       to: 'alfarizd027@gmail.com',
-      subject: '[FEEDBACK] KeluargaBerkah Finance',
+      subject: '[FEEDBACK] Berkah Finance',
       htmlBody: '<div style="font-family:sans-serif;padding:20px;border:1px solid #eee;border-radius:10px;">' +
                 '<h2>Saran & Masukan Baru</h2>' +
                 '<p><strong>Dari:</strong> ' + data.userName + ' (' + data.userId + ')</p>' +

@@ -1,7 +1,7 @@
 import { AppData, Transaction, User } from '../types';
 import { storage } from './storage';
 
-let currentScriptUrl = 'https://script.google.com/macros/s/AKfycbxnaIJW7OsWE0bB9VamA-zXr7JKouBfi6YXwQn3Qi1oQ70cqgft5DQ7SU9dFfrs1HLo/exec';
+let currentScriptUrl = 'https://script.google.com/macros/s/AKfycbxhdoSjqWuU7-HB_XitjWoxjJ25rYuQucKUXjvj1iEd9nn7ZrKYCtpJBEJbdN-CWh-Y/exec';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -271,8 +271,8 @@ export const api = {
     return this.request({ action: 'deleteBudget', userId, category });
   },
 
-  async updateUser(userId: string, updates: Partial<User & { password?: string }>, code?: string): Promise<{ success: boolean; error?: string; offline?: boolean }> {
-    return this.request({ action: 'updateUser', id: userId, ...updates, code });
+  async updateUser(userId: string, updates: Partial<User & { password?: string }>, code?: string, oldPassword?: string): Promise<{ success: boolean; error?: string; offline?: boolean }> {
+    return this.request({ action: 'updateUser', id: userId, ...updates, code, oldPassword });
   },
 
   // Goals

@@ -91,7 +91,6 @@ export default function App() {
   const [activeDialog, setActiveDialog] = useState<DialogConfig | null>(null);
 
   // Modals
-  const [showNotifSettings, setShowNotifSettings] = useState(false);
   const [showGenSettings, setShowGenSettings] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
@@ -104,8 +103,10 @@ export default function App() {
 
   // Profile Edit Temp States
   const [editName, setEditName] = useState('');
-  const [editEmail, setEditEmail] = useState('');
+  const [editEmail, setEditEmail] = useState(''); // old email (read-only, auto-filled)
+  const [editNewEmail, setEditNewEmail] = useState('');
   const [editPassword, setEditPassword] = useState('');
+  const [editNewPassword, setEditNewPassword] = useState('');
   const [editPhoto, setEditPhoto] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [editStep, setEditStep] = useState(1);
@@ -314,7 +315,7 @@ export default function App() {
   const [copied, setCopied] = useState(false);
 
   const appsScriptCode = `/**
- * Google Apps Script for KeluargaBerkah Finance
+ * Google Apps Script for Berkah Finance
  * Deploy as Web App with:
  * - Execute as: Me
  * - Who has access: Anyone
@@ -367,7 +368,7 @@ function handleSendFeedback(data) {
   try {
     MailApp.sendEmail({
       to: 'alfarizd027@gmail.com',
-      subject: '[FEEDBACK] KeluargaBerkah Finance',
+      subject: '[FEEDBACK] Berkah Finance',
       htmlBody: '<div style="font-family:sans-serif;padding:20px;border:1px solid #eee;border-radius:10px;">' +
                 '<h2>Saran & Masukan Baru</h2>' +
                 '<p><strong>Dari:</strong> ' + data.userName + ' (' + data.userId + ')</p>' +
@@ -413,7 +414,7 @@ function handleSendCode(email, type) {
   try {
     MailApp.sendEmail({
       to: email,
-      subject: '[' + type + '] Kode Verifikasi KeluargaBerkah Finance',
+      subject: '[' + type + '] Kode Verifikasi Berkah Finance',
       htmlBody: '<div style="font-family:sans-serif;padding:20px;border:1px solid #eee;border-radius:10px;">' +
                 '<h2>Kode Verifikasi Anda</h2>' +
                 '<p>Gunakan kode berikut untuk melanjutkan proses ' + type.toLowerCase() + ' Anda:</p>' +
@@ -815,7 +816,13 @@ function handleDeleteNote(data) {
   const handleUpdateProfile = async () => {
     if (!user) return;
 
-    const isSensitiveChange = editEmail !== user.email || editPassword !== '';
+    const isSensitiveChange = (editNewEmail && editNewEmail !== user.email) || editNewPassword !== '';
+
+    // Validate sensitive changes
+    if (isSensitiveChange && !editPassword) {
+      showToast('Masukkan password lama untuk mengonfirmasi perubahan', 'warning');
+      return;
+    }
 
     if (isSensitiveChange && editStep === 1) {
       setSavingProfile(true);
@@ -823,7 +830,7 @@ function handleDeleteNote(data) {
         const res = await api.sendUpdateCode(user.email);
         if (res.success) {
           setEditStep(2);
-          showToast('Kode verifikasi telah dikirim ke email Anda', 'info');
+          showToast('Kode OTP dikirim ke email lama Anda', 'info');
         } else {
           showToast(res.error || 'Gagal mengirim kode verifikasi', 'error');
         }
@@ -837,18 +844,29 @@ function handleDeleteNote(data) {
 
     setSavingProfile(true);
     try {
-      const updates: any = { name: editName, email: editEmail, photoUrl: editPhoto };
-      if (editPassword) updates.password = editPassword;
+      const updates: any = {
+        name: editName,
+        photoUrl: editPhoto,
+      };
+      if (editNewEmail) updates.email = editNewEmail;
+      if (editNewPassword) updates.password = editNewPassword;
 
-      const result = await api.updateUser(user.id, updates, editCode);
+      const result = await api.updateUser(user.id, updates, editCode, editPassword);
       if (result.success) {
-        const updatedUser = { ...user, name: editName, email: editEmail, photoUrl: editPhoto };
+        const updatedUser = {
+          ...user,
+          name: editName,
+          email: editNewEmail || user.email,
+          photoUrl: editPhoto,
+        };
         setUser(updatedUser);
         localStorage.setItem('kb_user', JSON.stringify(updatedUser));
-        showToast('Profil berhasil diperbaharui', 'success');
+        showToast('Profil berhasil diperbarui', 'success');
         setProfileView('main');
         setEditStep(1);
         setEditCode('');
+        setEditNewEmail('');
+        setEditNewPassword('');
       } else {
         showToast(result.error || 'Gagal merubah profil', 'error');
       }
@@ -949,10 +967,13 @@ function handleDeleteNote(data) {
   const openEditProfile = () => {
     if (!user) return;
     setEditName(user.name);
-    setEditEmail(user.email);
+    setEditEmail(user.email); // current email (read-only)
+    setEditNewEmail('');
     setEditPassword('');
+    setEditNewPassword('');
     setEditPhoto(user.photoUrl || '');
     setEditCode('');
+    setEditStep(1);
     setProfileView('edit');
   };
 
@@ -1224,6 +1245,7 @@ function handleDeleteNote(data) {
         return <Notes notes={data.notes} onAdd={handleAddNote} onUpdate={handleUpdateNote} onDelete={handleDeleteNote} userId={user.id} />;
       case 'profile':
         if (profileView === 'edit') {
+          const isSensitiveChange = (editNewEmail && editNewEmail !== user.email) || editNewPassword !== '';
           return (
             <div className="space-y-6 pb-4">
               <div className="flex items-center gap-4 mb-2">
@@ -1242,11 +1264,11 @@ function handleDeleteNote(data) {
                 </div>
               </div>
 
-              <div className="bg-card-bg rounded-[32px] border border-border-ui p-6 shadow-sm space-y-8">
+              <div className="bg-card-bg rounded-[32px] border border-border-ui p-6 shadow-sm space-y-6">
                 {editStep === 1 ? (
                   <>
-                    {/* Photo Upload Section */}
-                    <div className="flex flex-col items-center gap-4">
+                    {/* ── Foto Profil ── */}
+                    <div className="flex flex-col items-center gap-3">
                       <div className="relative group">
                         <div className="w-24 h-24 rounded-[32px] overflow-hidden border-4 border-bg-main bg-bg-main shadow-xl">
                           {editPhoto ? (
@@ -1269,60 +1291,112 @@ function handleDeleteNote(data) {
                       </div>
                       <div className="text-center">
                         <p className="text-sm font-bold text-text-primary">Foto Profil</p>
-                        <p className="text-[10px] text-text-secondary mt-1">PNG, JPG up to 2MB</p>
+                        <p className="text-[10px] text-text-secondary mt-0.5">PNG, JPG maks. 2MB</p>
                       </div>
                     </div>
 
-                    {/* Form Fields */}
-                    <div className="space-y-5">
-                      <div className="space-y-1.5">
-                        <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">Informasi Dasar</span>
+                    <div className="h-px bg-border-ui/50" />
+
+                    {/* ── Nama ── */}
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">Nama Lengkap</span>
+                      <div className="relative">
+                        <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                        <input
+                          type="text"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-2xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50"
+                          placeholder="Masukkan nama lengkap"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="h-px bg-border-ui/50" />
+
+                    {/* ── Ganti Email ── */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-2 px-1">
+                        <Mail className="w-3.5 h-3.5 text-blue-500" />
+                        <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">Ganti Email</span>
+                        <span className="ml-auto text-[9px] font-bold text-text-secondary/50 bg-border-ui/50 px-2 py-0.5 rounded-full">Opsional</span>
+                      </div>
+                      <div className="space-y-2">
                         <div className="relative">
-                          <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-text-secondary" />
+                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary/50" />
                           <input
-                            type="text"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="w-full pl-12 pr-4 py-4 bg-bg-main/50 rounded-2xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all"
-                            placeholder="Nama Lengkap"
+                            type="email"
+                            value={editEmail}
+                            readOnly
+                            className="w-full pl-11 pr-20 py-3.5 bg-bg-main/30 rounded-2xl border border-border-ui/50 outline-none text-sm font-bold text-text-secondary cursor-not-allowed"
+                          />
+                          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-text-secondary/50 uppercase tracking-widest bg-border-ui/70 px-2 py-0.5 rounded-full">Aktif</span>
+                        </div>
+                        <div className="relative">
+                          <ArrowRight className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500" />
+                          <input
+                            type="email"
+                            value={editNewEmail}
+                            onChange={(e) => setEditNewEmail(e.target.value)}
+                            className="w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-2xl border border-border-ui focus:border-blue-500/70 outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50"
+                            placeholder="Masukkan email baru"
                           />
                         </div>
                       </div>
+                    </div>
 
-                      <div className="space-y-1.5">
-                        <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">Keamanan & Akses</span>
-                        <div className="space-y-3">
-                          <div className="relative">
-                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-text-secondary" />
-                            <input
-                              type="email"
-                              value={editEmail}
-                              onChange={(e) => setEditEmail(e.target.value)}
-                              className="w-full pl-12 pr-4 py-4 bg-bg-main/50 rounded-2xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all"
-                              placeholder="Email Baru"
-                            />
-                          </div>
-                          <div className="relative">
-                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-text-secondary" />
-                            <input
-                              type="password"
-                              value={editPassword}
-                              onChange={(e) => setEditPassword(e.target.value)}
-                              className="w-full pl-12 pr-4 py-4 bg-bg-main/50 rounded-2xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all"
-                              placeholder="Password Baru (Opsional)"
-                            />
-                          </div>
-                        </div>
-                        {(editEmail !== user.email || editPassword !== '') && (
-                          <div className="mt-4 p-4 bg-secondary/10 rounded-2xl border border-secondary/20 flex items-start gap-3">
-                            <ShieldCheck className="w-5 h-5 text-secondary shrink-0" />
-                            <p className="text-[11px] text-secondary font-bold leading-relaxed">
-                              Perubahan email atau password membutuhkan verifikasi kode OTP yang akan dikirim ke email lama Anda.
-                            </p>
+                    <div className="h-px bg-border-ui/50" />
+
+                    {/* ── Ganti Password ── */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-2 px-1">
+                        <Lock className="w-3.5 h-3.5 text-rose-500" />
+                        <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">Ganti Password</span>
+                        <span className="ml-auto text-[9px] font-bold text-text-secondary/50 bg-border-ui/50 px-2 py-0.5 rounded-full">Opsional</span>
+                      </div>
+                    <div className="space-y-2">
+                      {/* Password Lama (REQUIRED for sensitive changes) */}
+                      <div className="relative">
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                        <input
+                          type="password"
+                          value={editPassword}
+                          onChange={(e) => setEditPassword(e.target.value)}
+                          className={cn(
+                            "w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-2xl border border-border-ui outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50",
+                            isSensitiveChange && !editPassword && "border-rose-500/50 bg-rose-500/5"
+                          )}
+                          placeholder="Masukkan password lama"
+                        />
+                        {isSensitiveChange && !editPassword && (
+                          <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                            <span className="text-[8px] font-black text-rose-500 uppercase tracking-widest bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">Wajib Diisi</span>
                           </div>
                         )}
                       </div>
+                      {/* Password Baru */}
+                      <div className="relative">
+                        <ArrowRight className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-rose-500" />
+                        <input
+                          type="password"
+                          value={editNewPassword}
+                          onChange={(e) => setEditNewPassword(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-2xl border border-border-ui focus:border-rose-500/70 outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50"
+                          placeholder="Masukkan password baru"
+                        />
+                      </div>
                     </div>
+                  </div>
+
+                    {/* OTP Notice */}
+                    {((editNewEmail && editNewEmail !== user.email) || editNewPassword !== '') && (
+                      <div className="p-4 bg-amber-500/8 rounded-2xl border border-amber-500/25 flex items-start gap-3">
+                        <ShieldCheck className="w-4.5 h-4.5 text-amber-500 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold leading-relaxed">
+                          Perubahan email atau password membutuhkan kode OTP yang akan dikirim ke <span className="font-black">{user.email}</span>.
+                        </p>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="py-4 space-y-6">
@@ -1332,12 +1406,12 @@ function handleDeleteNote(data) {
                       </div>
                       <div>
                         <h4 className="text-base font-black text-text-primary tracking-tight">Verifikasi OTP</h4>
-                        <p className="text-[11px] text-text-secondary font-medium leading-relaxed max-w-[200px] mx-auto mt-1">
-                          Kode 6-digit telah dikirim ke <span className="text-accent font-bold">{user.email}</span>
+                        <p className="text-[11px] text-text-secondary font-medium leading-relaxed max-w-xs mx-auto mt-1">
+                          Kode 6-digit telah dikirim ke <span className="text-accent font-bold">{user.email}</span>. Cek folder Spam jika tidak masuk.
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-4">
                       <input
                         type="text"
@@ -1352,7 +1426,7 @@ function handleDeleteNote(data) {
                         onClick={() => setEditStep(1)}
                         className="w-full text-[11px] font-black text-text-secondary hover:text-accent uppercase tracking-[0.2em] transition-colors"
                       >
-                        ← Ganti Email/Nama
+                        ← Kembali ke Form
                       </button>
                     </div>
                   </div>
@@ -1360,17 +1434,20 @@ function handleDeleteNote(data) {
 
                 <button
                   onClick={handleUpdateProfile}
-                  disabled={savingProfile || !editName || !editEmail || (editStep === 2 && editCode.length < 6)}
-                  className="w-full py-4.5 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl font-black shadow-lg shadow-accent/20 hover:shadow-accent/40 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-3 text-sm"
+                  disabled={savingProfile || !editName || (editStep === 2 && editCode.length < 6)}
+                  className="w-full py-4 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl font-black shadow-lg shadow-accent/20 hover:shadow-accent/40 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-3 text-sm"
                 >
                   {savingProfile ? (
                     <RefreshCw className="w-5 h-5 animate-spin" />
                   ) : (
                     <>
                       <span>
-                        {editStep === 1 ? (
-                          (editEmail !== user.email || editPassword !== '') ? 'Lanjut ke Verifikasi' : 'Simpan Perubahan'
-                        ) : 'Verifikasi & Perbarui'}
+                        {editStep === 1
+                          ? ((editNewEmail && editNewEmail !== user.email) || editNewPassword
+                              ? 'Lanjut ke Verifikasi OTP'
+                              : 'Simpan Perubahan')
+                          : 'Verifikasi & Perbarui'
+                        }
                       </span>
                       <ArrowRight className="w-4 h-4" />
                     </>
@@ -1784,25 +1861,6 @@ function handleDeleteNote(data) {
                   </span>
                 </button>
 
-                {/* Notifikasi */}
-                <button
-                  onClick={() => setShowNotifSettings(true)}
-                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group"
-                >
-                  <div className="w-9 h-9 rounded-2xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                    <Bell className="w-4.5 h-4.5 text-amber-500" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className="text-sm font-semibold text-text-primary">Notifikasi</p>
-                    <p className="text-[10px] text-text-secondary">Pengingat & peringatan</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={cn("text-[10px] font-bold", appSettings.notifBudgets ? "text-accent" : "text-text-secondary")}>
-                      {appSettings.notifBudgets ? 'Aktif' : 'Off'}
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-text-primary transition-colors" />
-                  </div>
-                </button>
 
                 {/* Wallpaper */}
                 <button
@@ -1966,7 +2024,7 @@ function handleDeleteNote(data) {
     <Layout
       activeTab={activeTab}
       setActiveTab={setActiveTab}
-      user={user}
+      user={user!}
       isDark={isDark}
       toggleTheme={toggleTheme}
       wallpaper={wallpaper}
@@ -1976,6 +2034,8 @@ function handleDeleteNote(data) {
       syncStatus={loading ? 'Memuat Data...' : (syncing ? 'Sinkronisasi...' : '')}
       onAddClick={() => { setActiveTab('transactions'); setShowAddModal(true); }}
       onLogout={handleLogout}
+      toasts={toasts}
+      activeDialog={activeDialog}
     >
 
 
@@ -2006,7 +2066,7 @@ function handleDeleteNote(data) {
             <div className="flex-1 overflow-y-auto p-8 space-y-8 text-sm text-text-secondary leading-relaxed custom-scrollbar">
               <section>
                 <h4 className="font-bold text-text-primary mb-2">1. Buat Google Sheet Baru</h4>
-                <p>Buka Google Sheets dan buat spreadsheet baru. Beri nama misalnya "Database Keuangan Keluarga".</p>
+                <p>Buka Google Sheets dan buat spreadsheet baru. Beri nama misalnya "Database Keuangan".</p>
               </section>
 
               <section>
@@ -2060,129 +2120,6 @@ function handleDeleteNote(data) {
 
       {renderContent()}
 
-      {/* Global Notification & Toast Stack - Top Right (Moved down to clear header) */}
-      <div className="fixed top-22 right-6 z-[100] flex flex-col gap-3 w-full max-w-[320px] pointer-events-none items-end">
-        <AnimatePresence>
-          {/* Toasts */}
-          {toasts.map(toast => (
-            <motion.div
-              key={toast.id}
-              initial={{ opacity: 0, x: 50, scale: 0.9 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 20, scale: 0.95 }}
-              layout
-              className={cn(
-                "px-5 py-4 rounded-[22px] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] flex items-center gap-4 border backdrop-blur-xl pointer-events-auto w-full",
-                toast.type === 'success' && "bg-success/15 border-success/30 text-success",
-                toast.type === 'error' && "bg-danger/15 border-danger/30 text-danger",
-                toast.type === 'warning' && "bg-warning/15 border-warning/30 text-warning",
-                toast.type === 'info' && "bg-accent/15 border-accent/30 text-accent"
-              )}
-            >
-              <div className="shrink-0">
-                {toast.type === 'success' && <CheckCircle2 className="w-5 h-5" />}
-                {toast.type === 'error' && <AlertOctagon className="w-5 h-5" />}
-                {toast.type === 'warning' && <AlertTriangle className="w-5 h-5" />}
-                {toast.type === 'info' && <Info className="w-5 h-5" />}
-              </div>
-              <span className="text-[11px] font-bold leading-tight tracking-tight">{toast.message}</span>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {/* Custom Global Dialog (Alert/Confirm) - Top Right Slide-in */}
-        {activeDialog && (
-          <div className="fixed inset-0 z-[110] flex p-4 justify-end items-start pointer-events-none">
-            <div
-              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm pointer-events-auto"
-              onClick={() => activeDialog.onCancel()}
-            />
-            <div
-              className="relative w-full max-w-sm bg-card-bg rounded-[32px] p-8 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] border border-border-ui pointer-events-auto mt-20"
-            >
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className={cn(
-                "w-12 h-12 rounded-2xl flex items-center justify-center",
-                activeDialog.type === 'confirm' ? "bg-accent/10 text-accent" : "bg-warning/10 text-warning"
-              )}>
-                {activeDialog.type === 'confirm' ? <AlertCircle className="w-6 h-6" /> : <Info className="w-6 h-6" />}
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-lg font-black text-text-primary tracking-tight">{activeDialog.title}</h3>
-                <p className="text-sm text-text-secondary leading-relaxed font-medium">
-                  {activeDialog.message}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-col gap-2">
-              <button
-                onClick={() => activeDialog.onConfirm()}
-                className="w-full py-4 bg-linear-to-r from-accent to-secondary text-white rounded-2xl font-bold shadow-lg shadow-accent/20 hover:shadow-accent/40 active:scale-[0.98] transition-all text-sm"
-              >
-                {activeDialog.confirmText}
-              </button>
-              {activeDialog.type === 'confirm' && (
-                <button
-                  onClick={() => activeDialog.onCancel()}
-                  className="w-full py-4 bg-bg-main text-text-secondary rounded-2xl font-bold hover:bg-border-ui transition-colors text-sm"
-                >
-                  {activeDialog.cancelText}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showNotifSettings && (
-        <div className="fixed inset-0 z-50 flex p-4 overflow-y-auto">
-          <div
-            onClick={() => setShowNotifSettings(false)}
-            className={cn(
-              "fixed inset-0 bg-slate-900/60",
-              !isMobile && "backdrop-blur-sm"
-            )}
-          />
-          <div className="relative bg-card-bg p-8 rounded-3xl border border-border-ui shadow-2xl w-full max-w-sm mt-4 mx-auto mb-auto z-10">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold text-text-primary">Notifikasi</h3>
-              <button onClick={() => setShowNotifSettings(false)} className="p-2 hover:bg-bg-main rounded-lg transition-colors">
-                <X className="w-5 h-5 text-text-secondary" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <button
-                onClick={() => setAppSettings((prev: any) => ({ ...prev, notifBudgets: !prev.notifBudgets }))}
-                className="w-full flex items-center justify-between p-4 bg-bg-main/50 rounded-2xl border border-border-ui"
-              >
-                <div className="text-left">
-                  <p className="text-sm font-bold text-text-primary">Pengingat Anggaran</p>
-                  <p className="text-[10px] text-text-secondary mt-0.5">Alert jika kategori hampir habis.</p>
-                </div>
-                <div className={cn("w-10 h-6 rounded-full transition-colors relative", appSettings.notifBudgets ? "bg-accent" : "bg-border-ui")}>
-                  <div className={cn("absolute top-1 w-4 h-4 bg-white rounded-full transition-all", appSettings.notifBudgets ? "left-5" : "left-1")} />
-                </div>
-              </button>
-
-              <button
-                onClick={() => setAppSettings((prev: any) => ({ ...prev, notifSync: !prev.notifSync }))}
-                className="w-full flex items-center justify-between p-4 bg-bg-main/50 rounded-2xl border border-border-ui"
-              >
-                <div className="text-left">
-                  <p className="text-sm font-bold text-text-primary">Status Sinkronisasi</p>
-                  <p className="text-[10px] text-text-secondary mt-0.5">Tampilkan toast saat simpan cloud.</p>
-                </div>
-                <div className={cn("w-10 h-6 rounded-full transition-colors relative", appSettings.notifSync ? "bg-accent" : "bg-border-ui")}>
-                  <div className={cn("absolute top-1 w-4 h-4 bg-white rounded-full transition-all", appSettings.notifSync ? "left-5" : "left-1")} />
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Theme Switching Loading Overlay (Main App) */}
       <AnimatePresence>

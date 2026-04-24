@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.keluargaberkah.finance',
+  appId: 'com.berkah.finance',
   appName: 'Vinance',
   webDir: 'dist',
   server: {

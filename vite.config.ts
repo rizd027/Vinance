@@ -29,7 +29,7 @@ export default defineConfig(({mode}) => {
         manifest: {
           name: 'Vinance',
           short_name: 'Vinance',
-          description: 'Aplikasi Manajemen Keuangan Keluarga Premium',
+          description: 'Aplikasi Manajemen Keuangan Premium',
           theme_color: '#6366f1',
           background_color: '#0f172a',
           display: 'standalone',

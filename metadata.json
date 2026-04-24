@@ -1,6 +1,6 @@
 {
-  "name": "KeluargaBerkah Finance",
-  "description": "Aplikasi kelola keuangan keluarga modern dengan sinkronisasi Google Sheets.",
+  "name": "Berkah Finance",
+  "description": "Aplikasi kelola keuangan modern dengan sinkronisasi Google Sheets.",
   "requestFramePermissions": [],
   "majorCapabilities": ["PWA", "Google Sheets Sync", "Expense Tracking", "Budgeting"]
 }

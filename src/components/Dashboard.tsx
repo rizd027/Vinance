@@ -262,12 +262,10 @@ export default function Dashboard({ transactions, budgets, onAddClick, onViewAll
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.15 }}
-          onClick={totalBudget === 0 ? onNavigateToBudget : undefined}
+          onClick={onNavigateToBudget}
           className={cn(
-            "bg-card-bg rounded-2xl p-3 border shadow-sm flex flex-col items-center justify-center gap-1 relative",
-            totalBudget === 0
-              ? "border-dashed border-accent/40 cursor-pointer hover:bg-accent/5 hover:border-accent/60 active:scale-95 transition-all group"
-              : "border-border-ui"
+            "bg-card-bg rounded-2xl p-3 border shadow-sm flex flex-col items-center justify-center gap-1 relative cursor-pointer hover:bg-accent/5 active:scale-95 transition-all group",
+            totalBudget === 0 ? "border-dashed border-accent/40" : "border-border-ui hover:border-accent/40"
           )}
         >
           <svg width="88" height="88" viewBox="0 0 88 88" className="-rotate-90">
@@ -293,8 +291,8 @@ export default function Dashboard({ transactions, budgets, onAddClick, onViewAll
               {'Ketuk\nUntuk Atur'}
             </p>
           ) : (
-            <p className="text-[8px] font-bold text-text-secondary uppercase tracking-wider text-center leading-tight whitespace-pre-line">
-              {'Budget\nTerpakai'}
+            <p className="text-[8px] font-bold text-text-secondary uppercase tracking-wider text-center leading-tight whitespace-pre-line group-hover:text-accent transition-colors">
+              {'Ketuk\nUntuk Atur'}
             </p>
           )}
         </motion.div>
