@@ -43,6 +43,10 @@ export default function App() {
   });
   const [activeTab, setActiveTab] = useState('home');
   const [data, setData] = useState<AppData>(() => {
+    // If no user, always start with empty data
+    const savedUser = localStorage.getItem('kb_user');
+    if (!savedUser) return { transactions: [], budgets: [], goals: [], notes: [] };
+
     const saved = localStorage.getItem('kb_data');
     const parsed = saved ? JSON.parse(saved) : {};
     return {
@@ -296,6 +300,8 @@ export default function App() {
   };
 
   const handleLogin = (newUser: User) => {
+    // Clear data first to avoid ghost data from previous user
+    setData({ transactions: [], budgets: [], goals: [], notes: [] });
     setUser(newUser);
     if (newUser.scriptUrl) {
       api.setBaseUrl(newUser.scriptUrl);
@@ -662,8 +668,15 @@ function handleDeleteNote(data) {
 
   const handleLogout = () => {
     setUser(null);
+    setData({ transactions: [], budgets: [], goals: [], notes: [] });
     localStorage.removeItem('kb_user');
+    localStorage.removeItem('kb_data');
+    localStorage.removeItem('kb_pin');
+    localStorage.removeItem('kb_wallpaper');
+    localStorage.removeItem('kb_settings');
+    setIsDark(false);
     setActiveTab('home');
+    setProfileView('main');
   };
 
   const handleAddTransaction = async (t: Omit<Transaction, 'id'>) => {
