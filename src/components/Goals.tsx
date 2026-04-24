@@ -119,23 +119,23 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
 
       {/* Summary Cards */}
       {goals && goals.length > 0 && (
-        <div className="flex overflow-x-auto sm:grid sm:grid-cols-3 gap-3 sm:gap-4 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 pb-2 sm:pb-0">
+        <div className="flex overflow-x-auto sm:grid sm:grid-cols-3 gap-3 sm:gap-4 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 pb-3 sm:pb-0">
           {[
-            { label: 'Total Target', value: formatCurrency(totalTarget), icon: <Target className="w-3.5 h-3.5" />, color: 'text-accent', bg: 'bg-accent/5' },
-            { label: 'Total Terkumpul', value: formatCurrency(totalSaved), icon: <PiggyBank className="w-3.5 h-3.5" />, color: 'text-success', bg: 'bg-success/5' },
-            { label: 'Tujuan Tercapai', value: `${completedGoals} / ${goals.length}`, icon: <CheckCircle2 className="w-3.5 h-3.5" />, color: 'text-emerald-500', bg: 'bg-emerald-500/5' },
+            { label: 'Total Target', value: formatCurrency(totalTarget), icon: <Target className="w-3.5 h-3.5" />, color: 'text-accent', bg: 'bg-accent/10' },
+            { label: 'Total Terkumpul', value: formatCurrency(totalSaved), icon: <PiggyBank className="w-3.5 h-3.5" />, color: 'text-success', bg: 'bg-success/10' },
+            { label: 'Tujuan Tercapai', value: `${completedGoals} / ${goals.length}`, icon: <CheckCircle2 className="w-3.5 h-3.5" />, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
 
           ].map((s, i) => (
-            <div key={i} className="flex-shrink-0 w-[150px] sm:w-auto bg-card-bg p-3.5 rounded-2xl border border-border-ui shadow-sm">
-              <div className="flex items-center gap-2 mb-2">
-                <div className={cn("p-1.5 rounded-lg", s.bg)}>
+            <div key={i} className="flex-shrink-0 w-[160px] sm:w-auto bg-card-bg p-4 rounded-2xl border border-border-ui shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-2.5 mb-2.5">
+                <div className={cn("p-2 rounded-xl", s.bg)}>
                   <span className={s.color}>{s.icon}</span>
                 </div>
-                <p className="text-[8px] font-medium text-text-secondary uppercase tracking-widest truncate">{s.label}</p>
+                <p className="text-[9px] font-black text-text-secondary uppercase tracking-[0.15em] truncate">{s.label}</p>
               </div>
-              <div className="flex items-center gap-1">
-                {s.label === 'Total Terkumpul' && <ArrowUpRight className="w-3 h-3 text-success" />}
-                <p className={cn("text-sm sm:text-base font-bold tracking-tight currency-font", s.color)}>{s.value}</p>
+              <div className="flex items-center gap-1.5">
+                {s.label === 'Total Terkumpul' && <ArrowUpRight className="w-3.5 h-3.5 text-success" />}
+                <p className={cn("text-base sm:text-lg font-black tracking-tight currency-font", s.color)}>{s.value}</p>
               </div>
             </div>
           ))}
@@ -145,14 +145,14 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
       {/* Goals Grid */}
       {!goals || goals.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 gap-4">
-          <div className="w-16 h-16 rounded-3xl bg-accent/10 flex items-center justify-center text-3xl">🎯</div>
+          <div className="w-20 h-20 rounded-[2rem] bg-accent/10 flex items-center justify-center text-4xl shadow-inner">🎯</div>
           <p className="text-sm font-bold text-text-secondary">Belum ada tujuan tabungan</p>
-          <button onClick={openAdd} className="px-4 py-2 bg-accent/10 text-accent rounded-xl text-xs font-black hover:bg-accent/20 transition-colors">
-            Buat Tujuan Pertama
+          <button onClick={openAdd} className="px-6 py-3 bg-accent text-white rounded-2xl text-xs font-black shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+            + Buat Tujuan Pertama
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {goals.map((goal, i) => {
               const pct = Math.min((goal.savedAmount / goal.targetAmount) * 100, 100);
               const remaining = goal.targetAmount - goal.savedAmount;
@@ -162,19 +162,31 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
               return (
                 <div
                   key={goal.id}
-                  className="bg-card-bg rounded-3xl border border-border-ui overflow-hidden shadow-sm hover:shadow-md hover:border-accent/30 transition-all"
+                  className="bg-card-bg rounded-[2rem] border border-border-ui overflow-hidden shadow-md hover:shadow-xl hover:border-accent/40 transition-all group"
                 >
                   {/* Card Header */}
-                  <div className="p-4 sm:p-5 relative" style={{ background: `linear-gradient(135deg, ${goal.color}, ${goal.color}dd)` }}>
-                    <div className="flex justify-between items-start">
-                      <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white">
-                        {React.createElement(getIconById(goal.icon), { className: "w-6 h-6" })}
+                  <div 
+                    className="p-5 sm:p-6 relative overflow-hidden bg-accent" 
+                    style={{ 
+                      background: (goal.color && goal.color.length > 3)
+                        ? `linear-gradient(135deg, ${goal.color}, ${goal.color}dd)` 
+                        : undefined 
+                    }}
+                  >
+                    {/* Decorative pattern */}
+                    <div className="absolute inset-0 opacity-10 pointer-events-none">
+                      <div className="absolute top-0 left-0 w-full h-full bg-[url('/doodle_wallpaper.png')] bg-repeat opacity-20 scale-150" />
+                    </div>
+
+                    <div className="flex justify-between items-start relative z-10">
+                      <div className="w-12 h-12 bg-black/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/20 shadow-inner">
+                        {React.createElement(getIconById(goal.icon), { className: "w-6.5 h-6.5" })}
                       </div>
                       <div className="flex gap-1">
-                        <button onClick={() => openEdit(goal)} className="p-2.5 bg-white/20 hover:bg-white/30 rounded-xl transition-colors">
+                        <button onClick={() => openEdit(goal)} className="p-2.5 bg-black/10 hover:bg-black/20 rounded-xl transition-colors">
                           <Edit2 className="w-4 h-4 text-white" />
                         </button>
-                        <button onClick={() => onDelete(goal.id)} className="p-2.5 bg-white/20 hover:bg-red-500/50 rounded-xl transition-colors">
+                        <button onClick={() => onDelete(goal.id)} className="p-2.5 bg-black/10 hover:bg-red-600/40 rounded-xl transition-colors">
                           <Trash2 className="w-4 h-4 text-white" />
                         </button>
                       </div>
