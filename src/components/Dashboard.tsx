@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import {
   ArrowRight, Plus, Wallet, TrendingUp, ArrowUpRight, ArrowDownRight,
   Utensils, Car, ShoppingBag, Receipt, Gamepad2, HeartPulse,
-  ShieldCheck, AlertCircle, Zap, Sparkles
+  ShieldCheck, AlertCircle, Zap, Sparkles, Target, Plane, Smartphone, GraduationCap, Camera, Globe, Briefcase, Coffee, Home
 } from 'lucide-react';
-import { Transaction, Budget } from '../types';
+import { Transaction, Budget, Goal } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
 import { isToday, isThisMonth, isThisWeek } from 'date-fns';
 
@@ -25,6 +25,25 @@ const getCategoryIcon = (category: string) => {
   return entry ? entry[1] : Wallet;
 };
 
+const GOAL_ICONS: Record<string, any> = {
+  'home': Home,
+  'car': Car,
+  'plane': Plane,
+  'phone': Smartphone,
+  'edu': GraduationCap,
+  'health': HeartPulse,
+  'shop': ShoppingBag,
+  'game': Gamepad2,
+  'camera': Camera,
+  'world': Globe,
+  'work': Briefcase,
+  'coffee': Coffee,
+};
+
+const getGoalIcon = (id: string) => {
+  return GOAL_ICONS[id] || Target;
+};
+
 const CATEGORY_COLORS = [
   'bg-violet-500/15 text-violet-500',
   'bg-sky-500/15 text-sky-500',
@@ -37,15 +56,17 @@ const CATEGORY_COLORS = [
 interface DashboardProps {
   transactions: Transaction[];
   budgets: Budget[];
+  goals?: Goal[];
   onAddClick: () => void;
   onViewAll: () => void;
   onNavigateToBudget?: () => void;
+  onNavigateToGoals?: () => void;
   userName?: string;
 }
 
 type FilterPeriod = 'today' | 'week' | 'month' | 'all';
 
-export default function Dashboard({ transactions, budgets, onAddClick, onViewAll, onNavigateToBudget, userName }: DashboardProps) {
+export default function Dashboard({ transactions, budgets, goals = [], onAddClick, onViewAll, onNavigateToBudget, onNavigateToGoals, userName }: DashboardProps) {
   const [period, setPeriod] = useState<FilterPeriod>('month');
 
   const filtered = transactions.filter(t => {
@@ -264,39 +285,98 @@ export default function Dashboard({ transactions, budgets, onAddClick, onViewAll
           transition={{ delay: 0.15 }}
           onClick={onNavigateToBudget}
           className={cn(
-            "bg-card-bg rounded-2xl p-3 border shadow-sm flex flex-col items-center justify-center gap-1 relative cursor-pointer hover:bg-accent/5 active:scale-95 transition-all group",
+            "bg-card-bg rounded-2xl p-3 border shadow-sm flex flex-col items-center relative cursor-pointer hover:bg-accent/5 active:scale-95 transition-all group justify-between",
             totalBudget === 0 ? "border-dashed border-accent/40" : "border-border-ui hover:border-accent/40"
           )}
         >
-          <svg width="88" height="88" viewBox="0 0 88 88" className="-rotate-90">
-            <circle cx="44" cy="44" r={radius} fill="none" stroke="currentColor" strokeWidth="8" className="text-bg-main" />
-            <circle
-              cx="44" cy="44" r={radius} fill="none"
-              stroke="url(#dashGrad)" strokeWidth="8"
-              strokeLinecap="round"
-              strokeDasharray={`${expenseDash} ${circ}`}
-            />
-            <defs>
-              <linearGradient id="dashGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#059669" />
-                <stop offset="100%" stopColor="#10b981" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <div className="absolute flex flex-col items-center pointer-events-none">
-            <span className="text-xs font-black text-text-primary">{totalBudget > 0 ? `${budgetUsage.toFixed(0)}%` : '—'}</span>
+          <div className="w-full mb-1">
+            <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest text-center">Anggaran</p>
           </div>
-          {totalBudget === 0 ? (
-            <p className="text-[8px] font-bold text-accent uppercase tracking-wider text-center leading-tight group-hover:underline whitespace-pre-line">
-              {'Ketuk\nUntuk Atur'}
-            </p>
-          ) : (
-            <p className="text-[8px] font-bold text-text-secondary uppercase tracking-wider text-center leading-tight whitespace-pre-line group-hover:text-accent transition-colors">
-              {'Ketuk\nUntuk Atur'}
-            </p>
-          )}
+          <div className="relative flex items-center justify-center">
+            <svg width="76" height="76" viewBox="0 0 88 88" className="-rotate-90">
+              <circle cx="44" cy="44" r={radius} fill="none" stroke="currentColor" strokeWidth="8" className="text-bg-main" />
+              <circle
+                cx="44" cy="44" r={radius} fill="none"
+                stroke="url(#dashGrad)" strokeWidth="8"
+                strokeLinecap="round"
+                strokeDasharray={`${expenseDash} ${circ}`}
+              />
+              <defs>
+                <linearGradient id="dashGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#059669" />
+                  <stop offset="100%" stopColor="#10b981" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-xs font-black text-text-primary mt-0.5">{totalBudget > 0 ? `${budgetUsage.toFixed(0)}%` : '—'}</span>
+            </div>
+          </div>
+          <div className="mt-1">
+            {totalBudget === 0 ? (
+              <p className="text-[8px] font-bold text-accent uppercase tracking-wider text-center leading-tight group-hover:underline whitespace-pre-line">
+                {'Ketuk\nUntuk Atur'}
+              </p>
+            ) : (
+              <p className="text-[8px] font-bold text-text-secondary uppercase tracking-wider text-center leading-tight whitespace-pre-line group-hover:text-accent transition-colors">
+                {'Ketuk\nUntuk Atur'}
+              </p>
+            )}
+          </div>
         </motion.div>
       </div>
+
+      {/* ── Target Tabungan (Goals) ── */}
+      {goals.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-black text-text-primary">Target & Tujuan</h3>
+            <button
+              onClick={onNavigateToGoals}
+              className="text-[10px] font-bold text-accent flex items-center gap-0.5 hover:gap-1.5 transition-all"
+            >
+              Lihat Semua <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+            {goals.slice(0, 3).map((goal, i) => {
+              const pct = Math.min((goal.savedAmount / goal.targetAmount) * 100, 100);
+              const GoalIcon = getGoalIcon(goal.icon);
+              const gColor = (goal.color && goal.color.startsWith('#')) ? goal.color : '#059669';
+
+              return (
+                <motion.div
+                  key={goal.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 + i * 0.1 }}
+                  onClick={onNavigateToGoals}
+                  className="bg-card-bg rounded-[1.25rem] border border-border-ui shadow-sm flex-shrink-0 w-[240px] p-3 flex flex-col gap-2 cursor-pointer hover:shadow-md hover:border-accent/30 transition-all group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-sm" style={{ backgroundColor: gColor }}>
+                      <GoalIcon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-bold text-text-primary truncate">{goal.name}</p>
+                      <p className="text-[9px] text-text-secondary mt-0.5">Target: {formatCurrency(goal.targetAmount)}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-[9px] font-bold" style={{ color: gColor }}>{pct > 0 && pct < 1 ? '< 1' : Math.round(pct)}%</span>
+                      <span className="text-[9px] text-text-secondary font-medium">{formatCurrency(goal.savedAmount)}</span>
+                    </div>
+                    <div className="h-1.5 bg-bg-main rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-1000" style={{ backgroundColor: gColor, width: `${pct}%` }} />
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ── Top Pengeluaran (ref: Popular Plan) ── */}
       {topExpenses.length > 0 && (

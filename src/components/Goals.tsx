@@ -5,7 +5,7 @@ import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, ArrowUpRight
 } from 'lucide-react';
 import { Goal } from '../types';
-import { formatCurrency, cn } from '../lib/utils';
+import { formatCurrency, cn, formatInputNumber, parseInputNumber } from '../lib/utils';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import DatePicker from './UI/DatePicker';
@@ -60,8 +60,8 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
     setEditGoal(g);
     setForm({
       name: g.name,
-      targetAmount: String(g.targetAmount),
-      savedAmount: String(g.savedAmount),
+      targetAmount: formatInputNumber(String(g.targetAmount)),
+      savedAmount: formatInputNumber(String(g.savedAmount)),
       deadline: g.deadline || '',
       icon: g.icon,
       color: g.color,
@@ -74,8 +74,8 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
     const payload = {
       userId,
       name: form.name,
-      targetAmount: Number(form.targetAmount),
-      savedAmount: Number(form.savedAmount) || 0,
+      targetAmount: Number(parseInputNumber(form.targetAmount)),
+      savedAmount: Number(parseInputNumber(form.savedAmount)) || 0,
       deadline: form.deadline || undefined,
       icon: form.icon,
       color: form.color,
@@ -90,7 +90,7 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
 
   const handleAddSavings = () => {
     if (!showSavingsModal || !savingsAmount) return;
-    onAddSavings(showSavingsModal.id, Number(savingsAmount));
+    onAddSavings(showSavingsModal.id, Number(parseInputNumber(savingsAmount)));
     setSavingsAmount('');
     setShowSavingsModal(null);
   };
@@ -335,11 +335,11 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Target (Rp)</label>
-                  <input type="number" value={form.targetAmount} onChange={e => setForm(f => ({ ...f, targetAmount: e.target.value }))} placeholder="500000000" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
+                  <input type="text" value={form.targetAmount} onChange={e => setForm(f => ({ ...f, targetAmount: formatInputNumber(e.target.value) }))} placeholder="500.000.000" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Sudah Terkumpul</label>
-                  <input type="number" value={form.savedAmount} onChange={e => setForm(f => ({ ...f, savedAmount: e.target.value }))} placeholder="0" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
+                  <input type="text" value={form.savedAmount} onChange={e => setForm(f => ({ ...f, savedAmount: formatInputNumber(e.target.value) }))} placeholder="0" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
                 </div>
               </div>
 
@@ -381,7 +381,7 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
               </button>
             </div>
             <div className="space-y-4">
-              <input type="number" value={savingsAmount} onChange={e => setSavingsAmount(e.target.value)} placeholder="Masukkan jumlah (Rp)" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" autoFocus />
+              <input type="text" value={savingsAmount} onChange={e => setSavingsAmount(formatInputNumber(e.target.value))} placeholder="Masukkan jumlah (Rp)" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" autoFocus />
               <button onClick={handleAddSavings} disabled={!savingsAmount || Number(savingsAmount) <= 0} className="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50">
                 Tambah {savingsAmount ? formatCurrency(Number(savingsAmount)) : ''}
               </button>

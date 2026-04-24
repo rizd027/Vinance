@@ -7,8 +7,9 @@ import {
   ArrowUpDown, FileDown, FileUp, TrendingUp
 } from 'lucide-react';
 import { Transaction } from '../types';
-import { formatCurrency, cn } from '../lib/utils';
+import { formatCurrency, cn, formatInputNumber, parseInputNumber } from '../lib/utils';
 import ExportImportModal from './ExportImportModal';
+import DatePicker from './UI/DatePicker';
 
 const CATEGORY_ICONS: Record<string, any> = {
   'Makanan': Utensils,
@@ -651,6 +652,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
   const [customCategory, setCustomCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
+  const [date, setDate] = useState(new Date().toISOString());
 
   useEffect(() => {
     if (initialData) {
@@ -666,14 +668,16 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
         setCategory('Lainnya');
         setCustomCategory(initialData.category);
       }
-      setAmount(initialData.amount.toString());
+      setAmount(formatInputNumber(initialData.amount.toString()));
       setNote(initialData.note || '');
+      setDate(initialData.date);
     } else {
       setType('Expense');
       setCategory('');
       setCustomCategory('');
       setAmount('');
       setNote('');
+      setDate(new Date().toISOString());
     }
   }, [initialData, isOpen]);
 
@@ -689,8 +693,8 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
         userId: '',
         type,
         category: finalCategory,
-        amount: Number(amount),
-        date: initialData?.date || new Date().toISOString(),
+        amount: Number(parseInputNumber(amount)),
+        date: new Date(date).toISOString(),
         note
       });
     } else {
@@ -698,8 +702,8 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
         userId: '',
         type,
         category: finalCategory,
-        amount: Number(amount),
-        date: new Date().toISOString(),
+        amount: Number(parseInputNumber(amount)),
+        date,
         note
       });
     }
@@ -778,10 +782,10 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
             <div>
               <label className="block text-xs font-bold text-text-secondary mb-1 uppercase">Jumlah (Rp)</label>
               <input
-                type="number"
+                type="text"
                 required
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => setAmount(formatInputNumber(e.target.value))}
                 className="w-full px-4 py-2.5 rounded-lg border border-border-ui bg-card-bg text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-colors"
                 placeholder="0"
                 inputMode="decimal"
@@ -796,6 +800,17 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
                 onChange={(e) => setNote(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-lg border border-border-ui bg-card-bg text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-colors"
                 placeholder="Contoh: Belanja bulanan"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-text-secondary mb-1 uppercase">Tanggal</label>
+              <DatePicker 
+                value={date} 
+                onChange={setDate} 
+                placeholder="Pilih Tanggal"
+                className="w-full"
+                dropUp
               />
             </div>
           </div>

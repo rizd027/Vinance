@@ -7,7 +7,7 @@ import {
   Utensils, Car, ShoppingBag, Receipt, Gamepad2, HeartPulse
 } from 'lucide-react';
 import { Budget, Transaction } from '../types';
-import { formatCurrency, cn } from '../lib/utils';
+import { formatCurrency, cn, formatInputNumber, parseInputNumber } from '../lib/utils';
 
 const CATEGORY_ICONS: Record<string, any> = {
   'Makanan': Utensils,
@@ -337,7 +337,7 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
                   </div>
                   <div className="flex gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={() => { setEditing(cat); setNewLimit(limit > 0 ? limit.toString() : ''); }}
+                      onClick={() => { setEditing(cat); setNewLimit(limit > 0 ? formatInputNumber(limit.toString()) : ''); }}
                       className="p-2 sm:p-1.5 bg-bg-main hover:bg-accent/10 rounded-lg text-text-secondary hover:text-accent transition-colors"
                       title="Edit Limit"
                     >
@@ -395,16 +395,16 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
                 {editing === cat && (
                   <div className="mt-4 p-3 bg-bg-main rounded-2xl space-y-3">
                     <input
-                      type="number"
+                      type="text"
                       value={newLimit}
-                      onChange={(e) => setNewLimit(e.target.value)}
+                      onChange={(e) => setNewLimit(formatInputNumber(e.target.value))}
                       className="w-full px-3 py-2 rounded-xl border border-border-ui bg-card-bg text-text-primary outline-none text-xs focus:ring-2 focus:ring-accent"
                       placeholder="Limit Anggaran"
                       autoFocus
                     />
                     <div className="flex gap-2">
                       <button
-                        onClick={() => { onUpdate(cat, Number(newLimit)); setEditing(null); }}
+                        onClick={() => { onUpdate(cat, Number(parseInputNumber(newLimit))); setEditing(null); }}
                         className="flex-1 bg-linear-to-r from-accent to-secondary text-white py-2 rounded-xl text-[10px] font-bold shadow-lg shadow-accent/20"
                       >
                         SIMPAN

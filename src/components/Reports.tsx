@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
-  AreaChart, Area, CartesianGrid
+  AreaChart, Area, CartesianGrid, LabelList
 } from 'recharts';
 import {
   TrendingUp, TrendingDown, Wallet,
@@ -48,15 +48,27 @@ const COLORS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-card-bg border border-border-ui rounded-xl shadow-xl p-3 text-xs">
-        <p className="font-bold text-text-primary mb-2">{label}</p>
-        {payload.map((p: any, i: number) => (
-          <div key={i} className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-            <span className="text-text-secondary">{p.name}:</span>
-            <span className="font-bold text-text-primary">{formatCurrency(p.value)}</span>
-          </div>
-        ))}
+      <div className="bg-card-bg/95 backdrop-blur-md border border-border-ui rounded-2xl shadow-2xl p-4 text-xs min-w-[140px] animate-in fade-in zoom-in duration-200">
+        <p className="font-black text-text-primary mb-3 pb-2 border-b border-border-ui/50 uppercase tracking-wider">{label}</p>
+        <div className="space-y-2.5">
+          {payload.map((p: any, i: number) => (
+            <div key={i} className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: p.color }} />
+                <span className="text-text-secondary font-bold">{p.name}</span>
+              </div>
+              <span className="font-black text-text-primary currency-font">{formatCurrency(p.value)}</span>
+            </div>
+          ))}
+          {payload.length > 1 && (
+            <div className="pt-2 border-t border-border-ui/50 flex justify-between items-center">
+              <span className="text-[10px] font-black text-text-secondary uppercase">Selisih</span>
+              <span className={cn("font-black", (payload[0].value - payload[1].value) >= 0 ? "text-success" : "text-danger")}>
+                {formatCurrency(Math.abs(payload[0].value - payload[1].value))}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -224,10 +236,10 @@ export default function Reports({ transactions }: ReportsProps) {
           </h3>
           <div className="flex items-center gap-4 text-[10px] font-bold">
             <span className="flex items-center gap-1.5 text-text-secondary">
-              <span className="w-3 h-1.5 rounded-full bg-accent inline-block" /> Pemasukan
+              <span className="w-3 h-3 rounded-full bg-[#10b981] inline-block shadow-sm" /> Pemasukan (Hijau)
             </span>
             <span className="flex items-center gap-1.5 text-text-secondary">
-              <span className="w-3 h-1.5 rounded-full bg-danger inline-block" /> Pengeluaran
+              <span className="w-3 h-3 rounded-full bg-[#ef4444] inline-block shadow-sm" /> Pengeluaran (Merah)
             </span>
           </div>
         </div>
@@ -242,13 +254,23 @@ export default function Reports({ transactions }: ReportsProps) {
               <AreaChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                    <stop offset="50%" stopColor="#10b981" stopOpacity={0.1} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                    <stop offset="50%" stopColor="#ef4444" stopOpacity={0.1} />
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                   </linearGradient>
+                  <filter id="shadow" height="200%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur" />
+                    <feOffset in="blur" dx="0" dy="4" result="offsetBlur" />
+                    <feMerge>
+                      <feMergeNode in="offsetBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148,163,184,0.08)" />
                 <XAxis
@@ -270,8 +292,32 @@ export default function Reports({ transactions }: ReportsProps) {
                   width={48}
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="income" stroke="var(--color-accent)" fillOpacity={1} fill="url(#colorIncome)" strokeWidth={2.5} name="Pemasukan" dot={{ fill: 'var(--color-accent)', strokeWidth: 0, r: 3 }} activeDot={{ r: 5, strokeWidth: 0 }} isAnimationActive={!isMobile} animationDuration={500} animationEasing="ease-out" />
-                <Area type="monotone" dataKey="expense" stroke="#f43f5e" fillOpacity={1} fill="url(#colorExpense)" strokeWidth={2.5} name="Pengeluaran" dot={{ fill: '#f43f5e', strokeWidth: 0, r: 3 }} activeDot={{ r: 5, strokeWidth: 0 }} isAnimationActive={!isMobile} animationDuration={500} animationEasing="ease-out" />
+                <Area type="monotone" dataKey="income" stroke="#10b981" fillOpacity={1} fill="url(#colorIncome)" strokeWidth={3} name="Pemasukan" dot={{ fill: '#10b981', strokeWidth: 2, r: 4, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} isAnimationActive={!isMobile} animationDuration={1000} animationEasing="ease-in-out">
+                  <LabelList dataKey="income" position="top" offset={15} content={(props: any) => {
+                    const { x, y, value } = props;
+                    if (value === 0) return null;
+                    const label = value >= 1_000_000 ? `${(value / 1_000_000).toFixed(1)}jt` : value >= 1_000 ? `${(value / 1_000).toFixed(0)}rb` : value;
+                    return (
+                      <g>
+                        <rect x={x - 15} y={y - 22} width={30} height={14} rx={4} fill="#10b981" fillOpacity={0.1} />
+                        <text x={x} y={y - 12} fill="#10b981" fontSize={8} fontWeight="900" textAnchor="middle">{label}</text>
+                      </g>
+                    );
+                  }} />
+                </Area>
+                <Area type="monotone" dataKey="expense" stroke="#ef4444" fillOpacity={1} fill="url(#colorExpense)" strokeWidth={3} name="Pengeluaran" dot={{ fill: '#ef4444', strokeWidth: 2, r: 4, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} isAnimationActive={!isMobile} animationDuration={1000} animationEasing="ease-in-out">
+                  <LabelList dataKey="expense" position="top" offset={15} content={(props: any) => {
+                    const { x, y, value } = props;
+                    if (value === 0) return null;
+                    const label = value >= 1_000_000 ? `${(value / 1_000_000).toFixed(1)}jt` : value >= 1_000 ? `${(value / 1_000).toFixed(0)}rb` : value;
+                    return (
+                      <g>
+                        <rect x={x - 15} y={y - 22} width={30} height={14} rx={4} fill="#ef4444" fillOpacity={0.1} />
+                        <text x={x} y={y - 12} fill="#ef4444" fontSize={8} fontWeight="900" textAnchor="middle">{label}</text>
+                      </g>
+                    );
+                  }} />
+                </Area>
 
               </AreaChart>
             </ResponsiveContainer>
@@ -283,10 +329,20 @@ export default function Reports({ transactions }: ReportsProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Bar Chart - Income vs Expense */}
         <div className="bg-card-bg p-6 rounded-3xl border border-border-ui shadow-sm transition-colors">
-          <h3 className="text-xs font-black text-text-primary uppercase tracking-wider mb-6 flex items-center gap-2">
-            <BarChart2 className="w-4 h-4 text-accent" />
-            Pemasukan vs Pengeluaran
-          </h3>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <h3 className="text-xs font-black text-text-primary uppercase tracking-wider flex items-center gap-2">
+              <BarChart2 className="w-4 h-4 text-accent" />
+              Pemasukan vs Pengeluaran
+            </h3>
+            <div className="flex items-center gap-3 text-[9px] font-bold">
+              <span className="flex items-center gap-1 text-text-secondary">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#10b981] inline-block shadow-sm" /> Pemasukan (Hijau)
+              </span>
+              <span className="flex items-center gap-1 text-text-secondary">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] inline-block shadow-sm" /> Pengeluaran (Merah)
+              </span>
+            </div>
+          </div>
           {trendData.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-text-secondary text-xs">Tidak ada data</div>
           ) : (
@@ -303,8 +359,32 @@ export default function Reports({ transactions }: ReportsProps) {
                     width={42}
                   />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="income" name="Pemasukan" fill="var(--color-accent)" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={!isMobile} animationDuration={500} animationEasing="ease-out" />
-                  <Bar dataKey="expense" name="Pengeluaran" fill="#f43f5e" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={!isMobile} animationDuration={500} animationEasing="ease-out" />
+                  <Bar dataKey="income" name="Pemasukan" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={32} isAnimationActive={!isMobile} animationDuration={1000}>
+                    <LabelList dataKey="income" position="top" content={(props: any) => {
+                      const { x, y, width, value } = props;
+                      if (value === 0) return null;
+                      const label = value >= 1_000_000 ? `${(value / 1_000_000).toFixed(1)}jt` : value >= 1_000 ? `${(value / 1_000).toFixed(0)}rb` : value;
+                      return (
+                        <g>
+                          <rect x={x + width / 2 - 15} y={y - 20} width={30} height={14} rx={4} fill="#10b981" fillOpacity={0.1} />
+                          <text x={x + width / 2} y={y - 10} fill="#10b981" fontSize={8} fontWeight="900" textAnchor="middle">{label}</text>
+                        </g>
+                      );
+                    }} />
+                  </Bar>
+                  <Bar dataKey="expense" name="Pengeluaran" fill="#ef4444" radius={[6, 6, 0, 0]} maxBarSize={32} isAnimationActive={!isMobile} animationDuration={1000}>
+                    <LabelList dataKey="expense" position="top" content={(props: any) => {
+                      const { x, y, width, value } = props;
+                      if (value === 0) return null;
+                      const label = value >= 1_000_000 ? `${(value / 1_000_000).toFixed(1)}jt` : value >= 1_000 ? `${(value / 1_000).toFixed(0)}rb` : value;
+                      return (
+                        <g>
+                          <rect x={x + width / 2 - 15} y={y - 20} width={30} height={14} rx={4} fill="#ef4444" fillOpacity={0.1} />
+                          <text x={x + width / 2} y={y - 10} fill="#ef4444" fontSize={8} fontWeight="900" textAnchor="middle">{label}</text>
+                        </g>
+                      );
+                    }} />
+                  </Bar>
 
                 </BarChart>
               </ResponsiveContainer>

@@ -1217,9 +1217,11 @@ function handleDeleteNote(data) {
           <Dashboard
             transactions={data.transactions}
             budgets={data.budgets}
+            goals={data.goals}
             onAddClick={() => { setActiveTab('transactions'); setShowAddModal(true); }}
             onViewAll={() => setActiveTab('transactions')}
             onNavigateToBudget={() => setActiveTab('budgets')}
+            onNavigateToGoals={() => setActiveTab('goals')}
             userName={user.name}
           />
         );
