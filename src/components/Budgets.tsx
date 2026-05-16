@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Target, Edit2, AlertCircle, TrendingUp, Wallet, CheckCircle2,
   Plus, Trash2, PieChart as PieIcon, ArrowRight, ShieldCheck,
@@ -141,7 +140,7 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-accent to-secondary text-white rounded-xl text-xs font-bold shadow-lg shadow-accent/20 hover:shadow-accent/30 hover:scale-105 active:scale-95 transition-all"
+          className="flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-accent to-secondary text-white rounded-lg text-xs font-bold shadow-lg shadow-accent/20 hover:shadow-accent/30 hover:scale-105 active:scale-95 transition-all"
         >
           <Plus className="w-4 h-4" />
         </button>
@@ -151,7 +150,7 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Main Budget Card */}
-          <div className="bg-card-bg rounded-3xl border border-border-ui p-8 shadow-sm transition-colors relative overflow-hidden">
+          <div className="bg-card-bg rounded-lg border border-border-ui p-8 shadow-sm transition-colors relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-bl-full -z-10" />
             <div className="flex flex-col sm:flex-row justify-between gap-6">
               <div className="space-y-4">
@@ -184,13 +183,12 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
                 </div>
                 <div className="h-3 bg-bg-main rounded-full overflow-hidden transition-colors border border-border-ui/50">
                   {totalBudget > 0 ? (
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min((totalSpent / totalBudget) * 100, 100)}%` }}
+                    <div
                       className={cn(
                         "h-full transition-all duration-1000",
                         totalSpent > totalBudget ? "bg-danger" : "bg-linear-to-r from-accent to-secondary"
                       )}
+                      style={{ width: `${Math.min((totalSpent / totalBudget) * 100, 100)}%` }}
                     />
                   ) : (
                     <div className="h-full w-full bg-text-secondary/10" />
@@ -201,7 +199,7 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
           </div>
 
           {/* 50/30/20 Health Check */}
-          <div className="bg-bg-main p-6 rounded-3xl border border-border-ui space-y-4 shadow-sm relative z-10">
+          <div className="bg-bg-main p-6 rounded-lg border border-border-ui space-y-4 shadow-sm relative z-10">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-success" />
@@ -218,7 +216,7 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
         </div>
 
         {/* Allocation Pie Chart */}
-        <div className="lg:col-span-2 bg-card-bg p-6 rounded-3xl border border-border-ui flex flex-col items-center">
+        <div className="lg:col-span-2 bg-card-bg p-6 rounded-lg border border-border-ui flex flex-col items-center">
           <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider mb-4 self-start flex items-center gap-2">
             <PieIcon className="w-4 h-4 text-accent" />
             Distribusi Anggaran
@@ -256,8 +254,8 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
       {(alertStatus.critical.length > 0 || alertStatus.warning.length > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {alertStatus.critical.length > 0 && (
-            <div className="bg-danger/5 border border-danger/20 p-4 rounded-2xl flex items-start gap-3">
-              <div className="w-10 h-10 bg-danger/10 rounded-xl flex items-center justify-center shrink-0">
+            <div className="bg-danger/5 border border-danger/20 p-4 rounded-lg flex items-start gap-3">
+              <div className="w-10 h-10 bg-danger/10 rounded-lg flex items-center justify-center shrink-0">
                 <AlertCircle className="w-5 h-5 text-danger" />
               </div>
               <div className="flex-1">
@@ -273,8 +271,8 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
             </div>
           )}
           {alertStatus.warning.length > 0 && (
-            <div className="bg-warning/5 border border-warning/20 p-4 rounded-2xl flex items-start gap-3">
-              <div className="w-10 h-10 bg-warning/10 rounded-xl flex items-center justify-center shrink-0">
+            <div className="bg-warning/5 border border-warning/20 p-4 rounded-lg flex items-start gap-3">
+              <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center shrink-0">
                 <Info className="w-5 h-5 text-warning" />
               </div>
               <div className="flex-1">
@@ -294,7 +292,6 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
 
       {/* categories Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-        <AnimatePresence>
           {allCategories.map((cat) => {
             const budget = budgets.find(b => b.category === cat);
             const spent = getSpent(cat);
@@ -305,14 +302,10 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
             const remaining = limit - spent;
 
             return (
-              <motion.div
+              <div
                 key={cat}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
                 className={cn(
-                  "bg-card-bg p-3 rounded-2xl border shadow-xs group transition-all relative overflow-hidden",
+                  "bg-card-bg p-3 rounded-lg border shadow-xs group transition-all relative overflow-hidden",
                   isOver ? "border-danger/40 ring-1 ring-danger/10" :
                     isWarning ? "border-warning/40 ring-1 ring-warning/10" :
                       "border-border-ui hover:border-accent/30"
@@ -372,10 +365,9 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
                       <span className={cn("font-bold currency-font", isOver ? "text-danger" : "text-text-primary")}>{Math.round(percent)}%</span>
                     </div>
                     <div className="h-1.5 bg-bg-main rounded-full overflow-hidden transition-colors">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${percent}%` }}
+                      <div
                         className={cn("h-full", isOver ? "bg-danger" : percent > 85 ? "bg-warning" : "bg-accent")}
+                        style={{ width: `${percent}%` }}
                       />
                     </div>
                   </div>
@@ -393,46 +385,45 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
                 </div>
 
                 {editing === cat && (
-                  <div className="mt-4 p-3 bg-bg-main rounded-2xl space-y-3">
+                  <div className="mt-4 p-3 bg-bg-main rounded-lg space-y-3">
                     <input
                       type="text"
                       value={newLimit}
                       onChange={(e) => setNewLimit(formatInputNumber(e.target.value))}
-                      className="w-full px-3 py-2 rounded-xl border border-border-ui bg-card-bg text-text-primary outline-none text-xs focus:ring-2 focus:ring-accent"
+                      className="w-full px-3 py-2 rounded-lg border border-border-ui bg-card-bg text-text-primary outline-none text-xs focus:ring-2 focus:ring-accent"
                       placeholder="Limit Anggaran"
                       autoFocus
                     />
                     <div className="flex gap-2">
                       <button
                         onClick={() => { onUpdate(cat, Number(parseInputNumber(newLimit))); setEditing(null); }}
-                        className="flex-1 bg-linear-to-r from-accent to-secondary text-white py-2 rounded-xl text-[10px] font-bold shadow-lg shadow-accent/20"
+                        className="flex-1 bg-linear-to-r from-accent to-secondary text-white py-2 rounded-lg text-[10px] font-bold shadow-lg shadow-accent/20"
                       >
                         SIMPAN
                       </button>
-                      <button onClick={() => setEditing(null)} className="flex-1 bg-danger/10 text-danger py-2 rounded-xl text-[10px] font-bold">
+                      <button onClick={() => setEditing(null)} className="flex-1 bg-danger/10 text-danger py-2 rounded-lg text-[10px] font-bold">
                         BATAL
                       </button>
                     </div>
                   </div>
                 )}
-              </motion.div>
+              </div>
             );
           })}
-        </AnimatePresence>
       </div>
 
       {/* Add Category Modal */}
       {showAddModal && (
-          <div className="fixed inset-0 z-50 flex p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-50 flex sm:p-4 overflow-y-auto">
             <div 
               onClick={() => setShowAddModal(false)} 
               className={cn(
                 "fixed inset-0 bg-slate-900/60",
-                !isMobile && "backdrop-blur-sm"
+                !isMobile ? "backdrop-blur-sm" : "hidden"
               )} 
             />
             <div 
-              className="relative bg-card-bg p-8 rounded-3xl border border-border-ui shadow-2xl w-full max-w-sm mt-4 mx-auto mb-auto z-10"
+              className="relative bg-card-bg p-8 sm:rounded-lg border border-border-ui shadow-2xl w-full min-h-full sm:min-h-0 sm:max-w-sm sm:m-auto z-10"
             >
               <h3 className="text-lg font-bold text-text-primary mb-6">Tambah Kategori Anggaran</h3>
               <div className="space-y-4">
@@ -441,7 +432,7 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
                   value={customCategory}
                   onChange={(e) => setCustomCategory(e.target.value)}
                   placeholder="Nama Kategori (Contoh: Liburan)"
-                  className="w-full px-4 py-3 rounded-xl border border-border-ui bg-bg-main text-text-primary outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-3 rounded-lg border border-border-ui bg-bg-main text-text-primary outline-none focus:ring-2 focus:ring-accent"
                   autoFocus
                 />
                 <button
@@ -453,7 +444,7 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
                       setCustomCategory('');
                     }
                   }}
-                  className="w-full py-4 bg-linear-to-r from-accent to-secondary text-white rounded-xl font-bold hover:shadow-lg hover:shadow-accent/20 transition-all"
+                  className="w-full py-4 bg-linear-to-r from-accent to-secondary text-white rounded-lg font-bold hover:shadow-lg hover:shadow-accent/20 transition-all"
                 >
                   Lanjut ke Limit
                 </button>
@@ -463,8 +454,8 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
         )}
 
       {/* Tips Section */}
-      <div className="bg-card-bg p-6 rounded-3xl border border-border-ui flex flex-col md:flex-row gap-6 items-center shadow-sm relative z-10">
-        <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center text-accent">
+      <div className="bg-card-bg p-6 rounded-lg border border-border-ui flex flex-col md:flex-row gap-6 items-center shadow-sm relative z-10">
+        <div className="w-16 h-16 bg-accent/10 rounded-lg flex items-center justify-center text-accent">
           <TrendingUp className="w-8 h-8" />
         </div>
         <div className="flex-1 space-y-1">
@@ -473,14 +464,14 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
             Sistem kami mendeteksi alokasi Anda secara otomatis. Pastikan Kebutuhan Pokok Anda (Needs) tidak melebihi 50% dari total penghasilan untuk menjaga keseimbangan finansial.
           </p>
         </div>
-        <button onClick={() => setShowInfoModal(true)} className="px-6 py-3 bg-card-bg border border-border-ui rounded-xl text-xs font-bold text-text-primary hover:bg-bg-main transition-colors flex items-center gap-2">
+        <button onClick={() => setShowInfoModal(true)} className="px-6 py-3 bg-card-bg border border-border-ui rounded-lg text-xs font-bold text-text-primary hover:bg-bg-main transition-colors flex items-center gap-2">
           Pelajari Lebih Lanjut <ArrowRight className="w-4 h-4" />
         </button>
       </div>
 
       {/* 50/30/20 Info Modal */}
       {showInfoModal && (
-          <div className="fixed inset-0 z-50 flex p-4 items-center justify-center">
+          <div className="fixed inset-0 z-50 flex sm:p-4 items-center justify-center">
             <div 
               onClick={() => setShowInfoModal(false)} 
               className={cn(
@@ -489,7 +480,7 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
               )} 
             />
             <div 
-              className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-4xl mx-auto z-10 overflow-hidden flex flex-col max-h-[90vh]"
+              className="relative bg-card-bg sm:rounded-lg border border-border-ui shadow-2xl w-full h-full sm:h-auto sm:max-w-4xl mx-auto z-10 overflow-hidden flex flex-col max-h-full sm:max-h-[90vh]"
             >
               <InfoModalContent onClose={() => setShowInfoModal(false)} />
             </div>
@@ -507,7 +498,7 @@ function InfoModalContent({ onClose }: { onClose: () => void }) {
           <ShieldCheck className="w-6 h-6 text-success" />
           Aturan 50/30/20
         </h3>
-        <button onClick={onClose} className="p-2 hover:bg-bg-main rounded-xl text-text-secondary transition-colors">
+        <button onClick={onClose} className="p-2 hover:bg-bg-main rounded-lg text-text-secondary transition-colors">
           <X className="w-5 h-5" />
         </button>
       </div>
@@ -522,10 +513,10 @@ function InfoModalContent({ onClose }: { onClose: () => void }) {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 bg-accent/5 border border-accent/20 rounded-3xl hover:bg-accent/10 transition-all group relative overflow-hidden">
+            <div className="p-6 bg-accent/5 border border-accent/20 rounded-lg hover:bg-accent/10 transition-all group relative overflow-hidden">
               <div className="absolute top-0 right-0 w-16 h-16 bg-accent/5 rounded-bl-full -z-10 group-hover:scale-110 transition-transform" />
               <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center text-accent shadow-sm">
+                <div className="w-14 h-14 bg-accent/10 rounded-lg flex items-center justify-center text-accent shadow-sm">
                   <LayoutGrid className="w-7 h-7" />
                 </div>
                 <div>
@@ -538,10 +529,10 @@ function InfoModalContent({ onClose }: { onClose: () => void }) {
               </div>
             </div>
             
-            <div className="p-6 bg-secondary/5 border border-secondary/20 rounded-3xl hover:bg-secondary/10 transition-all group relative overflow-hidden">
+            <div className="p-6 bg-secondary/5 border border-secondary/20 rounded-lg hover:bg-secondary/10 transition-all group relative overflow-hidden">
               <div className="absolute top-0 right-0 w-16 h-16 bg-secondary/5 rounded-bl-full -z-10 group-hover:scale-110 transition-transform" />
               <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-14 h-14 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary shadow-sm">
+                <div className="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center text-secondary shadow-sm">
                   <Wallet className="w-7 h-7" />
                 </div>
                 <div>
@@ -554,10 +545,10 @@ function InfoModalContent({ onClose }: { onClose: () => void }) {
               </div>
             </div>
             
-            <div className="p-6 bg-success/5 border border-success/20 rounded-3xl hover:bg-success/10 transition-all group relative overflow-hidden">
+            <div className="p-6 bg-success/5 border border-success/20 rounded-lg hover:bg-success/10 transition-all group relative overflow-hidden">
               <div className="absolute top-0 right-0 w-16 h-16 bg-success/5 rounded-bl-full -z-10 group-hover:scale-110 transition-transform" />
               <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-14 h-14 bg-success/10 rounded-2xl flex items-center justify-center text-success shadow-sm">
+                <div className="w-14 h-14 bg-success/10 rounded-lg flex items-center justify-center text-success shadow-sm">
                   <CheckCircle2 className="w-7 h-7" />
                 </div>
                 <div>
@@ -571,7 +562,7 @@ function InfoModalContent({ onClose }: { onClose: () => void }) {
             </div>
           </div>
           
-          <div className="bg-bg-main p-6 rounded-3xl border border-border-ui shadow-xs relative overflow-hidden">
+          <div className="bg-bg-main p-6 rounded-lg border border-border-ui shadow-xs relative overflow-hidden">
             <div className="flex items-start gap-4">
               <div className="p-2 bg-accent/10 rounded-lg text-accent">
                 <Info className="w-5 h-5" />
@@ -593,7 +584,7 @@ function InfoModalContent({ onClose }: { onClose: () => void }) {
       <div className="p-6 md:p-8 border-t border-border-ui/50 shrink-0 bg-card-bg">
         <button
           onClick={onClose}
-          className="w-full px-5 py-4 bg-linear-to-r from-accent to-secondary text-white rounded-2xl font-black hover:shadow-xl hover:shadow-accent/20 transition-all text-sm shadow-lg tracking-wide"
+          className="w-full px-5 py-4 bg-linear-to-r from-accent to-secondary text-white rounded-lg font-black hover:shadow-xl hover:shadow-accent/20 transition-all text-sm shadow-lg tracking-wide"
         >
           SAYA MENGERTI
         </button>
@@ -618,13 +609,12 @@ function RuleBar({ label, pct, target, color }: { label: string, pct: number, ta
         </span>
       </div>
       <div className="h-full relative bg-bg-main rounded-lg overflow-hidden border border-border-ui/50">
-        <motion.div
-          initial={{ height: 0 }}
-          animate={{ height: `${Math.min(pct, 100)}%` }}
+        <div
           className={cn(
-            "absolute bottom-0 w-full transition-all duration-1000", 
+            "absolute bottom-0 w-full", 
             isHealthy ? color : "bg-danger"
           )}
+          style={{ height: `${Math.min(pct, 100)}%` }}
         />
         <div className="absolute w-full border-t border-dashed border-text-secondary/40" style={{ bottom: `${target}%` }} />
       </div>

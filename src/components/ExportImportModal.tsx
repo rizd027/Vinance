@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { X, FileSpreadsheet, FileText, Download, Upload, Loader2, AlertCircle, FileCheck } from 'lucide-react';
 import { Transaction } from '../types';
 import { exportToExcel, exportToCSV, exportToPDF, exportToDocx } from '../lib/exportUtils';
@@ -161,13 +160,13 @@ export default function ExportImportModal({ isOpen, onClose, transactions, onImp
         )
       ) : (
         isOpen && (
-          <div className="fixed inset-0 z-50 flex p-4 items-center justify-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div
               onClick={onClose}
               className="fixed inset-0 bg-black/80"
             />
             <div 
-              className="relative w-full bg-card-bg rounded-2xl shadow-xl border border-border-ui overflow-hidden flex flex-col mt-4 mx-auto mb-auto z-10"
+              className="relative w-full h-full bg-card-bg shadow-xl border border-border-ui overflow-hidden flex flex-col z-10"
             >
               <ExportImportContent 
                 activeTab={activeTab} 

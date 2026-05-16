@@ -17,7 +17,6 @@ import { api } from './lib/api';
 import { storage } from './lib/storage';
 import { cn } from './lib/utils';
 import { LogOut, Settings, Shield, Bell, Database, ExternalLink, Info, X, Copy, Check, Lock, AlertCircle, CheckCircle2, AlertTriangle, AlertOctagon, ArrowRight, RefreshCw, User as UserIcon, Mail, ShieldCheck, MessageSquare, Send, Coffee, ChevronRight, Image, Palette, Phone, Instagram, Github, MessageCircle, Globe, ArrowLeft, Camera } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface Toast {
   id: string;
@@ -64,22 +63,11 @@ export default function App() {
     const saved = localStorage.getItem('kb_theme');
     return saved === 'dark';
   });
-  const [isChangingTheme, setIsChangingTheme] = useState(false);
 
   const toggleTheme = () => {
-    setIsChangingTheme(true);
     const nextDark = !isDark;
-    
-    // Increase initial delay to ensure the overlay is 100% opaque before the "big flip"
-    setTimeout(() => {
-      setIsDark(nextDark);
-      localStorage.setItem('kb_theme', nextDark ? 'dark' : 'light');
-      
-      // Keep it a bit longer to hide the browser's layout recalculation stutter
-      setTimeout(() => {
-        setIsChangingTheme(false);
-      }, 500);
-    }, 250); // Increased from 80ms to ensure fade-in completes
+    setIsDark(nextDark);
+    localStorage.setItem('kb_theme', nextDark ? 'dark' : 'light');
   };
 
   const [appPin, setAppPin] = useState(() => localStorage.getItem('kb_pin') || null);
@@ -98,7 +86,31 @@ export default function App() {
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+
+    // Fix for Android WebView White Screen on Resume
+    // This triggers a subtle repaint to ensure the UI is rendered correctly 
+    // when coming back from background
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Force a layout reflow by toggling a non-visible property
+        document.body.style.display = 'none';
+        // Use offsetHeight to force calculation
+        document.body.offsetHeight;
+        document.body.style.display = '';
+        
+        // Secondary backup: slight opacity shift
+        document.body.style.opacity = '0.999';
+        setTimeout(() => {
+          document.body.style.opacity = '1';
+        }, 100);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   // Profile Edit Temp States
@@ -147,6 +159,40 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('kb_settings', JSON.stringify(appSettings));
   }, [appSettings]);
+
+  // Navigation History Support
+  useEffect(() => {
+    // Initial state
+    if (!window.history.state) {
+      window.history.replaceState({ tab: activeTab, modal: showAddModal }, '');
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state;
+      if (state) {
+        if (showAddModal && !state.modal) {
+          setShowAddModal(false);
+        } else if (state.tab) {
+          setActiveTab(state.tab);
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [activeTab, showAddModal]);
+
+  const handleTabChange = (tabId: string) => {
+    if (activeTab === tabId) return;
+    setActiveTab(tabId);
+    window.history.pushState({ tab: tabId, modal: false }, '');
+  };
+
+  useEffect(() => {
+    if (showAddModal) {
+      window.history.pushState({ tab: activeTab, modal: true }, '');
+    }
+  }, [showAddModal]);
 
   useEffect(() => {
     if (activeTab !== 'profile') {
@@ -374,7 +420,7 @@ function handleSendFeedback(data) {
                 '<p><strong>Dari:</strong> ' + data.userName + ' (' + data.userId + ')</p>' +
                 '<p><strong>Pesan:</strong></p>' +
                 '<div style="background:#f9fafb;padding:15px;border-radius:8px;border-left:4px solid #059669;">' +
-                data.feedback.replace(/\\n/g, "<br>") +
+                data.feedback.replace(/\\\\n/g, "<br>") +
                 '</div>' +
                 '</div>'
     });
@@ -1163,31 +1209,6 @@ function handleDeleteNote(data) {
           toggleTheme={toggleTheme}
         />
 
-        {/* Theme Switching Loading Overlay */}
-        <AnimatePresence>
-          {isChangingTheme && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25, ease: "linear" }}
-              className={cn(
-                "fixed inset-0 z-[9999] flex flex-col items-center justify-center will-change-opacity",
-                isDark ? "bg-[#020617]" : "bg-[#f1f5f9]" // Use hardcoded colors to avoid CSS variable flipping flicker
-              )}
-            >
-              <div className="relative mb-6">
-                <div className="w-12 h-12 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                   <div className="w-6 h-6 bg-white dark:bg-slate-800 rounded-lg shadow-sm flex items-center justify-center p-1 border border-border-ui/30">
-                     <img src="/Logo-Vinance.png" alt="Logo" className="w-full h-full object-contain" />
-                   </div>
-                </div>
-              </div>
-              <p className="text-[9px] font-black text-accent uppercase tracking-[0.5em] opacity-80">Syncing Theme</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     );
   }
@@ -1209,7 +1230,6 @@ function handleDeleteNote(data) {
       </div>
     );
   }
-
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
@@ -1218,10 +1238,10 @@ function handleDeleteNote(data) {
             transactions={data.transactions}
             budgets={data.budgets}
             goals={data.goals}
-            onAddClick={() => { setActiveTab('transactions'); setShowAddModal(true); }}
-            onViewAll={() => setActiveTab('transactions')}
-            onNavigateToBudget={() => setActiveTab('budgets')}
-            onNavigateToGoals={() => setActiveTab('goals')}
+            onAddClick={() => { handleTabChange('transactions'); setShowAddModal(true); }}
+            onViewAll={() => handleTabChange('transactions')}
+            onNavigateToBudget={() => handleTabChange('budgets')}
+            onNavigateToGoals={() => handleTabChange('goals')}
             userName={user.name}
           />
         );
@@ -1256,7 +1276,7 @@ function handleDeleteNote(data) {
                     setProfileView('main');
                     setEditStep(1);
                   }}
-                  className="w-10 h-10 rounded-2xl bg-bg-main border border-border-ui flex items-center justify-center hover:bg-border-ui transition-colors shadow-sm"
+                  className="w-10 h-10 rounded-lg bg-bg-main border border-border-ui flex items-center justify-center hover:bg-border-ui transition-colors shadow-sm"
                 >
                   <ArrowLeft className="w-5 h-5 text-text-primary" />
                 </button>
@@ -1266,13 +1286,12 @@ function handleDeleteNote(data) {
                 </div>
               </div>
 
-              <div className="bg-card-bg rounded-[32px] border border-border-ui p-6 shadow-sm space-y-6">
+              <div className="bg-card-bg rounded-lg border border-border-ui p-6 shadow-sm space-y-6">
                 {editStep === 1 ? (
                   <>
-                    {/* ── Foto Profil ── */}
                     <div className="flex flex-col items-center gap-3">
                       <div className="relative group">
-                        <div className="w-24 h-24 rounded-[32px] overflow-hidden border-4 border-bg-main bg-bg-main shadow-xl">
+                        <div className="w-24 h-24 rounded-lg overflow-hidden border-4 border-bg-main bg-bg-main shadow-xl">
                           {editPhoto ? (
                             <img src={editPhoto} alt="Preview" className="w-full h-full object-cover" />
                           ) : (
@@ -1286,7 +1305,7 @@ function handleDeleteNote(data) {
                             </div>
                           )}
                         </div>
-                        <label className="absolute -bottom-2 -right-2 w-10 h-10 bg-accent rounded-2xl flex items-center justify-center border-4 border-card-bg shadow-lg cursor-pointer hover:scale-110 active:scale-95 transition-all">
+                        <label className="absolute -bottom-2 -right-2 w-10 h-10 bg-accent rounded-lg flex items-center justify-center border-4 border-card-bg shadow-lg cursor-pointer hover:scale-110 active:scale-95 transition-all">
                           <Palette className="w-5 h-5 text-white" />
                           <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={savingProfile} />
                         </label>
@@ -1299,7 +1318,6 @@ function handleDeleteNote(data) {
 
                     <div className="h-px bg-border-ui/50" />
 
-                    {/* ── Nama ── */}
                     <div className="space-y-2">
                       <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">Nama Lengkap</span>
                       <div className="relative">
@@ -1308,7 +1326,7 @@ function handleDeleteNote(data) {
                           type="text"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          className="w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-2xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50"
+                          className="w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-lg border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50"
                           placeholder="Masukkan nama lengkap"
                         />
                       </div>
@@ -1316,7 +1334,6 @@ function handleDeleteNote(data) {
 
                     <div className="h-px bg-border-ui/50" />
 
-                    {/* ── Ganti Email ── */}
                     <div className="space-y-2.5">
                       <div className="flex items-center gap-2 px-1">
                         <Mail className="w-3.5 h-3.5 text-blue-500" />
@@ -1330,7 +1347,7 @@ function handleDeleteNote(data) {
                             type="email"
                             value={editEmail}
                             readOnly
-                            className="w-full pl-11 pr-20 py-3.5 bg-bg-main/30 rounded-2xl border border-border-ui/50 outline-none text-sm font-bold text-text-secondary cursor-not-allowed"
+                            className="w-full pl-11 pr-20 py-3.5 bg-bg-main/30 rounded-lg border border-border-ui/50 outline-none text-sm font-bold text-text-secondary cursor-not-allowed"
                           />
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-text-secondary/50 uppercase tracking-widest bg-border-ui/70 px-2 py-0.5 rounded-full">Aktif</span>
                         </div>
@@ -1340,7 +1357,7 @@ function handleDeleteNote(data) {
                             type="email"
                             value={editNewEmail}
                             onChange={(e) => setEditNewEmail(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-2xl border border-border-ui focus:border-blue-500/70 outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50"
+                            className="w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-lg border border-border-ui focus:border-blue-500/70 outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50"
                             placeholder="Masukkan email baru"
                           />
                         </div>
@@ -1349,67 +1366,49 @@ function handleDeleteNote(data) {
 
                     <div className="h-px bg-border-ui/50" />
 
-                    {/* ── Ganti Password ── */}
                     <div className="space-y-2.5">
                       <div className="flex items-center gap-2 px-1">
                         <Lock className="w-3.5 h-3.5 text-rose-500" />
                         <span className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em]">Ganti Password</span>
                         <span className="ml-auto text-[9px] font-bold text-text-secondary/50 bg-border-ui/50 px-2 py-0.5 rounded-full">Opsional</span>
                       </div>
-                    <div className="space-y-2">
-                      {/* Password Lama (REQUIRED for sensitive changes) */}
-                      <div className="relative">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
-                        <input
-                          type="password"
-                          value={editPassword}
-                          onChange={(e) => setEditPassword(e.target.value)}
-                          className={cn(
-                            "w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-2xl border border-border-ui outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50",
-                            isSensitiveChange && !editPassword && "border-rose-500/50 bg-rose-500/5"
-                          )}
-                          placeholder="Masukkan password lama"
-                        />
-                        {isSensitiveChange && !editPassword && (
-                          <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                            <span className="text-[8px] font-black text-rose-500 uppercase tracking-widest bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">Wajib Diisi</span>
-                          </div>
-                        )}
-                      </div>
-                      {/* Password Baru */}
-                      <div className="relative">
-                        <ArrowRight className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-rose-500" />
-                        <input
-                          type="password"
-                          value={editNewPassword}
-                          onChange={(e) => setEditNewPassword(e.target.value)}
-                          className="w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-2xl border border-border-ui focus:border-rose-500/70 outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50"
-                          placeholder="Masukkan password baru"
-                        />
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                          <input
+                            type="password"
+                            value={editPassword}
+                            onChange={(e) => setEditPassword(e.target.value)}
+                            className={cn(
+                              "w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-lg border border-border-ui outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50",
+                              isSensitiveChange && !editPassword && "border-rose-500/50 bg-rose-500/5"
+                            )}
+                            placeholder="Masukkan password lama"
+                          />
+                        </div>
+                        <div className="relative">
+                          <ArrowRight className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-rose-500" />
+                          <input
+                            type="password"
+                            value={editNewPassword}
+                            onChange={(e) => setEditNewPassword(e.target.value)}
+                            className="w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-lg border border-border-ui focus:border-rose-500/70 outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50"
+                            placeholder="Masukkan password baru"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                    {/* OTP Notice */}
-                    {((editNewEmail && editNewEmail !== user.email) || editNewPassword !== '') && (
-                      <div className="p-4 bg-amber-500/8 rounded-2xl border border-amber-500/25 flex items-start gap-3">
-                        <ShieldCheck className="w-4.5 h-4.5 text-amber-500 shrink-0 mt-0.5" />
-                        <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold leading-relaxed">
-                          Perubahan email atau password membutuhkan kode OTP yang akan dikirim ke <span className="font-black">{user.email}</span>.
-                        </p>
-                      </div>
-                    )}
                   </>
                 ) : (
                   <div className="py-4 space-y-6">
                     <div className="text-center space-y-3">
-                      <div className="w-16 h-16 bg-accent/10 rounded-[24px] flex items-center justify-center mx-auto border border-accent/20">
+                      <div className="w-16 h-16 bg-accent/10 rounded-lg flex items-center justify-center mx-auto border border-accent/20">
                         <ShieldCheck className="w-8 h-8 text-accent" />
                       </div>
                       <div>
                         <h4 className="text-base font-black text-text-primary tracking-tight">Verifikasi OTP</h4>
                         <p className="text-[11px] text-text-secondary font-medium leading-relaxed max-w-xs mx-auto mt-1">
-                          Kode 6-digit telah dikirim ke <span className="text-accent font-bold">{user.email}</span>. Cek folder Spam jika tidak masuk.
+                          Kode 6-digit telah dikirim ke <span className="text-accent font-bold">{user.email}</span>.
                         </p>
                       </div>
                     </div>
@@ -1419,17 +1418,11 @@ function handleDeleteNote(data) {
                         type="text"
                         maxLength={6}
                         value={editCode}
-                        onChange={(e) => setEditCode(e.target.value.replace(/\D/g, ''))}
-                        className="w-full py-5 bg-bg-main rounded-2xl border-2 border-border-ui focus:border-accent outline-none text-2xl font-black tracking-[0.6em] text-center text-text-primary transition-all"
+                        onChange={(e) => setEditCode(e.target.value.replace(/\\\\D/g, ''))}
+                        className="w-full py-5 bg-bg-main rounded-lg border-2 border-border-ui focus:border-accent outline-none text-2xl font-black tracking-[0.6em] text-center text-text-primary transition-all"
                         placeholder="••••••"
                         autoFocus
                       />
-                      <button
-                        onClick={() => setEditStep(1)}
-                        className="w-full text-[11px] font-black text-text-secondary hover:text-accent uppercase tracking-[0.2em] transition-colors"
-                      >
-                        ← Kembali ke Form
-                      </button>
                     </div>
                   </div>
                 )}
@@ -1437,7 +1430,7 @@ function handleDeleteNote(data) {
                 <button
                   onClick={handleUpdateProfile}
                   disabled={savingProfile || !editName || (editStep === 2 && editCode.length < 6)}
-                  className="w-full py-4 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl font-black shadow-lg shadow-accent/20 hover:shadow-accent/40 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-3 text-sm"
+                  className="w-full py-4 bg-gradient-to-r from-accent to-secondary text-white rounded-lg font-black shadow-lg shadow-accent/20 hover:shadow-accent/40 active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-3 text-sm"
                 >
                   {savingProfile ? (
                     <RefreshCw className="w-5 h-5 animate-spin" />
@@ -1471,8 +1464,6 @@ function handleDeleteNote(data) {
             { id: 'aurora', name: 'Aurora', class: 'bg-gradient-to-tr from-green-300 via-blue-500 to-purple-600' },
             { id: 'mesh', name: 'Mesh Gradient', class: 'bg-[radial-gradient(at_top_left,_var(--tw-gradient-stops))] from-yellow-200 via-emerald-200 to-yellow-200' },
             { id: 'doodle', name: 'Doodle Classic', class: 'bg-slate-900 bg-[url("/doodle_wallpaper.png")] bg-repeat bg-[length:400px_400px] bg-blend-soft-light' },
-            { id: 'doodle2', name: 'Growth Doodle', class: 'bg-slate-900 bg-[url("/doodle_2.png")] bg-repeat bg-[length:350px_350px] bg-blend-soft-light' },
-            { id: 'doodle3', name: 'Abstract Flow', class: 'bg-[#020617] bg-[url("/doodle_3.png")] bg-repeat bg-[length:500px_500px] bg-blend-soft-light' },
           ];
 
           return (
@@ -1480,7 +1471,7 @@ function handleDeleteNote(data) {
               <div className="flex items-center gap-4 mb-2">
                 <button
                   onClick={() => setProfileView('main')}
-                  className="w-10 h-10 rounded-2xl bg-bg-main border border-border-ui flex items-center justify-center hover:bg-border-ui transition-colors shadow-sm"
+                  className="w-10 h-10 rounded-lg bg-bg-main border border-border-ui flex items-center justify-center hover:bg-border-ui transition-colors shadow-sm"
                 >
                   <ArrowLeft className="w-5 h-5 text-text-primary" />
                 </button>
@@ -1490,7 +1481,6 @@ function handleDeleteNote(data) {
                 </div>
               </div>
 
-              {/* Preset Wallpapers */}
               <div className="grid grid-cols-2 gap-4">
                 {wallpapers.map((wp) => (
                   <button
@@ -1501,97 +1491,16 @@ function handleDeleteNote(data) {
                       showToast(`Wallpaper ${wp.name} diterapkan`, 'success');
                     }}
                     className={cn(
-                      "group relative aspect-[9/16] rounded-[32px] overflow-hidden border-4 transition-all duration-300 active:scale-95",
+                      "group relative aspect-[9/16] rounded-lg overflow-hidden border-4 transition-all duration-300 active:scale-95",
                       wallpaper === wp.id ? "border-accent shadow-lg shadow-accent/20 scale-[1.02]" : "border-transparent hover:border-border-ui"
                     )}
                   >
                     <div className={cn("absolute inset-0 transition-transform duration-500 group-hover:scale-110", wp.class)} />
                     <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
                       <p className="text-[11px] font-black text-white tracking-tight">{wp.name}</p>
-                      {wallpaper === wp.id && (
-                        <div className="absolute top-4 right-4 w-6 h-6 bg-accent rounded-full flex items-center justify-center shadow-lg border-2 border-white/20">
-                          <Check className="w-3.5 h-3.5 text-white" />
-                        </div>
-                      )}
                     </div>
                   </button>
                 ))}
-              </div>
-
-              {/* Custom Options Section */}
-              <div className="space-y-4">
-                <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">Warna & Foto Kustom</p>
-                <div className="bg-card-bg rounded-[32px] border border-border-ui p-6 shadow-sm space-y-6">
-                  
-                  {/* Custom Color Picker */}
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                        <Palette className="w-5 h-5 text-accent" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-text-primary">Warna Solid</p>
-                        <p className="text-[10px] text-text-secondary">Pilih warna favorit Anda</p>
-                      </div>
-                    </div>
-                    <div className="relative group">
-                      <input 
-                        type="color" 
-                        value={wallpaper.startsWith('#') ? wallpaper : '#059669'}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setWallpaper(val);
-                          localStorage.setItem('kb_wallpaper', val);
-                        }}
-                        className="w-12 h-12 rounded-xl cursor-pointer bg-transparent border-0 outline-none overflow-hidden [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch]:rounded-xl shadow-lg"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="h-px bg-border-ui/50" />
-
-                  {/* Image Upload */}
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                        <Image className="w-5 h-5 text-blue-500" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-text-primary">Upload Foto</p>
-                        <p className="text-[10px] text-text-secondary">Gunakan gambar sendiri</p>
-                      </div>
-                    </div>
-                    <label className="px-4 py-2 bg-bg-main hover:bg-border-ui border border-border-ui rounded-xl text-xs font-black text-text-primary cursor-pointer transition-colors active:scale-95">
-                      Pilih File
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={handleWallpaperUpload}
-                      />
-                    </label>
-                  </div>
-
-                  {wallpaper.startsWith('data:') && (
-                    <div className="mt-2 p-3 bg-accent/5 rounded-2xl border border-accent/20 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-8 rounded-lg overflow-hidden border border-border-ui">
-                          <img src={wallpaper} className="w-full h-full object-cover" />
-                        </div>
-                        <p className="text-[10px] font-bold text-accent uppercase tracking-widest">Foto Kustom Aktif</p>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          setWallpaper('none');
-                          localStorage.setItem('kb_wallpaper', 'none');
-                        }}
-                        className="p-1.5 hover:bg-danger/10 rounded-lg text-danger transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           );
@@ -1603,7 +1512,7 @@ function handleDeleteNote(data) {
               <div className="flex items-center gap-4 mb-2">
                 <button
                   onClick={() => setProfileView('main')}
-                  className="w-10 h-10 rounded-2xl bg-bg-main border border-border-ui flex items-center justify-center hover:bg-border-ui transition-colors shadow-sm"
+                  className="w-10 h-10 rounded-lg bg-bg-main border border-border-ui flex items-center justify-center hover:bg-border-ui transition-colors shadow-sm"
                 >
                   <ArrowLeft className="w-5 h-5 text-text-primary" />
                 </button>
@@ -1612,56 +1521,14 @@ function handleDeleteNote(data) {
                   <p className="text-[10px] font-bold text-teal-500 uppercase tracking-widest mt-0.5">Bantuan & Dukungan Teknis</p>
                 </div>
               </div>
-
-              <div className="bg-card-bg rounded-[32px] border border-border-ui p-6 shadow-sm space-y-6">
-                <div className="text-center space-y-2">
-                  <div className="w-16 h-16 bg-teal-500/10 rounded-[24px] flex items-center justify-center mx-auto border border-teal-500/20">
-                    <Phone className="w-8 h-8 text-teal-500" />
-                  </div>
-                  <h3 className="text-base font-black text-text-primary tracking-tight">Ada Kendala?</h3>
-                  <p className="text-xs text-text-secondary font-medium leading-relaxed max-w-[240px] mx-auto">
-                    Kami siap membantu Anda mengelola keuangan dengan lebih baik. Silakan hubungi melalui saluran di bawah ini.
-                  </p>
-                </div>
-
                 <div className="grid gap-3">
                   <a
-                    href="https://wa.me/6285185443576"
+                    href="https://instagram.com/rizd027"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 bg-bg-main rounded-2xl border border-border-ui hover:border-emerald-500/50 hover:bg-emerald-500/[0.02] transition-all group"
+                    className="flex items-center gap-4 p-4 bg-bg-main rounded-lg border border-border-ui hover:border-rose-500/50 hover:bg-rose-500/[0.02] transition-all group"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <MessageCircle className="w-5 h-5 text-emerald-500" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-text-primary">WhatsApp Support</p>
-                      <p className="text-[10px] text-text-secondary">Respon cepat (6285185443576)</p>
-                    </div>
-                    <ExternalLink className="w-4 h-4 text-text-secondary" />
-                  </a>
-
-                  <a
-                    href="mailto:alfarizd027@gmail.com"
-                    className="flex items-center gap-4 p-4 bg-bg-main rounded-2xl border border-border-ui hover:border-blue-500/50 hover:bg-blue-500/[0.02] transition-all group"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Mail className="w-5 h-5 text-blue-500" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-text-primary">Email Official</p>
-                      <p className="text-[10px] text-text-secondary">alfarizd027@gmail.com</p>
-                    </div>
-                    <ExternalLink className="w-4 h-4 text-text-secondary" />
-                  </a>
-
-                  <a
-                    href="https://instagram.com/vinance.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 bg-bg-main rounded-2xl border border-border-ui hover:border-rose-500/50 hover:bg-rose-500/[0.02] transition-all group"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-lg bg-rose-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <Instagram className="w-5 h-5 text-rose-500" />
                     </div>
                     <div className="flex-1">
@@ -1674,10 +1541,10 @@ function handleDeleteNote(data) {
 
                 <div className="pt-4 border-t border-border-ui/50">
                   <div className="flex items-center justify-center gap-6">
-                    <a href="#" className="p-2 hover:bg-bg-main rounded-xl transition-colors text-text-secondary hover:text-text-primary">
+                    <a href="#" className="p-2 hover:bg-bg-main rounded-lg transition-colors text-text-secondary hover:text-text-primary">
                       <Github className="w-5 h-5" />
                     </a>
-                    <a href="#" className="p-2 hover:bg-bg-main rounded-xl transition-colors text-text-secondary hover:text-text-primary">
+                    <a href="#" className="p-2 hover:bg-bg-main rounded-lg transition-colors text-text-secondary hover:text-text-primary">
                       <Globe className="w-5 h-5" />
                     </a>
                   </div>
@@ -1686,7 +1553,6 @@ function handleDeleteNote(data) {
                   </p>
                 </div>
               </div>
-            </div>
           );
         }
 
@@ -1701,7 +1567,7 @@ function handleDeleteNote(data) {
             </div>
 
             {/* ── Hero Profile Card ── */}
-            <div className="bg-card-bg rounded-3xl border border-border-ui shadow-sm overflow-hidden relative">
+            <div className="bg-card-bg rounded-lg border border-border-ui shadow-sm overflow-hidden relative">
               {/* Global Card Doodle Pattern */}
               <div className="absolute inset-0 bg-[url('/doodle_wallpaper.png')] bg-repeat bg-[length:250px_250px] opacity-[0.05] pointer-events-none" />
 
@@ -1716,7 +1582,7 @@ function handleDeleteNote(data) {
                 )}
 
                 {/* Edit Sampul Button */}
-                <label className="absolute top-2 right-2 px-2.5 py-1.5 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-xl border border-white/20 text-[9px] font-black text-white uppercase tracking-[0.1em] cursor-pointer transition-all flex items-center gap-1.5 active:scale-95 z-10 group">
+                <label className="absolute top-2 right-2 px-2.5 py-1.5 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-lg border border-white/20 text-[9px] font-black text-white uppercase tracking-[0.1em] cursor-pointer transition-all flex items-center gap-1.5 active:scale-95 z-10 group">
                   <Palette className="w-3 h-3 group-hover:rotate-12 transition-transform" />
                   Edit Sampul
                   <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
@@ -1754,14 +1620,14 @@ function handleDeleteNote(data) {
             {/* ── Settings List ── */}
             <div>
               <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-2 px-1">Pengaturan</p>
-              <div className="bg-card-bg rounded-3xl border border-border-ui shadow-sm divide-y divide-border-ui/50 overflow-hidden">
+              <div className="bg-card-bg rounded-lg border border-border-ui shadow-sm divide-y divide-border-ui/50 overflow-hidden">
 
                 {/* Edit Profil */}
                 <button
                   onClick={openEditProfile}
                   className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group text-left"
                 >
-                  <div className="w-9 h-9 rounded-2xl bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
                     <UserIcon className="w-4.5 h-4.5 text-accent" />
                   </div>
                   <div className="flex-1">
@@ -1774,7 +1640,7 @@ function handleDeleteNote(data) {
                 {/* URL Script */}
                 <div className="px-5 py-4">
                   <div className="flex items-center gap-4 mb-3">
-                    <div className="w-9 h-9 rounded-2xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
+                    <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
                       <ExternalLink className="w-4.5 h-4.5 text-violet-500" />
                     </div>
                     <div className="flex-1">
@@ -1798,13 +1664,13 @@ function handleDeleteNote(data) {
                   {/* Collapsible Info Panel */}
                   {showScriptInfo && (
                     <div className="pl-[52px] mb-3">
-                      <div className="bg-accent/5 border border-accent/20 rounded-2xl p-4 space-y-2.5">
+                      <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 space-y-2.5">
                         <p className="text-[11px] text-text-secondary leading-relaxed">
                           Hubungkan Google Sheets pribadi Anda untuk menyimpan{' '}
                           <span className="text-text-primary font-bold">data keuangan</span>{' '}
                           (transaksi, anggaran, tujuan, dan catatan).
                         </p>
-                        <div className="flex gap-2 p-2.5 bg-warning/5 border border-warning/20 rounded-xl">
+                        <div className="flex gap-2 p-2.5 bg-warning/5 border border-warning/20 rounded-lg">
                           <span className="text-warning mt-0.5 flex-shrink-0">⚠</span>
                           <p className="text-[11px] text-text-secondary leading-relaxed">
                             <span className="text-warning font-bold">Penting:</span> Database mandiri ini khusus untuk pengelolaan data keuangan.{' '}
@@ -1830,13 +1696,13 @@ function handleDeleteNote(data) {
                       type="text"
                       defaultValue={user.scriptUrl || ''}
                       placeholder="https://script.google.com/macros/s/.../exec"
-                      className="flex-1 px-3 py-2 rounded-xl border border-border-ui bg-bg-main/60 text-[11px] text-text-primary outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all placeholder:text-text-secondary/40"
+                      className="flex-1 px-3 py-2 rounded-lg border border-border-ui bg-bg-main/60 text-[11px] text-text-primary outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all placeholder:text-text-secondary/40"
                       onBlur={(e) => handleUpdateScriptUrl(e.target.value)}
                     />
                     <button
                       onClick={handleTestConnection}
                       disabled={!user.scriptUrl || testingConnection}
-                      className="px-3 py-2 bg-gradient-to-r from-accent to-secondary text-white rounded-xl text-[11px] font-bold hover:shadow-lg hover:shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex-shrink-0"
+                      className="px-3 py-2 bg-gradient-to-r from-accent to-secondary text-white rounded-lg text-[11px] font-bold hover:shadow-lg hover:shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex-shrink-0"
                     >
                       {testingConnection ? '...' : 'Tes'}
                     </button>
@@ -1848,7 +1714,7 @@ function handleDeleteNote(data) {
                   onClick={handleTogglePin}
                   className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group"
                 >
-                  <div className="w-9 h-9 rounded-2xl bg-rose-500/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-rose-500/10 flex items-center justify-center flex-shrink-0">
                     <Lock className="w-4.5 h-4.5 text-rose-500" />
                   </div>
                   <div className="flex-1 text-left">
@@ -1869,7 +1735,7 @@ function handleDeleteNote(data) {
                   onClick={() => setProfileView('wallpaper')}
                   className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group"
                 >
-                  <div className="w-9 h-9 rounded-2xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
                     <Image className="w-4.5 h-4.5 text-emerald-500" />
                   </div>
                   <div className="flex-1 text-left">
@@ -1884,7 +1750,7 @@ function handleDeleteNote(data) {
                   onClick={toggleTheme}
                   className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group"
                 >
-                  <div className="w-9 h-9 rounded-2xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
                     <Palette className="w-4.5 h-4.5 text-blue-500" />
                   </div>
                   <div className="flex-1 text-left">
@@ -1904,7 +1770,7 @@ function handleDeleteNote(data) {
                   onClick={handleLogout}
                   className="w-full flex items-center gap-4 px-5 py-4 hover:bg-danger/5 transition-colors group text-left"
                 >
-                  <div className="w-9 h-9 rounded-2xl bg-danger/10 flex items-center justify-center flex-shrink-0 group-hover:bg-danger/20 transition-colors">
+                  <div className="w-9 h-9 rounded-lg bg-danger/10 flex items-center justify-center flex-shrink-0 group-hover:bg-danger/20 transition-colors">
                     <LogOut className="w-4.5 h-4.5 text-danger" />
                   </div>
                   <div className="flex-1">
@@ -1920,14 +1786,14 @@ function handleDeleteNote(data) {
             {/* ── Feedback & Support ── */}
             <div>
               <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-2 px-1">Bantuan</p>
-              <div className="bg-card-bg rounded-3xl border border-border-ui shadow-sm overflow-hidden">
+              <div className="bg-card-bg rounded-lg border border-border-ui shadow-sm overflow-hidden">
 
                 {/* Kontak */}
                 <button
                   onClick={() => setProfileView('contact')}
                   className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group text-left border-b border-border-ui/50"
                 >
-                  <div className="w-9 h-9 rounded-2xl bg-teal-500/10 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-teal-500/10 flex items-center justify-center flex-shrink-0">
                     <Phone className="w-4.5 h-4.5 text-teal-500" />
                   </div>
                   <div className="flex-1">
@@ -1940,7 +1806,7 @@ function handleDeleteNote(data) {
                 {/* Feedback */}
                 <div className="px-5 py-4 space-y-3">
                   <div className="flex items-center gap-4">
-                    <div className="w-9 h-9 rounded-2xl bg-fuchsia-500/10 flex items-center justify-center flex-shrink-0">
+                    <div className="w-9 h-9 rounded-lg bg-fuchsia-500/10 flex items-center justify-center flex-shrink-0">
                       <MessageSquare className="w-4.5 h-4.5 text-fuchsia-500" />
                     </div>
                     <div>
@@ -1953,12 +1819,12 @@ function handleDeleteNote(data) {
                       value={feedback}
                       onChange={(e) => setFeedback(e.target.value)}
                       placeholder="Tulis saran atau kendala yang Anda alami..."
-                      className="w-full px-3 py-2.5 bg-bg-main/60 rounded-2xl border border-border-ui focus:border-accent outline-none text-xs font-medium text-text-primary transition-all resize-none min-h-[80px] placeholder:text-text-secondary/40"
+                      className="w-full px-3 py-2.5 bg-bg-main/60 rounded-lg border border-border-ui focus:border-accent outline-none text-xs font-medium text-text-primary transition-all resize-none min-h-[80px] placeholder:text-text-secondary/40"
                     />
                     <button
                       onClick={handleSendFeedback}
                       disabled={!feedback.trim() || sendingFeedback}
-                      className="w-full py-2.5 bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-fuchsia-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                      className="w-full py-2.5 bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white rounded-lg text-xs font-bold hover:shadow-lg hover:shadow-fuchsia-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                     >
                       {sendingFeedback ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       {sendingFeedback ? 'Mengirim...' : 'Kirim Masukan'}
@@ -1975,12 +1841,12 @@ function handleDeleteNote(data) {
                     href="https://saweria.co/frd027"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full relative overflow-hidden p-4 rounded-2xl flex items-center justify-between group transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] block"
+                    className="w-full relative overflow-hidden p-4 rounded-lg flex items-center justify-between group transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] block"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-accent via-emerald-500 to-secondary" />
                     <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shine pointer-events-none" />
                     <div className="relative flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30 overflow-hidden group-hover:scale-110 transition-transform">
+                      <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/30 overflow-hidden group-hover:scale-110 transition-transform">
                         <img src="/cat-sticker.png" alt="Cat" className="w-full h-full object-cover" />
                       </div>
                       <div>
@@ -1988,7 +1854,7 @@ function handleDeleteNote(data) {
                         <p className="text-[9px] text-white/80 font-bold uppercase tracking-wider mt-0.5">Dukung Developer Lokal</p>
                       </div>
                     </div>
-                    <div className="relative flex items-center gap-1.5 px-3 py-1.5 bg-white/20 rounded-xl border border-white/30">
+                    <div className="relative flex items-center gap-1.5 px-3 py-1.5 bg-white/20 rounded-lg border border-white/30">
                       <span className="text-[10px] font-black text-white">saweria</span>
                       <ExternalLink className="w-3 h-3 text-white/70" />
                     </div>
@@ -2025,7 +1891,7 @@ function handleDeleteNote(data) {
   return (
     <Layout
       activeTab={activeTab}
-      setActiveTab={setActiveTab}
+      setActiveTab={handleTabChange}
       user={user!}
       isDark={isDark}
       toggleTheme={toggleTheme}
@@ -2034,7 +1900,7 @@ function handleDeleteNote(data) {
       budgets={data.budgets || []}
       syncing={loading || syncing}
       syncStatus={loading ? 'Memuat Data...' : (syncing ? 'Sinkronisasi...' : '')}
-      onAddClick={() => { setActiveTab('transactions'); setShowAddModal(true); }}
+      onAddClick={() => setShowAddModal(true)}
       onLogout={handleLogout}
       toasts={toasts}
       activeDialog={activeDialog}
@@ -2042,24 +1908,24 @@ function handleDeleteNote(data) {
 
 
       {showSetupGuide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex sm:p-4 items-center justify-center">
           <div
             onClick={() => setShowSetupGuide(false)}
             className={cn(
               "fixed inset-0 bg-slate-900/60",
-              !isMobile && "backdrop-blur-sm"
+              !isMobile ? "backdrop-blur-sm" : "hidden"
             )}
           />
-          <div
-            className="relative w-full max-w-2xl bg-card-bg rounded-[32px] shadow-2xl border border-border-ui flex flex-col max-h-[85vh] overflow-hidden z-10"
-          >
+            <div
+              className="relative w-full h-full sm:h-auto sm:max-w-2xl bg-card-bg sm:rounded-lg shadow-2xl border border-border-ui flex flex-col max-h-full sm:max-h-[85vh] overflow-hidden z-10"
+            >
             {/* Modal Header - Fixed */}
             <div className="flex justify-between items-center px-8 py-6 border-b border-border-ui/50 shrink-0">
               <div>
                 <h3 className="text-lg font-black text-text-primary tracking-tight">Panduan Setup Database</h3>
                 <p className="text-[10px] font-bold text-accent uppercase tracking-widest mt-0.5">Langkah-langkah Konfigurasi</p>
               </div>
-              <button onClick={() => setShowSetupGuide(false)} className="p-2 hover:bg-bg-main rounded-xl transition-colors">
+              <button onClick={() => setShowSetupGuide(false)} className="p-2 hover:bg-bg-main rounded-lg transition-colors">
                 <X className="w-5 h-5 text-text-secondary" />
               </button>
             </div>
@@ -2088,7 +1954,7 @@ function handleDeleteNote(data) {
                   </button>
                 </div>
                 <p className="mb-3">Hapus semua kode yang ada di editor Apps Script, lalu paste kode backend di bawah ini:</p>
-                <div className="bg-bg-main/50 p-4 rounded-xl border border-border-ui font-mono text-[10px] overflow-x-auto max-h-40 no-scrollbar">
+                <div className="bg-bg-main/50 p-4 rounded-lg border border-border-ui font-mono text-[10px] overflow-x-auto max-h-40 no-scrollbar">
                   <pre>{appsScriptCode}</pre>
                 </div>
               </section>
@@ -2110,7 +1976,7 @@ function handleDeleteNote(data) {
                 <p>Paste URL tersebut ke kolom "Konfigurasi Database" di tab Profil aplikasi ini.</p>
               </section>
 
-              <div className="bg-accent/5 p-4 rounded-xl border border-accent/20">
+              <div className="bg-accent/5 p-4 rounded-lg border border-accent/20">
                 <p className="text-xs text-accent font-medium">
                   <strong>Catatan:</strong> Dengan database sendiri, semua data Anda akan tersimpan aman di Google Drive pribadi Anda dan tidak dapat diakses oleh orang lain.
                 </p>
@@ -2123,31 +1989,6 @@ function handleDeleteNote(data) {
       {renderContent()}
 
 
-      {/* Theme Switching Loading Overlay (Main App) */}
-      <AnimatePresence>
-        {isChangingTheme && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease: "linear" }}
-            className={cn(
-              "fixed inset-0 z-[9999] flex flex-col items-center justify-center will-change-opacity",
-              isDark ? "bg-[#020617]" : "bg-[#f1f5f9]"
-            )}
-          >
-            <div className="relative mb-6">
-              <div className="w-12 h-12 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="w-6 h-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg flex items-center justify-center p-1.5 border border-border-ui/50">
-                   <img src="/Logo-Vinance.png" alt="Logo" className="w-full h-full object-contain" />
-                 </div>
-              </div>
-            </div>
-            <p className="text-[9px] font-black text-accent uppercase tracking-[0.5em] opacity-80">Syncing Theme</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </Layout>
   );
 }

@@ -5,7 +5,6 @@ import { Note } from '../types';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { cn } from '../lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface NotesProps {
   notes: Note[];
@@ -88,7 +87,7 @@ export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }:
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 px-5 py-3.5 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl text-xs font-black shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+          className="flex items-center gap-2 px-5 py-3.5 bg-linear-to-r from-accent to-secondary text-white rounded-lg text-xs font-black shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
           <Plus className="w-4 h-4" />
           TULIS CATATAN
@@ -111,7 +110,7 @@ export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }:
             <p className="text-base font-black text-text-primary mb-1">Belum ada catatan</p>
             <p className="text-xs font-medium text-text-secondary">Simpan rencana keuangan, ide, atau pengingat di sini.</p>
           </div>
-          <button onClick={() => setShowAdd(true)} className="mt-2 px-6 py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-xl text-xs font-black shadow-lg shadow-accent/20 hover:scale-105 active:scale-95 transition-all">
+          <button onClick={() => setShowAdd(true)} className="mt-2 px-6 py-3 bg-linear-to-r from-accent to-secondary text-white rounded-lg text-xs font-black shadow-lg shadow-accent/20 hover:scale-105 active:scale-95 transition-all">
             Tulis Catatan Pertama
           </button>
         </div>
@@ -144,7 +143,7 @@ export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }:
                     <button
                       onClick={(e) => { e.stopPropagation(); onUpdate({ ...note, isPinned: !note.isPinned }); }}
                       className={cn(
-                        "p-2 bg-bg-main/80 backdrop-blur-sm border border-border-ui/50 rounded-xl transition-all shadow-sm", 
+                        "p-2 bg-bg-main/80 backdrop-blur-sm border border-border-ui/50 rounded-lg transition-all shadow-sm", 
                         note.isPinned ? "text-accent border-accent/30" : "text-text-secondary hover:text-text-primary"
                       )}
                       title={note.isPinned ? "Lepas sematan" : "Sematkan catatan"}
@@ -153,14 +152,14 @@ export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }:
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); startEdit(note); }}
-                      className="p-2 bg-bg-main/80 backdrop-blur-sm border border-border-ui/50 text-text-secondary hover:text-accent rounded-xl transition-all shadow-sm"
+                      className="p-2 bg-bg-main/80 backdrop-blur-sm border border-border-ui/50 text-text-secondary hover:text-accent rounded-lg transition-all shadow-sm"
                       title="Edit catatan"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); onDelete(note.id); }}
-                      className="p-2 bg-bg-main/80 backdrop-blur-sm border border-border-ui/50 text-text-secondary hover:text-danger hover:bg-danger/10 rounded-xl transition-all shadow-sm"
+                      className="p-2 bg-bg-main/80 backdrop-blur-sm border border-border-ui/50 text-text-secondary hover:text-danger hover:bg-danger/10 rounded-lg transition-all shadow-sm"
                       title="Hapus catatan"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -207,13 +206,13 @@ export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }:
 
       {/* Add Note Modal */}
       {showAdd && (
-        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex sm:p-4 overflow-y-auto">
           <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm hidden sm:block" 
             onClick={() => setShowAdd(false)} 
           />
           <div 
-            className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-md p-6 mt-4 sm:mt-0 z-10"
+            className="relative bg-card-bg sm:rounded-lg border border-border-ui shadow-2xl w-full min-h-full sm:min-h-0 sm:max-w-md p-6 sm:m-auto z-10"
           >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-black text-text-primary">Tulis Catatan</h3>
@@ -241,13 +240,13 @@ export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }:
                 onChange={e => setNewContent(e.target.value)}
                 placeholder="Tulis catatan keuangan Anda..."
                 rows={6}
-                className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm text-text-primary font-medium transition-all resize-none"
+                className="w-full p-3 bg-bg-main rounded-lg border border-border-ui focus:border-accent outline-none text-sm text-text-primary font-medium transition-all resize-none"
                 onKeyDown={e => e.ctrlKey && e.key === 'Enter' && handleAdd()}
               />
 
               <p className="text-[10px] text-text-secondary">Tekan Ctrl+Enter untuk menyimpan</p>
 
-              <button onClick={handleAdd} disabled={!newContent.trim()} className="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50">
+              <button onClick={handleAdd} disabled={!newContent.trim()} className="w-full py-3 bg-linear-to-r from-accent to-secondary text-white rounded-lg font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50">
                 Simpan Catatan
               </button>
             </div>
@@ -256,13 +255,13 @@ export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }:
         )}
 
       {editingNote && (
-        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex sm:p-4 overflow-y-auto">
           <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm hidden sm:block" 
             onClick={() => setEditingNote(null)} 
           />
           <div 
-            className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-md p-6 mt-4 sm:mt-0 z-10"
+            className="relative bg-card-bg sm:rounded-lg border border-border-ui shadow-2xl w-full min-h-full sm:min-h-0 sm:max-w-md p-6 sm:m-auto z-10"
           >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-black text-text-primary">Edit Catatan</h3>
@@ -290,13 +289,13 @@ export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }:
                 onChange={e => setEditContent(e.target.value)}
                 placeholder="Tulis catatan keuangan Anda..."
                 rows={6}
-                className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm text-text-primary font-medium transition-all resize-none"
+                className="w-full p-3 bg-bg-main rounded-lg border border-border-ui focus:border-accent outline-none text-sm text-text-primary font-medium transition-all resize-none"
                 onKeyDown={e => e.ctrlKey && e.key === 'Enter' && handleUpdate()}
               />
 
               <p className="text-[10px] text-text-secondary">Tekan Ctrl+Enter untuk menyimpan</p>
 
-              <button onClick={handleUpdate} disabled={!editContent.trim()} className="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50">
+              <button onClick={handleUpdate} disabled={!editContent.trim()} className="w-full py-3 bg-linear-to-r from-accent to-secondary text-white rounded-lg font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50">
                 Simpan Perubahan
               </button>
             </div>

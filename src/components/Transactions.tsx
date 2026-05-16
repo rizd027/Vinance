@@ -4,11 +4,13 @@ import {
   Calendar as CalendarIcon, List as ListIcon, ChevronLeft, ChevronRight,
   ArrowUpRight, ArrowDownRight, Utensils, Car, ShoppingBag, Receipt,
   Gamepad2, HeartPulse, Wallet, Settings2, SlidersHorizontal, ChevronDown,
-  ArrowUpDown, FileDown, FileUp, TrendingUp
+  ArrowUpDown, FileDown, FileUp, TrendingUp, Mic, Camera, Loader2
 } from 'lucide-react';
+import { aiService } from '../lib/ai';
 import { Transaction } from '../types';
 import { formatCurrency, cn, formatInputNumber, parseInputNumber } from '../lib/utils';
 import ExportImportModal from './ExportImportModal';
+import { createPortal } from 'react-dom';
 import DatePicker from './UI/DatePicker';
 
 const CATEGORY_ICONS: Record<string, any> = {
@@ -42,7 +44,6 @@ import {
   isToday
 } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface TransactionsProps {
   transactions: Transaction[];
@@ -187,7 +188,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
     : ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Lainnya'];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Title Header */}
       <div className="flex flex-col gap-1 lg:hidden mb-2">
         <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Riwayat Transaksi</h2>
@@ -206,14 +207,14 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
               placeholder="Cari transaksi..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 rounded-2xl border border-border-ui bg-card-bg text-xs text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all placeholder:text-text-secondary/50 shadow-sm"
+              className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-border-ui bg-card-bg text-xs text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all placeholder:text-text-secondary/50 shadow-sm"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setShowFilters(true)}
               className={cn(
-                "flex items-center justify-center gap-2 px-4 h-10 rounded-2xl border transition-all font-bold text-xs",
+                "flex items-center justify-center gap-2 px-4 h-10 rounded-lg border transition-all font-bold text-xs",
                 filterType !== 'All' || filterCategory || sortOrder !== 'date-desc'
                   ? "bg-accent text-white border-accent shadow-lg shadow-accent/20"
                   : "bg-card-bg border-border-ui text-text-secondary hover:bg-bg-main shadow-sm"
@@ -224,7 +225,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center justify-center w-10 h-10 bg-linear-to-r from-accent to-secondary text-white rounded-2xl shadow-lg shadow-accent/20 hover:scale-[1.05] active:scale-[0.95] transition-all"
+              className="flex items-center justify-center w-10 h-10 bg-linear-to-r from-accent to-secondary text-white rounded-lg shadow-lg shadow-accent/20 hover:scale-[1.05] active:scale-[0.95] transition-all"
               title="Tambah Transaksi"
             >
               <Plus className="w-5 h-5" />
@@ -234,22 +235,22 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
 
         {/* Unified Filter & Settings Modal */}
         {showFilters && (
-          <div className="fixed inset-0 z-[60] flex p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-[60] flex sm:p-4 overflow-y-auto">
             <div
               onClick={() => setShowFilters(false)}
-              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden sm:block"
             />
             <div
-              className="relative w-full max-w-sm md:max-w-2xl bg-card-bg rounded-[32px] p-6 md:p-8 shadow-2xl border border-border-ui m-auto z-10"
+              className="relative w-full min-h-full sm:min-h-0 sm:max-w-2xl bg-card-bg sm:rounded-lg p-6 md:p-8 shadow-2xl border-border-ui sm:m-auto z-10"
             >
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+                  <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
                     <Filter className="w-4 h-4" />
                   </div>
                   <h3 className="text-lg font-black text-text-primary">Filter & Opsi</h3>
                 </div>
-                <button onClick={() => setShowFilters(false)} className="p-2 hover:bg-bg-main rounded-xl transition-colors">
+                <button onClick={() => setShowFilters(false)} className="p-2 hover:bg-bg-main rounded-lg transition-colors">
                   <X className="w-5 h-5 text-text-secondary" />
                 </button>
               </div>
@@ -258,11 +259,11 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                 {/* View Mode Toggle */}
                 <div className="space-y-3">
                   <label className="block text-[10px] font-black text-text-secondary uppercase tracking-widest px-1">Tampilan</label>
-                  <div className="flex bg-bg-main p-1 rounded-2xl border border-border-ui">
+                  <div className="flex bg-bg-main p-1 rounded-lg border border-border-ui">
                     <button
                       onClick={() => setViewMode('list')}
                       className={cn(
-                        "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2",
+                        "flex-1 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2",
                         viewMode === 'list' ? 'bg-card-bg text-accent shadow-sm border border-border-ui/50' : 'text-text-secondary'
                       )}
                     >
@@ -271,7 +272,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                     <button
                       onClick={() => setViewMode('calendar')}
                       className={cn(
-                        "flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2",
+                        "flex-1 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2",
                         viewMode === 'calendar' ? 'bg-card-bg text-accent shadow-sm border border-border-ui/50' : 'text-text-secondary'
                       )}
                     >
@@ -293,7 +294,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                         key={t.id}
                         onClick={() => setFilterType(t.id as any)}
                         className={cn(
-                          "py-2.5 rounded-xl text-[10px] font-bold border transition-all",
+                          "py-2.5 rounded-lg text-[10px] font-bold border transition-all",
                           filterType === t.id
                             ? 'bg-accent/10 border-accent/40 text-accent'
                             : 'bg-bg-main border-border-ui text-text-secondary hover:border-accent/20'
@@ -319,7 +320,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                         key={s.id}
                         onClick={() => setSortOrder(s.id as any)}
                         className={cn(
-                          "py-2.5 px-3 rounded-xl text-[10px] font-bold border transition-all flex items-center gap-2",
+                          "py-2.5 px-3 rounded-lg text-[10px] font-bold border transition-all flex items-center gap-2",
                           sortOrder === s.id
                             ? 'bg-accent/10 border-accent/40 text-accent'
                             : 'bg-bg-main border-border-ui text-text-secondary hover:border-accent/20'
@@ -340,7 +341,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                     onChange={setFilterCategory}
                     options={allAvailableCategories}
                     placeholder="Semua Kategori"
-                    className="rounded-2xl border-border-ui"
+                    className="rounded-lg border-border-ui"
                   />
                 </div>
               </div>
@@ -350,13 +351,13 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => { setShowExportModal(true); setShowFilters(false); }}
-                    className="flex items-center justify-center gap-2 py-3 bg-bg-main border border-border-ui rounded-2xl text-[10px] font-black text-text-primary hover:bg-border-ui transition-all"
+                    className="flex items-center justify-center gap-2 py-3 bg-bg-main border border-border-ui rounded-lg text-[10px] font-black text-text-primary hover:bg-border-ui transition-all"
                   >
                     <FileDown className="w-4 h-4 text-accent" /> EXPORT
                   </button>
                   <button
                     onClick={() => { setShowExportModal(true); setShowFilters(false); }}
-                    className="flex items-center justify-center gap-2 py-3 bg-bg-main border border-border-ui rounded-2xl text-[10px] font-black text-text-primary hover:bg-border-ui transition-all"
+                    className="flex items-center justify-center gap-2 py-3 bg-bg-main border border-border-ui rounded-lg text-[10px] font-black text-text-primary hover:bg-border-ui transition-all"
                   >
                     <FileUp className="w-4 h-4 text-secondary" /> IMPORT
                   </button>
@@ -365,13 +366,13 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                 <div className="flex gap-2">
                   <button
                     onClick={clearFilters}
-                    className="flex-1 py-4 bg-bg-main text-text-secondary rounded-2xl text-xs font-black hover:bg-danger/5 hover:text-danger transition-all border border-border-ui"
+                    className="flex-1 py-4 bg-bg-main text-text-secondary rounded-lg text-xs font-black hover:bg-danger/5 hover:text-danger transition-all border border-border-ui"
                   >
                     RESET
                   </button>
                   <button
                     onClick={() => setShowFilters(false)}
-                    className="flex-[2] py-4 bg-linear-to-r from-accent to-secondary text-white rounded-2xl text-xs font-black shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all"
+                    className="flex-[2] py-4 bg-linear-to-r from-accent to-secondary text-white rounded-lg text-xs font-black shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all"
                   >
                     TERAPKAN
                   </button>
@@ -390,16 +391,16 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
       />
 
       {viewMode === 'list' ? (
-        <div className="bg-card-bg rounded-xl border border-border-ui overflow-hidden shadow-sm transition-colors">
+        <div className="bg-card-bg rounded-lg border border-border-ui overflow-hidden shadow-sm transition-colors">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead>
                 <tr className="bg-bg-main text-text-secondary border-b border-border-ui transition-colors text-[9px] font-bold uppercase tracking-widest">
-                  <th className="px-4 py-3">Tanggal</th>
-                  <th className="px-4 py-3">Kategori</th>
-                  <th className="px-4 py-3">Keterangan</th>
-                  <th className="px-4 py-3 text-right">Jumlah</th>
-                  <th className="px-4 py-3 text-center w-16">Aksi</th>
+                  <th className="px-4 py-2">Tanggal</th>
+                  <th className="px-4 py-2">Kategori</th>
+                  <th className="px-4 py-2">Keterangan</th>
+                  <th className="px-4 py-2 text-right">Jumlah</th>
+                  <th className="px-4 py-2 text-center w-16">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-ui">
@@ -407,7 +408,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center gap-3">
-                        <div className="w-12 h-12 bg-bg-main rounded-2xl flex items-center justify-center text-text-secondary/30">
+                        <div className="w-12 h-12 bg-bg-main rounded-lg flex items-center justify-center text-text-secondary/30">
                           <Search className="w-6 h-6" />
                         </div>
                         <div>
@@ -428,7 +429,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                 ) : (
                   filteredTransactions.map((t) => (
                     <tr key={t.id} className="hover:bg-bg-main transition-colors group">
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-4 py-2 whitespace-nowrap">
                         <div className="flex flex-col">
                           <span className="text-[10px] font-medium text-text-primary">
                             {new Date(t.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -438,10 +439,10 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2">
                         <div className="flex items-center gap-2">
                           <div className={cn(
-                            "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                            "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm",
                             t.type === 'Income' ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
                           )}>
                             {React.createElement(getCategoryIcon(t.category), { className: "w-4 h-4" })}
@@ -449,9 +450,9 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                           <span className="text-[10px] font-bold text-text-primary uppercase tracking-tight">{t.category}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-[10px] text-text-secondary italic max-w-[120px] truncate">{t.note || '-'}</td>
+                      <td className="px-4 py-2 text-[10px] text-text-secondary italic max-w-[120px] truncate">{t.note || '-'}</td>
                       <td className={cn(
-                        "px-4 py-3 text-right text-xs font-bold tracking-tight currency-font",
+                        "px-4 py-2 text-right text-xs font-bold tracking-tight currency-font",
                         t.type === 'Income' ? "text-success" : "text-danger"
                       )}>
                         <div className="flex items-center justify-end gap-1">
@@ -460,7 +461,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                         </div>
                       </td>
 
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-4 py-2 text-center">
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleEditClick(t)}
@@ -488,7 +489,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
       ) : (
         <div className="space-y-4">
           {/* Calendar View */}
-          <div className="bg-card-bg rounded-2xl border border-border-ui overflow-hidden shadow-sm">
+          <div className="bg-card-bg rounded-lg border border-border-ui overflow-hidden shadow-sm">
             <div className="p-4 border-b border-border-ui flex items-center justify-between bg-bg-main/20">
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-widest">
                 {format(currentMonth, 'MMMM yyyy', { locale: localeId })}
@@ -578,7 +579,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
 
           {/* Selected Date Details */}
           {selectedDate && (
-            <div className="bg-card-bg rounded-2xl border border-border-ui overflow-hidden shadow-lg">
+            <div className="bg-card-bg rounded-lg border border-border-ui overflow-hidden shadow-lg">
               <div className="p-3 border-b border-border-ui bg-bg-main/20 flex justify-between items-center">
                 <h4 className="text-[10px] font-bold text-text-primary uppercase tracking-widest">
                   Transaksi {format(selectedDate, 'dd MMMM yyyy', { locale: localeId })}
@@ -615,10 +616,10 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
                             {t.type === 'Income' ? '+' : '-'}{formatCurrency(t.amount)}
                           </span>
                           <div className="flex items-center gap-1.5">
-                            <button onClick={() => handleEditClick(t)} className="p-2.5 text-text-secondary/40 hover:text-accent hover:bg-accent/10 rounded-xl transition-all">
+                            <button onClick={() => handleEditClick(t)} className="p-2.5 text-text-secondary/40 hover:text-accent hover:bg-accent/10 rounded-lg transition-all">
                               <Edit2 className="w-4 h-4" />
                             </button>
-                            <button onClick={() => onDelete(t.id)} className="p-2.5 text-text-secondary/40 hover:text-danger hover:bg-danger/10 rounded-xl transition-all">
+                            <button onClick={() => onDelete(t.id)} className="p-2.5 text-text-secondary/40 hover:text-danger hover:bg-danger/10 rounded-lg transition-all">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
@@ -647,12 +648,122 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
 // --- SUB-COMPONENTS TO PREVENT LAG ---
 
 const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, initialData }: any) => {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const [type, setType] = useState<'Income' | 'Expense'>('Expense');
   const [category, setCategory] = useState('');
   const [customCategory, setCustomCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(new Date().toISOString());
+  const [isListening, setIsListening] = useState(false);
+  const [isProcessingAI, setIsProcessingAI] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const startVoiceInput = () => {
+    console.log("Voice Input Clicked");
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Browser Anda tidak mendukung Voice Input.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'id-ID';
+    recognition.onstart = () => {
+      console.log("Speech Recognition Started");
+      setIsListening(true);
+    };
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+    recognition.onresult = async (event: any) => {
+      const text = event.results[0][0].transcript;
+      if (!text) return;
+      
+      setIsProcessingAI(true);
+      try {
+        const result = await aiService.parseVoiceCommand(text);
+        if (result) {
+          setType(result.type);
+          
+          // Flexible category matching
+          const matchedCategory = categories.find(c => 
+            c.toLowerCase() === result.category.toLowerCase()
+          );
+          
+          if (matchedCategory) {
+            setCategory(matchedCategory);
+            setCustomCategory('');
+          } else {
+            setCategory('Lainnya');
+            setCustomCategory(result.category);
+          }
+          setAmount(formatInputNumber(result.amount.toString()));
+          setNote(result.note);
+        } else {
+          alert("AI gagal memproses suara Anda. Silakan coba lagi.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan saat menghubungi AI.");
+      } finally {
+        setIsProcessingAI(false);
+      }
+    };
+    recognition.start();
+  };
+
+  const handleReceiptScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Receipt Scan Triggered");
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Check file size (Groq limit is 20MB, but let's keep it smaller for speed)
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Ukuran gambar terlalu besar. Maksimal 10MB.");
+      return;
+    }
+
+    setIsProcessingAI(true);
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        const base64 = reader.result as string;
+        const result = await aiService.scanReceipt(base64);
+        if (result) {
+          setType(result.type);
+          
+          const matchedCategory = categories.find(c => 
+            c.toLowerCase() === result.category.toLowerCase()
+          );
+
+          if (matchedCategory) {
+            setCategory(matchedCategory);
+            setCustomCategory('');
+          } else {
+            setCategory('Lainnya');
+            setCustomCategory(result.category);
+          }
+          setAmount(formatInputNumber(result.amount.toString()));
+          setNote(result.note);
+        } else {
+          alert("AI gagal menganalisis struk. Pastikan gambar jelas.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan saat memproses gambar.");
+      } finally {
+        setIsProcessingAI(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     if (initialData) {
@@ -714,64 +825,70 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
     ? ['Gaji', 'Bonus', 'Investasi', 'Lainnya']
     : ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Lainnya'];
 
-  return (
-    <div className="fixed inset-0 z-50 flex p-4 overflow-y-auto">
-        <div
-          onClick={onClose}
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
-        />
-        <div 
-          className="relative w-full max-w-md bg-card-bg rounded-2xl p-6 sm:p-8 shadow-2xl border border-border-ui transition-colors mt-4 mx-auto mb-auto z-10"
-        >
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-text-primary">{editId ? 'Edit Transaksi' : 'Catat Transaksi Baru'}</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-text-primary p-1">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex flex-col overflow-y-auto bg-card-bg">
+          <div 
+            className="relative w-full flex-1 flex flex-col items-center py-12 px-6 md:px-12 lg:px-24"
+          >
+            <div className="w-full max-w-4xl">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h3 className="text-xl md:text-2xl font-black text-text-primary tracking-tight">{editId ? 'Edit Transaksi' : 'Catat Transaksi Baru'}</h3>
+            <div className="flex items-center gap-2 mt-1.5">
+              <div className={cn("w-2 h-2 rounded-full", isListening ? "bg-accent animate-pulse" : (isProcessingAI ? "bg-accent/40" : "bg-border-ui"))} />
+              <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">
+                {isListening ? 'Mendengarkan...' : (isProcessingAI ? 'AI sedang memproses...' : 'Input Data Manual atau AI')}
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-10 h-10 rounded-lg bg-bg-main flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger/5 transition-all">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex bg-bg-main p-1 rounded-lg transition-colors">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="flex bg-bg-main p-1.5 rounded-lg border border-border-ui/50 transition-colors">
             <button
               type="button"
               onClick={() => setType('Expense')}
               className={cn(
-                "flex-1 py-2 rounded-md text-xs font-bold transition-all",
-                type === 'Expense' ? 'bg-card-bg text-danger shadow-sm' : 'text-text-secondary'
+                "flex-1 py-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-2",
+                type === 'Expense' ? 'bg-card-bg text-danger shadow-sm border border-border-ui/30' : 'text-text-secondary hover:text-text-primary'
               )}
             >
-              Pengeluaran
+              <ArrowDownRight className="w-4 h-4" /> Pengeluaran
             </button>
             <button
               type="button"
               onClick={() => setType('Income')}
               className={cn(
-                "flex-1 py-2 rounded-md text-xs font-bold transition-all",
-                type === 'Income' ? 'bg-card-bg text-success shadow-sm' : 'text-text-secondary'
+                "flex-1 py-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-2",
+                type === 'Income' ? 'bg-card-bg text-success shadow-sm border border-border-ui/30' : 'text-text-secondary hover:text-text-primary'
               )}
             >
-              Pemasukan
+              <ArrowUpRight className="w-4 h-4" /> Pemasukan
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-text-secondary mb-1 uppercase">Kategori</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-text-secondary mb-1 uppercase tracking-widest px-1">Kategori</label>
               <CustomSelect
                 required
                 value={category}
                 onChange={setCategory}
                 options={categories}
                 placeholder="Pilih Kategori"
+                className="h-[52px] rounded-lg border-border-ui/60"
               />
               {category === 'Lainnya' && (
-                <div className="mt-3">
+                <div className="mt-3 animate-in fade-in slide-in-from-top-1 duration-300">
                   <input
                     type="text"
                     required
                     value={customCategory}
                     onChange={(e) => setCustomCategory(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border border-border-ui bg-card-bg text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-colors"
+                    className="w-full h-[52px] px-4 rounded-lg border border-border-ui bg-card-bg text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-all shadow-inner"
                     placeholder="Ketik kategori kustom..."
                     autoFocus
                   />
@@ -779,50 +896,93 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
               )}
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-text-secondary mb-1 uppercase">Jumlah (Rp)</label>
-              <input
-                type="text"
-                required
-                value={amount}
-                onChange={(e) => setAmount(formatInputNumber(e.target.value))}
-                className="w-full px-4 py-2.5 rounded-lg border border-border-ui bg-card-bg text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-colors"
-                placeholder="0"
-                inputMode="decimal"
-              />
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-text-secondary mb-1 uppercase tracking-widest px-1">Jumlah (RP)</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-text-secondary/50 group-focus-within:text-accent transition-colors">Rp</div>
+                <input
+                  type="text"
+                  required
+                  value={amount}
+                  onChange={(e) => setAmount(formatInputNumber(e.target.value))}
+                  className="w-full h-[52px] pl-10 pr-4 rounded-lg border border-border-ui bg-card-bg text-text-primary font-bold outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-all shadow-inner"
+                  placeholder="0"
+                  inputMode="decimal"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-text-secondary mb-1 uppercase">Keterangan</label>
-              <input
-                type="text"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-border-ui bg-card-bg text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-colors"
-                placeholder="Contoh: Belanja bulanan"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-text-secondary mb-1 uppercase">Tanggal</label>
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-text-secondary mb-1 uppercase tracking-widest px-1">Tanggal Transaksi</label>
               <DatePicker 
                 value={date} 
                 onChange={setDate} 
                 placeholder="Pilih Tanggal"
-                className="w-full"
-                dropUp
+                className="w-full h-[52px] rounded-lg border-border-ui/60"
+                dropUp={!isMobile}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-text-secondary mb-1 uppercase tracking-widest px-1">Keterangan (Opsional)</label>
+              <input
+                type="text"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="w-full h-[52px] px-4 rounded-lg border border-border-ui bg-card-bg text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-all shadow-inner"
+                placeholder="Contoh: Belanja bulanan ke pasar"
               />
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-linear-to-r from-accent to-secondary text-white py-3.5 rounded-lg font-bold shadow-lg shadow-accent/20 mt-4 hover:shadow-accent/30 active:scale-[0.98] transition-all"
-          >
-            {editId ? 'Simpan Perubahan' : 'Simpan Transaksi'}
-          </button>
+          <div className="flex flex-col sm:flex-row items-center gap-3 pt-4">
+            <button
+              type="submit"
+              className="w-full sm:flex-1 bg-linear-to-r from-accent to-secondary text-white h-[56px] rounded-lg font-black text-sm shadow-xl shadow-accent/20 hover:shadow-accent/30 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+            >
+              {editId ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {editId ? 'SIMPAN PERUBAHAN' : 'SIMPAN TRANSAKSI'}
+            </button>
+            {!editId && (
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <button 
+                  type="button" 
+                  onClick={startVoiceInput} 
+                  disabled={isProcessingAI}
+                  className={cn(
+                    "h-[56px] flex-1 sm:flex-none px-6 rounded-lg transition-all border flex items-center justify-center gap-2 group",
+                    isListening ? "bg-accent/20 border-accent text-accent animate-pulse" : "bg-bg-main border-border-ui text-text-secondary hover:text-accent hover:border-accent/40"
+                  )}
+                  title="Voice Input"
+                >
+                  <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-black sm:hidden uppercase">Voice</span>
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => fileInputRef.current?.click()} 
+                  disabled={isProcessingAI}
+                  className="h-[56px] flex-1 sm:flex-none px-6 rounded-lg bg-bg-main border border-border-ui text-text-secondary hover:text-accent hover:border-accent/40 transition-all flex items-center justify-center gap-2 group"
+                  title="Scan Struk"
+                >
+                  {isProcessingAI ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+                  <span className="text-[10px] font-black sm:hidden uppercase">Scan</span>
+                </button>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleReceiptScan} 
+                  accept="image/*" 
+                  className="hidden" 
+                  capture="environment"
+                />
+              </div>
+            )}
+          </div>
         </form>
           </div>
         </div>
-      );
+      </div>,
+      document.body
+    );
     });

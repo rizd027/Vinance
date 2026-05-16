@@ -9,7 +9,6 @@ import { formatCurrency, cn, formatInputNumber, parseInputNumber } from '../lib/
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import DatePicker from './UI/DatePicker';
-import { motion, AnimatePresence } from 'framer-motion';
 
 
 interface GoalsProps {
@@ -110,7 +109,7 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
         </div>
         <button
           onClick={openAdd}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl text-xs font-black shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-linear-to-r from-accent to-secondary text-white rounded-lg text-xs font-black shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
           <Plus className="w-4 h-4" />
           Tambah Tujuan
@@ -126,9 +125,9 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
             { label: 'Tujuan Tercapai', value: `${completedGoals} / ${goals.length}`, icon: <CheckCircle2 className="w-3.5 h-3.5" />, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
 
           ].map((s, i) => (
-            <div key={i} className="flex-shrink-0 w-[160px] sm:w-auto bg-card-bg p-4 rounded-2xl border border-border-ui shadow-sm hover:shadow-md transition-shadow">
+            <div key={i} className="flex-shrink-0 w-[160px] sm:w-auto bg-card-bg p-4 rounded-lg border border-border-ui shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-2.5 mb-2.5">
-                <div className={cn("p-2 rounded-xl", s.bg)}>
+                <div className={cn("p-2 rounded-lg", s.bg)}>
                   <span className={s.color}>{s.icon}</span>
                 </div>
                 <p className="text-[9px] font-black text-text-secondary uppercase tracking-[0.15em] truncate">{s.label}</p>
@@ -145,9 +144,9 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
       {/* Goals Grid */}
       {!goals || goals.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 gap-4">
-          <div className="w-20 h-20 rounded-[2rem] bg-accent/10 flex items-center justify-center text-4xl shadow-inner">🎯</div>
+          <div className="w-20 h-20 rounded-lg bg-accent/10 flex items-center justify-center text-4xl shadow-inner">🎯</div>
           <p className="text-sm font-bold text-text-secondary">Belum ada tujuan tabungan</p>
-          <button onClick={openAdd} className="px-6 py-3 bg-accent text-white rounded-2xl text-xs font-black shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+          <button onClick={openAdd} className="px-6 py-3 bg-accent text-white rounded-lg text-xs font-black shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
             + Buat Tujuan Pertama
           </button>
         </div>
@@ -162,7 +161,7 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
               return (
                 <div
                   key={goal.id}
-                  className="bg-card-bg rounded-[2rem] border border-border-ui overflow-hidden shadow-md hover:shadow-xl hover:border-accent/40 transition-all group"
+                  className="bg-card-bg rounded-lg border border-border-ui overflow-hidden shadow-md hover:shadow-xl hover:border-accent/40 transition-all group"
                 >
                   {/* Card Header */}
                   <div 
@@ -179,14 +178,14 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
                     </div>
 
                     <div className="flex justify-between items-start relative z-10">
-                      <div className="w-12 h-12 bg-black/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/20 shadow-inner">
+                      <div className="w-12 h-12 bg-black/10 backdrop-blur-md rounded-lg flex items-center justify-center text-white border border-white/20 shadow-inner">
                         {React.createElement(getIconById(goal.icon), { className: "w-6.5 h-6.5" })}
                       </div>
                       <div className="flex gap-1">
-                        <button onClick={() => openEdit(goal)} className="p-2.5 bg-black/10 hover:bg-black/20 rounded-xl transition-colors">
+                        <button onClick={() => openEdit(goal)} className="p-2.5 bg-black/10 hover:bg-black/20 rounded-lg transition-colors">
                           <Edit2 className="w-4 h-4 text-white" />
                         </button>
-                        <button onClick={() => onDelete(goal.id)} className="p-2.5 bg-black/10 hover:bg-red-600/40 rounded-xl transition-colors">
+                        <button onClick={() => onDelete(goal.id)} className="p-2.5 bg-black/10 hover:bg-red-600/40 rounded-lg transition-colors">
                           <Trash2 className="w-4 h-4 text-white" />
                         </button>
                       </div>
@@ -254,7 +253,7 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
                     {!isComplete && (
                       <button
                         onClick={() => setShowSavingsModal(goal)}
-                        className="w-full py-3 bg-linear-to-r from-accent to-secondary text-white rounded-xl text-[10px] font-black shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        className="w-full py-3 bg-linear-to-r from-accent to-secondary text-white rounded-lg text-[10px] font-black shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                       >
                         + TAMBAH TABUNGAN
                       </button>
@@ -267,13 +266,13 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
       )}
            {/* Add/Edit Goal Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex sm:p-4 overflow-y-auto">
           <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm hidden sm:block" 
             onClick={() => setShowModal(false)} 
           />
           <div 
-            className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-md p-6 mt-4 sm:mt-0 z-10"
+            className="relative bg-card-bg sm:rounded-lg border border-border-ui shadow-2xl w-full min-h-full sm:min-h-0 sm:max-w-md p-6 sm:m-auto z-10"
           >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-black text-text-primary">{editGoal ? 'Edit Tujuan' : 'Tambah Tujuan'}</h3>
@@ -292,7 +291,7 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
                       key={i.id} 
                       onClick={() => setForm(f => ({ ...f, icon: i.id }))} 
                       className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center transition-all", 
+                        "w-10 h-10 rounded-lg flex items-center justify-center transition-all", 
                         form.icon === i.id ? 'bg-accent/20 scale-110 ring-2 ring-accent text-accent' : 'bg-bg-main text-text-secondary hover:bg-border-ui hover:text-text-primary'
                       )}
                     >
@@ -321,7 +320,7 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
                       type="color" 
                       value={form.color} 
                       onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
-                      className="w-10 h-10 rounded-xl bg-bg-main border border-border-ui p-1 cursor-pointer"
+                      className="w-10 h-10 rounded-lg bg-bg-main border border-border-ui p-1 cursor-pointer"
                     />
                   </div>
                 </div>
@@ -329,17 +328,17 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
 
               <div>
                 <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Nama Tujuan</label>
-                <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Contoh: Tabungan Rumah" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
+                <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Contoh: Tabungan Rumah" className="w-full p-3 bg-bg-main rounded-lg border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Target (Rp)</label>
-                  <input type="text" value={form.targetAmount} onChange={e => setForm(f => ({ ...f, targetAmount: formatInputNumber(e.target.value) }))} placeholder="500.000.000" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
+                  <input type="text" value={form.targetAmount} onChange={e => setForm(f => ({ ...f, targetAmount: formatInputNumber(e.target.value) }))} placeholder="500.000.000" className="w-full p-3 bg-bg-main rounded-lg border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Sudah Terkumpul</label>
-                  <input type="text" value={form.savedAmount} onChange={e => setForm(f => ({ ...f, savedAmount: formatInputNumber(e.target.value) }))} placeholder="0" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
+                  <input type="text" value={form.savedAmount} onChange={e => setForm(f => ({ ...f, savedAmount: formatInputNumber(e.target.value) }))} placeholder="0" className="w-full p-3 bg-bg-main rounded-lg border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
                 </div>
               </div>
 
@@ -348,7 +347,7 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
                 <DatePicker value={form.deadline} onChange={v => setForm(f => ({ ...f, deadline: v }))} dropUp placeholder="dd/mm/yyyy" />
               </div>
 
-              <button onClick={handleSubmit} disabled={!form.name || !form.targetAmount} className="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100">
+              <button onClick={handleSubmit} disabled={!form.name || !form.targetAmount} className="w-full py-3 bg-linear-to-r from-accent to-secondary text-white rounded-lg font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100">
                 {editGoal ? 'Simpan Perubahan' : 'Tambah Tujuan'}
               </button>
             </div>
@@ -358,17 +357,17 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
 
       {/* Add Savings Modal */}
       {showSavingsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex sm:p-4 overflow-y-auto">
           <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm" 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm hidden sm:block" 
             onClick={() => setShowSavingsModal(null)} 
           />
           <div 
-            className="relative bg-card-bg rounded-3xl border border-border-ui shadow-2xl w-full max-w-sm p-6 z-10"
+            className="relative bg-card-bg sm:rounded-lg border border-border-ui shadow-2xl w-full min-h-full sm:min-h-0 sm:max-w-sm p-6 sm:m-auto z-10"
           >
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: showSavingsModal.color }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-lg" style={{ backgroundColor: showSavingsModal.color }}>
                   {React.createElement(getIconById(showSavingsModal.icon), { className: "w-5 h-5" })}
                 </div>
                 <div>
@@ -381,8 +380,8 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
               </button>
             </div>
             <div className="space-y-4">
-              <input type="text" value={savingsAmount} onChange={e => setSavingsAmount(formatInputNumber(e.target.value))} placeholder="Masukkan jumlah (Rp)" className="w-full p-3 bg-bg-main rounded-xl border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" autoFocus />
-              <button onClick={handleAddSavings} disabled={!savingsAmount || Number(savingsAmount) <= 0} className="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-2xl font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50">
+              <input type="text" value={savingsAmount} onChange={e => setSavingsAmount(formatInputNumber(e.target.value))} placeholder="Masukkan jumlah (Rp)" className="w-full p-3 bg-bg-main rounded-lg border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" autoFocus />
+              <button onClick={handleAddSavings} disabled={!savingsAmount || Number(savingsAmount) <= 0} className="w-full py-3 bg-linear-to-r from-accent to-secondary text-white rounded-lg font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50">
                 Tambah {savingsAmount ? formatCurrency(Number(savingsAmount)) : ''}
               </button>
             </div>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Home, List, PieChart, Target, User, LogOut, Moon, Sun, Plus, RefreshCw, TrendingUp, Wallet, StickyNote, Flag, Cloud, CloudOff, LayoutGrid, X, Bell, AlertCircle, CheckCircle2, AlertOctagon, AlertTriangle, Info } from 'lucide-react';
 
 import { cn, formatCurrency } from '../lib/utils';
@@ -86,29 +85,34 @@ export default function Layout({
     <div className="h-screen bg-bg-main flex overflow-hidden relative" onClick={() => setShowNotifications(false)}>
 
       {/* Sidebar for Desktop */}
-      <aside className="hidden lg:flex w-64 bg-sidebar-bg flex-col sticky top-0 h-screen border-r border-sidebar-border transition-colors overflow-hidden z-40">
-        <div className="px-6 py-6 border-b border-sidebar-border/30 flex items-center gap-3">
+      <aside 
+        className={cn(
+          "hidden lg:flex flex-col sticky top-0 h-screen border-r border-sidebar-border transition-all duration-500 ease-in-out z-40 bg-sidebar-bg group/sidebar overflow-hidden",
+          "w-20 hover:w-64"
+        )}
+      >
+        <div className="px-5 py-6 border-b border-sidebar-border/30 flex items-center gap-4 h-[89px] shrink-0">
           <button
             onClick={() => setActiveTab('home')}
-            className="flex items-center gap-3.5 flex-1 hover:bg-sidebar-text-primary/5 transition-colors text-left group rounded-xl -ml-2 pl-2 py-1"
+            className="flex items-center gap-3.5 flex-1 hover:bg-sidebar-text-primary/5 transition-colors text-left group rounded-lg -ml-1 pl-1 py-1"
           >
             <div className="relative flex-shrink-0">
-              <div className="absolute -inset-2 bg-accent/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition duration-500" />
-              <div className="relative w-11 h-11 bg-white dark:bg-slate-50 rounded-2xl flex items-center justify-center shadow-xl border border-slate-200 dark:border-accent/10 p-1.5 transition-transform group-hover:scale-105 duration-300">
+              <div className="absolute -inset-2 bg-accent/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 transition duration-500" />
+              <div className="relative w-10 h-10 bg-white dark:bg-slate-50 rounded-lg flex items-center justify-center shadow-xl border border-slate-200 dark:border-accent/10 p-1.5 transition-transform group-hover:scale-105 duration-300">
                 <img src="/Logo-Vinance.png" alt="Vinance Logo" className="w-full h-full object-contain" />
               </div>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">
               <span className="text-xl font-black tracking-tight text-sidebar-text-primary leading-none" style={{ textShadow: isDark ? '0 0 20px rgba(5, 150, 105, 0.4)' : 'none' }}>
                 Vinance
               </span>
               <div className="flex items-center gap-1.5 mt-1">
-                <span className="h-[1.5px] w-3 bg-gradient-to-r from-accent to-secondary rounded-full" />
+                <span className="h-[1.5px] w-3 bg-linear-to-r from-accent to-secondary rounded-full" />
                 <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-secondary/80">Ecosystem</span>
               </div>
             </div>
           </button>
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">
             {syncing ? (
               <RefreshCw className="w-3.5 h-3.5 text-accent animate-spin" />
             ) : (
@@ -117,47 +121,30 @@ export default function Layout({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar py-6 px-4 space-y-8">
-          {/* User Section */}
-          <div
-            className={cn("p-3.5 rounded-[22px] bg-bg-main/40 border border-border-ui/40 flex items-center gap-3.5 cursor-pointer hover:border-accent/40 hover:bg-bg-main/60 transition-all group shadow-sm", isPending && "opacity-70")}
-            onClick={() => handleTabClick('profile')}
-
-          >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-accent to-secondary p-[1.5px] flex-shrink-0 shadow-md transition-transform group-hover:rotate-3">
-              <div className="w-full h-full bg-sidebar-bg rounded-[14.5px] flex items-center justify-center overflow-hidden">
-                {user.photoUrl ? (
-                  <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-sm font-black text-accent">{user.name[0].toUpperCase()}</span>
-                )}
-              </div>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-sidebar-text-primary truncate">{user.name}</p>
-              <p className="text-[10px] text-sidebar-text-secondary/70 truncate font-medium">{user.email}</p>
-            </div>
-          </div>
+        <div className="flex-1 overflow-y-auto no-scrollbar py-6 px-3.5 space-y-8">
 
           {/* Navigation Section */}
           <div className="space-y-1.5">
-            <p className="px-4 mb-3 text-[10px] font-medium uppercase tracking-[0.2em] text-text-secondary/40">Menu Utama</p>
+            <p className="px-3.5 mb-3 text-[10px] font-medium uppercase tracking-[0.2em] text-text-secondary/40 whitespace-nowrap opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300">Menu Utama</p>
             <nav className="space-y-1">
               {mainTabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => handleTabClick(tab.id)}
                   className={cn(
-                    "w-full flex items-center gap-3.5 px-4 py-3 text-sm transition-all rounded-[18px] font-bold relative group",
+                    "w-full flex items-center gap-3.5 px-3.5 py-3 text-sm transition-all rounded-lg font-bold relative group",
                     activeTab === tab.id
                       ? "text-accent bg-accent/10 shadow-inner"
                       : "text-sidebar-text-secondary hover:text-sidebar-text-primary hover:bg-bg-main/40"
                   )}
                 >
-                  <tab.icon className={cn("w-4.5 h-4.5 transition-all duration-300", activeTab === tab.id ? "scale-110" : "group-hover:translate-x-0.5")} />
-                  <span className="flex-1 text-left tracking-wide">{tab.label}</span>
+                  <tab.icon className={cn("w-5 h-5 shrink-0 transition-all duration-300", activeTab === tab.id ? "scale-110" : "group-hover:translate-x-0.5")} />
+                  <span className="flex-1 text-left tracking-wide opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">{tab.label}</span>
                   {tab.id === 'transactions' && transactionBadge && (
-                    <span className="flex-shrink-0 w-5 h-5 bg-gradient-to-r from-accent to-secondary text-white text-[10px] font-bold rounded-lg flex items-center justify-center shadow-lg shadow-accent/20">
+                    <span className={cn(
+                      "flex-shrink-0 w-5 h-5 bg-linear-to-r from-accent to-secondary text-white text-[10px] font-bold rounded-lg flex items-center justify-center shadow-lg shadow-accent/20 transition-all",
+                      "group-hover/sidebar:scale-100 scale-0 group-hover/sidebar:opacity-100 opacity-0"
+                    )}>
                       {transactionBadge}
                     </span>
                   )}
@@ -168,27 +155,27 @@ export default function Layout({
         </div>
 
         {/* Footer Section */}
-        <div className="p-4 border-t border-sidebar-border/30 space-y-1">
+        <div className="p-3.5 border-t border-sidebar-border/30 space-y-1 shrink-0">
           <button
             onClick={() => handleTabClick('profile')}
             className={cn(
-              "w-full flex items-center gap-3.5 px-4 py-3 text-sm transition-all rounded-[18px] font-medium group",
+              "w-full flex items-center gap-3.5 px-3.5 py-3 text-sm transition-all rounded-lg font-medium group",
               activeTab === 'profile'
                 ? "text-accent bg-accent/10 shadow-inner"
                 : "text-sidebar-text-secondary hover:text-sidebar-text-primary hover:bg-bg-main/40"
             )}
           >
-            <User className={cn("w-4.5 h-4.5 transition-all", activeTab === 'profile' && "scale-110")} />
-            <span className="tracking-wide">Profil Saya</span>
+            <User className={cn("w-5 h-5 shrink-0 transition-all", activeTab === 'profile' && "scale-110")} />
+            <span className="tracking-wide opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">Profil Saya</span>
           </button>
           <button
             onClick={onLogout}
-            className="w-full flex items-center gap-3.5 px-4 py-3 text-sm font-medium text-danger/80 hover:text-danger hover:bg-danger/5 transition-all rounded-[18px] group"
+            className="w-full flex items-center gap-3.5 px-3.5 py-3 text-sm font-medium text-danger/80 hover:text-danger hover:bg-danger/5 transition-all rounded-lg group"
           >
-            <div className="w-4.5 h-4.5 flex items-center justify-center transition-transform group-hover:-translate-x-0.5">
-              <LogOut className="w-4.5 h-4.5" />
+            <div className="w-5 h-5 shrink-0 flex items-center justify-center transition-transform group-hover:-translate-x-0.5">
+              <LogOut className="w-5 h-5" />
             </div>
-            <span className="tracking-wide">Keluar Sesi</span>
+            <span className="tracking-wide opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 whitespace-nowrap">Keluar Sesi</span>
           </button>
         </div>
       </aside>
@@ -202,12 +189,12 @@ export default function Layout({
             <div 
               className={cn(
                 "absolute inset-0 transition-all duration-700",
-                wallpaper === 'sunset' && "bg-gradient-to-br from-orange-400/10 to-rose-500/15",
-                wallpaper === 'ocean' && "bg-gradient-to-br from-blue-600/10 to-cyan-500/15",
-                wallpaper === 'forest' && "bg-gradient-to-br from-emerald-600/10 to-teal-500/15",
-                wallpaper === 'royal' && "bg-gradient-to-br from-violet-600/10 to-fuchsia-500/15",
-                wallpaper === 'midnight' && "bg-gradient-to-br from-slate-800/20 to-slate-900/30",
-                wallpaper === 'aurora' && "bg-gradient-to-tr from-green-300/10 via-blue-500/10 to-purple-600/15",
+                wallpaper === 'sunset' && "bg-linear-to-br from-orange-400/10 to-rose-500/15",
+                wallpaper === 'ocean' && "bg-linear-to-br from-blue-600/10 to-cyan-500/15",
+                wallpaper === 'forest' && "bg-linear-to-br from-emerald-600/10 to-teal-500/15",
+                wallpaper === 'royal' && "bg-linear-to-br from-violet-600/10 to-fuchsia-500/15",
+                wallpaper === 'midnight' && "bg-linear-to-br from-slate-800/20 to-slate-900/30",
+                wallpaper === 'aurora' && "bg-linear-to-tr from-green-300/10 via-blue-500/10 to-purple-600/15",
                 wallpaper === 'mesh' && "bg-[radial-gradient(at_top_left,_var(--tw-gradient-stops))] from-yellow-200/5 via-emerald-200/5 to-yellow-200/5",
                 wallpaper === 'doodle' && "bg-slate-900/5 bg-[url('/doodle_wallpaper.png')] bg-repeat bg-[length:400px_400px] bg-blend-soft-light opacity-30",
                 wallpaper === 'doodle2' && "bg-slate-900/5 bg-[url('/doodle_2.png')] bg-repeat bg-[length:350px_350px] bg-blend-soft-light opacity-25",
@@ -236,7 +223,7 @@ export default function Layout({
                 onClick={() => setActiveTab('home')}
                 className="flex lg:hidden items-center gap-2.5 active:scale-95 transition-transform"
               >
-                <div className="w-9 h-9 bg-accent rounded-[12px] flex items-center justify-center shadow-lg p-1.5 border border-accent/20">
+                <div className="w-9 h-9 bg-accent rounded-lg flex items-center justify-center shadow-lg p-1.5 border border-accent/20">
                   <img src="/Logo-Vinance.png" alt="Vinance Logo" className="w-full h-full object-contain brightness-0 invert" />
                 </div>
                 <div className="flex flex-col items-start">
@@ -250,7 +237,7 @@ export default function Layout({
               {/* Desktop: Active Tab Title */}
               {activeTabDef && (
                 <div className="hidden lg:flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-[12px] bg-accent/10 flex items-center justify-center border border-accent/20 shadow-inner">
+                  <div className="w-10 h-10 rounded-md bg-accent/10 flex items-center justify-center border border-accent/20 shadow-inner">
                     {React.createElement(activeTabDef.icon, { className: "w-5 h-5 text-accent" })}
                   </div>
                   <div className="flex flex-col justify-center">
@@ -270,161 +257,159 @@ export default function Layout({
 
             <div className="flex items-center gap-2 sm:gap-2.5 relative">
               <div className="relative">
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowNotifications(!showNotifications);
                   }}
-                  layout
-                  initial={false}
-                  animate={{
-                    width: syncing ? 'auto' : (isMobile ? '32px' : '36px'),
-                    paddingLeft: syncing ? '12px' : '0px',
-                    paddingRight: syncing ? '12px' : '0px'
-                  }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   className={cn(
-                    "flex items-center justify-center h-8 sm:h-9 rounded-[12px] border transition-all overflow-hidden whitespace-nowrap relative z-30",
+                    "flex items-center justify-center h-8 sm:h-10 px-3 sm:px-4 rounded-lg border transition-all duration-300 relative group overflow-hidden shadow-sm",
                     syncing
                       ? "bg-accent/10 border-accent/30 text-accent"
                       : isOnline
-                        ? "bg-bg-main border-border-ui text-text-secondary hover:bg-border-ui"
+                        ? "bg-accent/5 border-accent/25 text-accent hover:border-accent/40 hover:bg-accent/10"
                         : "bg-danger/10 border-danger/20 text-danger",
-                    showNotifications && "ring-2 ring-accent/30 border-accent/50"
+                    showNotifications && "ring-2 ring-accent/30 border-accent/50 bg-accent/5"
                   )}
-                  title={syncing ? syncStatus : (isOnline ? 'Online & Terhubung' : 'Offline')}
+                  title={syncing ? syncStatus : (isOnline ? 'Sistem Terhubung' : 'Koneksi Terputus')}
                 >
-                  <div className="flex items-center gap-2">
-                    {syncing ? (
-                      <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin shrink-0" />
-                    ) : isOnline ? (
-                      <Cloud className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                    ) : (
-                      <CloudOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                    )}
-
-                    <AnimatePresence mode="wait">
-                      {syncing && (
-                        <motion.span
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -10 }}
-                          className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest"
-                        >
-                          {syncStatus || 'Sinkronisasi'}
-                        </motion.span>
+                  {/* Premium Background Glow Effect */}
+                  {isOnline && !syncing && (
+                    <div className="absolute inset-0 bg-linear-to-tr from-accent/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  )}
+                  
+                  <div className="flex items-center gap-2.5 relative z-10">
+                    <div className="relative">
+                      {syncing ? (
+                        <RefreshCw className="w-4 h-4 animate-spin shrink-0" />
+                      ) : isOnline ? (
+                        <div className="relative">
+                          <Cloud className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110 duration-300" />
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-success rounded-full border-2 border-white dark:border-slate-800 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <CloudOff className="w-4 h-4 shrink-0" />
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-danger rounded-full border-2 border-white dark:border-slate-800 shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                        </div>
                       )}
-                    </AnimatePresence>
+                    </div>
+
+                    <div className="flex flex-col items-start leading-none hidden sm:flex">
+                      <span className="text-[10px] font-black uppercase tracking-widest">
+                        {syncing ? 'Sinkronisasi' : isOnline ? 'Online' : 'Offline'}
+                      </span>
+                      {syncing && (
+                        <span className="text-[8px] font-bold text-accent/70 mt-0.5 truncate max-w-[80px]">
+                          {syncStatus}
+                        </span>
+                      )}
+                    </div>
+
+                    {notificationCount > 0 && (
+                      <div className="w-4 h-4 bg-accent text-white text-[9px] font-black rounded-lg flex items-center justify-center shadow-lg shadow-accent/20 animate-bounce sm:animate-none">
+                        {notificationCount}
+                      </div>
+                    )}
                   </div>
-                </motion.button>
+                </button>
 
                 {/* Notification Badge */}
-                <AnimatePresence>
-                  {notificationCount > 0 && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      className="absolute -top-1 -right-1 w-4 h-4 bg-danger text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-card-bg z-40 pointer-events-none"
-                    >
-                      {notificationCount}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {notificationCount > 0 && (
+                  <div
+                    className="absolute -top-1 -right-1 w-4 h-4 bg-danger text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-card-bg z-40 pointer-events-none"
+                  >
+                    {notificationCount}
+                  </div>
+                )}
 
                 {/* Notifications Dropdown Panel */}
-                <AnimatePresence>
-                  {showNotifications && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      onClick={(e) => e.stopPropagation()}
-                      className="absolute right-0 mt-3 w-80 bg-card-bg/95 backdrop-blur-2xl border border-border-ui rounded-[28px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden z-50 p-4"
-                    >
-                      <div className="flex items-center justify-between mb-4 px-2">
-                        <h4 className="text-xs font-black text-text-primary uppercase tracking-widest">Pemberitahuan</h4>
-                        {notificationCount > 0 && (
-                          <span className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full">
-                            {notificationCount} Baru
-                          </span>
-                        )}
-                      </div>
+                {showNotifications && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute right-0 mt-3 w-80 bg-card-bg/95 backdrop-blur-2xl border border-border-ui rounded-lg shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden z-50 p-4"
+                  >
+                    <div className="flex items-center justify-between mb-4 px-2">
+                      <h4 className="text-xs font-black text-text-primary uppercase tracking-widest">Pemberitahuan</h4>
+                      {notificationCount > 0 && (
+                        <span className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full">
+                          {notificationCount} Baru
+                        </span>
+                      )}
+                    </div>
 
-                      <div className="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar py-1">
-                        {notificationCount === 0 ? (
-                          <div className="flex flex-col items-center justify-center py-10 text-text-secondary/40">
-                            <Bell className="w-8 h-8 mb-2 stroke-[1.5]" />
-                            <p className="text-[10px] font-bold uppercase tracking-widest">Tidak ada notifikasi</p>
-                          </div>
-                        ) : (
-                          <>
-                            {/* Active Dialog (Priority) */}
-                            {activeDialog && (
-                              <div className="p-4 bg-accent/5 border border-accent/20 rounded-2xl space-y-4">
-                                <div className="flex items-start gap-3">
-                                  <div className="w-8 h-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0">
-                                    <AlertCircle className="w-4 h-4" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <p className="text-sm font-bold text-text-primary leading-tight">{activeDialog.title}</p>
-                                    <p className="text-[11px] text-text-secondary mt-1 leading-relaxed">{activeDialog.message}</p>
-                                  </div>
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar py-1">
+                      {notificationCount === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-text-secondary/40">
+                          <Bell className="w-8 h-8 mb-2 stroke-[1.5]" />
+                          <p className="text-[10px] font-bold uppercase tracking-widest">Tidak ada notifikasi</p>
+                        </div>
+                      ) : (
+                        <>
+                          {/* Active Dialog (Priority) */}
+                          {activeDialog && (
+                            <div className="p-4 bg-accent/5 border border-accent/20 rounded-lg space-y-4">
+                              <div className="flex items-start gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                                  <AlertCircle className="w-4 h-4" />
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex-1">
+                                  <p className="text-sm font-bold text-text-primary leading-tight">{activeDialog.title}</p>
+                                  <p className="text-[11px] text-text-secondary mt-1 leading-relaxed">{activeDialog.message}</p>
+                                </div>
+                                </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => activeDialog.onConfirm()}
+                                  className="flex-1 py-2.5 bg-accent text-white rounded-lg text-[10px] font-black shadow-lg shadow-accent/20"
+                                >
+                                  {activeDialog.confirmText?.toUpperCase()}
+                                </button>
+                                {activeDialog.type === 'confirm' && (
                                   <button
-                                    onClick={() => activeDialog.onConfirm()}
-                                    className="flex-1 py-2.5 bg-accent text-white rounded-xl text-[10px] font-black shadow-lg shadow-accent/20"
+                                    onClick={() => activeDialog.onCancel()}
+                                    className="flex-1 py-2.5 bg-bg-main text-text-secondary rounded-lg text-[10px] font-bold border border-border-ui"
                                   >
-                                    {activeDialog.confirmText?.toUpperCase()}
+                                    {activeDialog.cancelText?.toUpperCase()}
                                   </button>
-                                  {activeDialog.type === 'confirm' && (
-                                    <button
-                                      onClick={() => activeDialog.onCancel()}
-                                      className="flex-1 py-2.5 bg-bg-main text-text-secondary rounded-xl text-[10px] font-bold border border-border-ui"
-                                    >
-                                      {activeDialog.cancelText?.toUpperCase()}
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Toasts */}
-                            {toasts.map((toast) => (
-                              <div
-                                key={toast.id}
-                                className={cn(
-                                  "p-3 rounded-2xl flex items-center gap-3 border transition-colors",
-                                  toast.type === 'success' && "bg-success/5 border-success/20 text-success",
-                                  toast.type === 'error' && "bg-danger/5 border-danger/20 text-danger",
-                                  toast.type === 'warning' && "bg-warning/5 border-warning/20 text-warning",
-                                  toast.type === 'info' && "bg-accent/5 border-accent/20 text-accent"
                                 )}
-                              >
-                                <div className="shrink-0">
-                                  {toast.type === 'success' && <CheckCircle2 className="w-4 h-4" />}
-                                  {toast.type === 'error' && <AlertOctagon className="w-4 h-4" />}
-                                  {toast.type === 'warning' && <AlertTriangle className="w-4 h-4" />}
-                                  {toast.type === 'info' && <Info className="w-4 h-4" />}
-                                </div>
-                                <p className="text-[11px] font-bold leading-tight flex-1">{toast.message}</p>
                               </div>
-                            ))}
-                          </>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                            </div>
+                          )}
+
+                          {/* Toasts */}
+                          {toasts.map((toast) => (
+                            <div
+                              key={toast.id}
+                              className={cn(
+                                "p-3 rounded-lg flex items-center gap-3 border transition-colors",
+                                toast.type === 'success' && "bg-success/5 border-success/20 text-success",
+                                toast.type === 'error' && "bg-danger/5 border-danger/20 text-danger",
+                                toast.type === 'warning' && "bg-warning/5 border-warning/20 text-warning",
+                                toast.type === 'info' && "bg-accent/5 border-accent/20 text-accent"
+                              )}
+                            >
+                              <div className="shrink-0">
+                                {toast.type === 'success' && <CheckCircle2 className="w-4 h-4" />}
+                                {toast.type === 'error' && <AlertOctagon className="w-4 h-4" />}
+                                {toast.type === 'warning' && <AlertTriangle className="w-4 h-4" />}
+                                {toast.type === 'info' && <Info className="w-4 h-4" />}
+                              </div>
+                              <p className="text-[11px] font-bold leading-tight flex-1">{toast.message}</p>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
                 className={cn(
-                  "flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-[12px] transition-all border backdrop-blur-md shadow-inner",
+                  "flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-md transition-all border backdrop-blur-md shadow-inner",
                   isDark
                     ? "bg-white/10 hover:bg-white/20 text-white border-white/20"
                     : "bg-bg-main border-border-ui text-text-secondary hover:bg-border-ui"
@@ -437,7 +422,7 @@ export default function Layout({
           </div>
         </header>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full relative z-10">
+        <main className="flex-1 p-4 lg:p-5 max-w-[1600px] mx-auto w-full relative z-10">
           {children}
         </main>
 
@@ -451,7 +436,7 @@ export default function Layout({
             <div
               className="fixed bottom-[110px] left-6 right-6 z-30"
             >
-              <div className="bg-card-bg/95 backdrop-blur-xl border border-border-ui rounded-[32px] p-6 shadow-[0_12px_40px_rgba(0,0,0,0.3)]">
+              <div className="bg-card-bg/95 backdrop-blur-xl border border-border-ui rounded-lg p-6 shadow-[0_12px_40px_rgba(0,0,0,0.3)]">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-bold text-text-primary">Menu Utama</h3>
                   <button onClick={() => setIsMenuOpen(false)} className="w-8 h-8 rounded-full bg-bg-main flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-border-ui transition-all">
@@ -469,7 +454,7 @@ export default function Layout({
                       className="flex flex-col items-center gap-2.5 group"
                     >
                       <div className={cn(
-                        "w-14 h-14 rounded-[20px] flex items-center justify-center transition-all duration-300 relative",
+                        "w-14 h-14 rounded-lg flex items-center justify-center transition-all duration-300 relative",
                         activeTab === tab.id
                           ? "bg-accent text-white shadow-lg shadow-accent/30 scale-105"
                           : "bg-bg-main text-text-secondary group-hover:bg-accent/10 group-hover:text-accent"
@@ -533,7 +518,7 @@ export default function Layout({
                   onAddClick();
                   setIsMenuOpen(false);
                 }}
-                className="w-[56px] h-[56px] rounded-full bg-gradient-to-tr from-accent to-secondary flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95 shadow-[0_8px_20px_rgba(5,150,105,0.4)]"
+                className="w-[56px] h-[56px] rounded-full bg-linear-to-tr from-accent to-secondary flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95 shadow-[0_8px_20px_rgba(5,150,105,0.4)]"
               >
                 <Plus className="w-7 h-7" />
               </button>

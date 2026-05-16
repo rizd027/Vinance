@@ -3,12 +3,7 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
   AreaChart, Area, CartesianGrid, LabelList
 } from 'recharts';
-import {
-  TrendingUp, TrendingDown, Wallet,
-  ArrowUpRight, ArrowDownRight, ShieldCheck, Award, BarChart2,
-  Utensils, Car, ShoppingBag, Receipt, Gamepad2, HeartPulse,
-  Download, X
-} from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownRight, ShieldCheck, Award, BarChart2, Utensils, Car, ShoppingBag, Receipt, Gamepad2, HeartPulse, Download, X, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { Transaction } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
 
@@ -29,12 +24,10 @@ const getCategoryIcon = (category: string) => {
 };
 
 import {
-  startOfWeek, endOfWeek, startOfMonth, endOfMonth,
-  startOfYear, endOfYear, isWithinInterval, format
+  startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval, format, addWeeks, subWeeks, addMonths, subMonths, addYears, subYears
 } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { exportReportPDF, exportReportExcel, exportReportCSV, exportReportDocx } from '../lib/exportUtils';
-import { motion, AnimatePresence } from 'framer-motion';
 import { FileSpreadsheet, FileText } from 'lucide-react';
 
 interface ReportsProps {
@@ -48,7 +41,7 @@ const COLORS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-card-bg/95 backdrop-blur-md border border-border-ui rounded-2xl shadow-2xl p-4 text-xs min-w-[140px] animate-in fade-in zoom-in duration-200">
+      <div className="bg-card-bg/95 backdrop-blur-md border border-border-ui rounded-lg shadow-2xl p-4 text-xs min-w-[140px] animate-in fade-in zoom-in duration-200">
         <p className="font-black text-text-primary mb-3 pb-2 border-b border-border-ui/50 uppercase tracking-wider">{label}</p>
         <div className="space-y-2.5">
           {payload.map((p: any, i: number) => (
@@ -77,6 +70,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function Reports({ transactions }: ReportsProps) {
   const [period, setPeriod] = useState<Period>('month');
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   const [showExportModal, setShowExportModal] = useState(false);
 
@@ -88,24 +82,23 @@ export default function Reports({ transactions }: ReportsProps) {
 
 
   const filteredTransactions = useMemo(() => {
-    const now = new Date();
     let start: Date, end: Date;
 
     if (period === 'week') {
-      start = startOfWeek(now, { weekStartsOn: 1 });
-      end = endOfWeek(now, { weekStartsOn: 1 });
+      start = startOfWeek(selectedDate, { weekStartsOn: 1 });
+      end = endOfWeek(selectedDate, { weekStartsOn: 1 });
     } else if (period === 'month') {
-      start = startOfMonth(now);
-      end = endOfMonth(now);
+      start = startOfMonth(selectedDate);
+      end = endOfMonth(selectedDate);
     } else {
-      start = startOfYear(now);
-      end = endOfYear(now);
+      start = startOfYear(selectedDate);
+      end = endOfYear(selectedDate);
     }
 
     return transactions.filter(t =>
       isWithinInterval(new Date(t.date), { start, end })
     );
-  }, [transactions, period]);
+  }, [transactions, period, selectedDate]);
 
   const stats = useMemo(() => {
     const income = filteredTransactions
@@ -180,40 +173,103 @@ export default function Reports({ transactions }: ReportsProps) {
     return { score: 25, label: 'Perlu Perhatian', color: 'text-danger' };
   }, [stats]);
 
+  const handlePrev = () => {
+    if (period === 'week') setSelectedDate(subWeeks(selectedDate, 1));
+    else if (period === 'month') setSelectedDate(subMonths(selectedDate, 1));
+    else setSelectedDate(subYears(selectedDate, 1));
+  };
+
+  const handleNext = () => {
+    if (period === 'week') setSelectedDate(addWeeks(selectedDate, 1));
+    else if (period === 'month') setSelectedDate(addMonths(selectedDate, 1));
+    else setSelectedDate(addYears(selectedDate, 1));
+  };
+
+  const periodLabel = useMemo(() => {
+    if (period === 'week') {
+      const start = startOfWeek(selectedDate, { weekStartsOn: 1 });
+      const end = endOfWeek(selectedDate, { weekStartsOn: 1 });
+      return `${format(start, 'dd MMM')} - ${format(end, 'dd MMM yyyy')}`;
+    }
+    if (period === 'month') return format(selectedDate, 'MMMM yyyy', { locale: localeId });
+    return format(selectedDate, 'yyyy');
+  }, [selectedDate, period]);
+
   return (
     <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto">
       {/* Header & Filter */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex flex-col gap-1 lg:hidden">
-          <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Analisis Laporan</h2>
-          <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Ringkasan & Kesehatan Finansial</p>
-          <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-3xl font-black text-text-primary tracking-tighter leading-none">Analisis Laporan</h2>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="w-8 h-1 bg-accent rounded-full" />
+            <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em]">Ringkasan & Kesehatan Finansial</p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 bg-card-bg/50 p-1 rounded-xl border border-border-ui w-full sm:w-auto overflow-x-auto no-scrollbar">
-          {(['week', 'month', 'year'] as Period[]).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={cn(
-                "flex-1 sm:flex-none px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap",
-                period === p
-                  ? "bg-accent text-white shadow-lg shadow-accent/20"
-                  : "text-text-secondary hover:text-text-primary hover:bg-bg-main"
-              )}
-            >
-              {p === 'week' ? 'Mingguan' : p === 'month' ? 'Bulanan' : 'Tahunan'}
-            </button>
-          ))}
-          <div className="w-px h-6 bg-border-ui mx-1 hidden sm:block" />
-          <div className="flex items-center px-1.5">
+        <div className="flex flex-col items-stretch gap-4 w-full xl:w-auto">
+          {/* Unified Proportional Filter Hub */}
+          <div className="flex flex-col gap-3 bg-card-bg/40 p-2 sm:p-3 rounded-lg border border-border-ui/60 backdrop-blur-md shadow-xl w-full xl:min-w-[500px]">
+            
+            {/* Top Row: Period & Date Navigator */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              {/* Period Selector - Proportional */}
+              <div className="flex items-center bg-bg-main/60 p-1 rounded-lg flex-1">
+                {(['week', 'month', 'year'] as Period[]).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => {
+                      setPeriod(p);
+                      setSelectedDate(new Date());
+                    }}
+                    className={cn(
+                      "flex-1 px-2 sm:px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-500",
+                      period === p
+                        ? "bg-card-bg text-accent shadow-lg shadow-accent/5 ring-1 ring-border-ui/50"
+                        : "text-text-secondary hover:text-text-primary"
+                    )}
+                  >
+                    {p === 'week' ? 'Minggu' : p === 'month' ? 'Bulan' : 'Tahun'}
+                  </button>
+                ))}
+              </div>
+
+              {/* Date Navigator - Proportional */}
+              <div className="flex items-center bg-bg-main/60 p-1 rounded-lg sm:min-w-[240px]">
+                <button 
+                  onClick={handlePrev}
+                  className="p-2 hover:bg-accent/10 hover:text-accent rounded-lg text-text-secondary transition-all shrink-0"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                
+                <button
+                  onClick={() => setSelectedDate(new Date())}
+                  className="flex-1 flex items-center gap-2 px-2 py-2 hover:bg-card-bg hover:shadow-sm rounded-lg transition-all group justify-center"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-accent group-hover:scale-110 transition-transform" />
+                  <span className="text-[11px] font-black text-text-primary whitespace-nowrap tracking-tight">{periodLabel}</span>
+                </button>
+
+                <button 
+                  onClick={handleNext}
+                  className="p-2 hover:bg-accent/10 hover:text-accent rounded-lg text-text-secondary transition-all shrink-0"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Bottom Row: Primary Action */}
             <button 
               onClick={() => setShowExportModal(true)} 
-              className="flex items-center gap-1.5 px-3 py-2 text-accent bg-accent/10 hover:bg-accent/20 rounded-lg transition-colors font-bold text-xs" 
-              title="Export Laporan"
+              className="group relative flex items-center justify-center gap-3 px-6 py-3.5 text-white overflow-hidden rounded-lg transition-all duration-500 shadow-xl shadow-accent/20 hover:shadow-accent/40 active:scale-[0.98]" 
             >
-              <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Export</span>
+              <div className="absolute inset-0 bg-linear-to-r from-accent via-secondary to-accent bg-[length:200%_auto] animate-gradient-x" />
+              <div className="relative z-10 flex items-center gap-2 font-black text-xs uppercase tracking-[0.2em]">
+                <Download className="w-4 h-4 group-hover:bounce" />
+                <span>Export Laporan Lengkap</span>
+              </div>
             </button>
           </div>
         </div>
@@ -228,7 +284,7 @@ export default function Reports({ transactions }: ReportsProps) {
       </div>
 
       {/* Area Chart - Cash Flow Trend (Full Width) */}
-      <div className="bg-card-bg p-6 rounded-3xl border border-border-ui shadow-sm transition-colors">
+      <div className="bg-card-bg p-6 rounded-lg border border-border-ui shadow-sm transition-colors">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xs font-black text-text-primary uppercase tracking-wider flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-accent" />
@@ -292,7 +348,7 @@ export default function Reports({ transactions }: ReportsProps) {
                   width={48}
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="income" stroke="#10b981" fillOpacity={1} fill="url(#colorIncome)" strokeWidth={3} name="Pemasukan" dot={{ fill: '#10b981', strokeWidth: 2, r: 4, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} isAnimationActive={!isMobile} animationDuration={1000} animationEasing="ease-in-out">
+                <Area type="monotone" dataKey="income" stroke="#10b981" fillOpacity={1} fill="url(#colorIncome)" strokeWidth={3} name="Pemasukan" dot={{ fill: '#10b981', strokeWidth: 2, r: 4, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} isAnimationActive={false}>
                   <LabelList dataKey="income" position="top" offset={15} content={(props: any) => {
                     const { x, y, value } = props;
                     if (value === 0) return null;
@@ -305,7 +361,7 @@ export default function Reports({ transactions }: ReportsProps) {
                     );
                   }} />
                 </Area>
-                <Area type="monotone" dataKey="expense" stroke="#ef4444" fillOpacity={1} fill="url(#colorExpense)" strokeWidth={3} name="Pengeluaran" dot={{ fill: '#ef4444', strokeWidth: 2, r: 4, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} isAnimationActive={!isMobile} animationDuration={1000} animationEasing="ease-in-out">
+                <Area type="monotone" dataKey="expense" stroke="#ef4444" fillOpacity={1} fill="url(#colorExpense)" strokeWidth={3} name="Pengeluaran" dot={{ fill: '#ef4444', strokeWidth: 2, r: 4, stroke: '#fff' }} activeDot={{ r: 6, strokeWidth: 0 }} isAnimationActive={false}>
                   <LabelList dataKey="expense" position="top" offset={15} content={(props: any) => {
                     const { x, y, value } = props;
                     if (value === 0) return null;
@@ -328,7 +384,7 @@ export default function Reports({ transactions }: ReportsProps) {
       {/* 2-column: Bar Chart + Donut Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Bar Chart - Income vs Expense */}
-        <div className="bg-card-bg p-6 rounded-3xl border border-border-ui shadow-sm transition-colors">
+        <div className="bg-card-bg p-6 rounded-lg border border-border-ui shadow-sm transition-colors">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <h3 className="text-xs font-black text-text-primary uppercase tracking-wider flex items-center gap-2">
               <BarChart2 className="w-4 h-4 text-accent" />
@@ -359,7 +415,7 @@ export default function Reports({ transactions }: ReportsProps) {
                     width={42}
                   />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="income" name="Pemasukan" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={32} isAnimationActive={!isMobile} animationDuration={1000}>
+                  <Bar dataKey="income" name="Pemasukan" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={32} isAnimationActive={false}>
                     <LabelList dataKey="income" position="top" content={(props: any) => {
                       const { x, y, width, value } = props;
                       if (value === 0) return null;
@@ -372,7 +428,7 @@ export default function Reports({ transactions }: ReportsProps) {
                       );
                     }} />
                   </Bar>
-                  <Bar dataKey="expense" name="Pengeluaran" fill="#ef4444" radius={[6, 6, 0, 0]} maxBarSize={32} isAnimationActive={!isMobile} animationDuration={1000}>
+                  <Bar dataKey="expense" name="Pengeluaran" fill="#ef4444" radius={[6, 6, 0, 0]} maxBarSize={32} isAnimationActive={false}>
                     <LabelList dataKey="expense" position="top" content={(props: any) => {
                       const { x, y, width, value } = props;
                       if (value === 0) return null;
@@ -393,7 +449,7 @@ export default function Reports({ transactions }: ReportsProps) {
         </div>
 
         {/* Donut Chart - Category Breakdown */}
-        <div className="bg-card-bg p-6 rounded-3xl border border-border-ui shadow-sm transition-colors flex flex-col">
+        <div className="bg-card-bg p-6 rounded-lg border border-border-ui shadow-sm transition-colors flex flex-col">
           <h3 className="text-xs font-black text-text-primary uppercase tracking-wider mb-4 flex items-center gap-2">
             <PieChart className="w-4 h-4 text-secondary" />
             Alokasi Biaya
@@ -405,7 +461,7 @@ export default function Reports({ transactions }: ReportsProps) {
               <div className="h-44 w-full" tabIndex={-1} style={{ outline: 'none' }} onClick={(e) => (e.currentTarget as HTMLElement).blur()}>
                 <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={1}>
                   <PieChart>
-                    <Pie data={categoryData} cx="50%" cy="50%" innerRadius={52} outerRadius={76} paddingAngle={4} dataKey="value" isAnimationActive={!isMobile} animationDuration={500} animationEasing="ease-out">
+                    <Pie data={categoryData} cx="50%" cy="50%" innerRadius={52} outerRadius={76} paddingAngle={4} dataKey="value" isAnimationActive={false}>
 
                       {categoryData.map((_: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
@@ -415,19 +471,11 @@ export default function Reports({ transactions }: ReportsProps) {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
-                className="space-y-2"
-              >
                 {categoryData.map((item: any, index: number) => {
                   const pct = ((item.value / stats.expense) * 100).toFixed(0);
                   return (
-                    <motion.div
+                    <div
                       key={item.name}
-                      variants={{ hidden: isMobile ? { opacity: 1, x: 0 } : { opacity: 0, x: -8 }, visible: { opacity: 1, x: 0 } }}
-
                       className="flex items-center gap-2"
                     >
                       <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
@@ -437,13 +485,9 @@ export default function Reports({ transactions }: ReportsProps) {
                           <span className="text-[10px] font-bold text-text-secondary ml-2">{pct}%</span>
                         </div>
                         <div className="h-1 bg-bg-main rounded-full overflow-hidden">
-                          <motion.div
-                            initial={isMobile ? false : { width: 0 }}
-                            animate={{ width: `${pct}%` }}
-                            transition={{ duration: 0.5, ease: 'easeOut' }}
-
+                          <div
                             className="h-full rounded-full"
-                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                            style={{ backgroundColor: COLORS[index % COLORS.length], width: `${pct}%` }}
                           />
                         </div>
                       </div>
@@ -451,10 +495,9 @@ export default function Reports({ transactions }: ReportsProps) {
                         <ArrowDownRight className="w-2.5 h-2.5 text-danger shrink-0" />
                         <span className="text-[10px] font-bold text-text-primary shrink-0 currency-font">{formatCurrency(item.value)}</span>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
-              </motion.div>
             </div>
           )}
         </div>
@@ -463,7 +506,7 @@ export default function Reports({ transactions }: ReportsProps) {
       {/* Bottom Row: Financial Health + Top Expenses */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Financial Health Card */}
-        <div className="bg-card-bg p-6 rounded-3xl border border-border-ui shadow-sm transition-colors">
+        <div className="bg-card-bg p-6 rounded-lg border border-border-ui shadow-sm transition-colors">
           <h3 className="text-xs font-black text-text-primary uppercase tracking-wider mb-6 flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-success" />
             Kesehatan Finansial
@@ -474,12 +517,9 @@ export default function Reports({ transactions }: ReportsProps) {
               <span className={cn("text-2xl font-bold", healthScore.color)}>{healthScore.label}</span>
             </div>
             <div className="h-3 bg-bg-main rounded-full overflow-hidden border border-border-ui/50">
-              <motion.div
-                initial={isMobile ? false : { width: 0 }}
-                animate={{ width: `${healthScore.score}%` }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
-
+              <div
                 className={cn("h-full rounded-full", healthScore.score >= 75 ? 'bg-success' : healthScore.score >= 50 ? 'bg-warning' : 'bg-danger')}
+                style={{ width: `${healthScore.score}%` }}
               />
             </div>
             <div className="grid grid-cols-3 gap-3 pt-2">
@@ -488,7 +528,7 @@ export default function Reports({ transactions }: ReportsProps) {
                 { label: 'Target 20%\nTabungan', pct: Math.round(Math.max(stats.savingsRate, 0)), target: 20, color: '#10b981' },
                 { label: 'Rasio\nUtilisasi', pct: stats.income > 0 ? Math.round((stats.expense / stats.income) * 100) : 0, target: 80, color: '#f59e0b' },
               ].map((item, i) => (
-                <div key={i} className="text-center p-3 bg-bg-main/50 rounded-2xl">
+                <div key={i} className="text-center p-3 bg-bg-main/50 rounded-lg">
                   <p className="text-lg font-bold currency-font" style={{ color: item.color }}>{item.pct}%</p>
                   <p className="text-[9px] text-text-secondary whitespace-pre-line leading-tight mt-1 font-medium">{item.label}</p>
                 </div>
@@ -498,7 +538,7 @@ export default function Reports({ transactions }: ReportsProps) {
         </div>
 
         {/* Top Expenses Card */}
-        <div className="bg-card-bg p-6 rounded-3xl border border-border-ui shadow-sm transition-colors">
+        <div className="bg-card-bg p-6 rounded-lg border border-border-ui shadow-sm transition-colors">
           <h3 className="text-xs font-black text-text-primary uppercase tracking-wider mb-6 flex items-center gap-2">
             <Award className="w-4 h-4 text-warning" />
             Top Pengeluaran
@@ -508,15 +548,11 @@ export default function Reports({ transactions }: ReportsProps) {
           ) : (
             <div className="space-y-3">
               {topExpenses.map((t, i) => (
-                <motion.div
+                <div
                   key={t.id}
-                  initial={isMobile ? false : { opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: isMobile ? 0 : i * 0.05 }}
-
                   className="flex items-center gap-3"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-danger/10 flex items-center justify-center text-danger shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-danger/10 flex items-center justify-center text-danger shrink-0">
                     {React.createElement(getCategoryIcon(t.category), { className: "w-5 h-5" })}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -527,7 +563,7 @@ export default function Reports({ transactions }: ReportsProps) {
                     <ArrowDownRight className="w-3 h-3 text-danger shrink-0" />
                     <p className="text-xs font-bold text-danger shrink-0 currency-font">-{formatCurrency(t.amount)}</p>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           )}
@@ -536,13 +572,13 @@ export default function Reports({ transactions }: ReportsProps) {
 
       {/* Export Modal */}
       {showExportModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex sm:p-4 items-center justify-center">
             <div
               onClick={() => setShowExportModal(false)}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm hidden sm:block"
             />
             <div
-              className="relative w-full max-w-sm bg-card-bg rounded-[24px] shadow-2xl border border-border-ui overflow-hidden z-10"
+              className="relative w-full h-full sm:h-auto sm:max-w-sm bg-card-bg sm:rounded-lg shadow-2xl border border-border-ui overflow-hidden z-10"
             >
               <div className="flex items-center justify-between p-5 border-b border-border-ui/50">
                 <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
@@ -551,7 +587,7 @@ export default function Reports({ transactions }: ReportsProps) {
                 </h3>
                 <button
                   onClick={() => setShowExportModal(false)}
-                  className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-main rounded-xl transition-colors"
+                  className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-main rounded-lg transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -559,7 +595,7 @@ export default function Reports({ transactions }: ReportsProps) {
               <div className="p-5 grid grid-cols-2 gap-3">
                 <button
                   onClick={() => { handleExport('xlsx'); setShowExportModal(false); }}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border-ui hover:border-emerald-500 hover:bg-emerald-500/5 transition-all group"
+                  className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border-ui hover:border-emerald-500 hover:bg-emerald-500/5 transition-all group"
                 >
                   <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
                     <FileSpreadsheet className="w-5 h-5" />
@@ -568,7 +604,7 @@ export default function Reports({ transactions }: ReportsProps) {
                 </button>
                 <button
                   onClick={() => { handleExport('csv'); setShowExportModal(false); }}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border-ui hover:border-slate-500 hover:bg-slate-500/5 transition-all group"
+                  className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border-ui hover:border-slate-500 hover:bg-slate-500/5 transition-all group"
                 >
                   <div className="w-10 h-10 rounded-full bg-slate-500/10 flex items-center justify-center text-slate-500 group-hover:scale-110 transition-transform">
                     <FileText className="w-5 h-5" />
@@ -577,7 +613,7 @@ export default function Reports({ transactions }: ReportsProps) {
                 </button>
                 <button
                   onClick={() => { handleExport('pdf'); setShowExportModal(false); }}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border-ui hover:border-rose-500 hover:bg-rose-500/5 transition-all group"
+                  className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border-ui hover:border-rose-500 hover:bg-rose-500/5 transition-all group"
                 >
                   <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
                     <FileText className="w-5 h-5" />
@@ -586,7 +622,7 @@ export default function Reports({ transactions }: ReportsProps) {
                 </button>
                 <button
                   onClick={() => { handleExport('docx'); setShowExportModal(false); }}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border-ui hover:border-blue-500 hover:bg-blue-500/5 transition-all group"
+                  className="flex flex-col items-center gap-2 p-4 rounded-lg border border-border-ui hover:border-blue-500 hover:bg-blue-500/5 transition-all group"
                 >
                   <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
                     <FileText className="w-5 h-5" />
@@ -603,7 +639,7 @@ export default function Reports({ transactions }: ReportsProps) {
 
 function StatCard({ label, value, icon, trend, color, isRaw }: { label: string, value: any, icon: React.ReactNode, trend?: 'up' | 'down', color: string, isRaw?: boolean }) {
   return (
-    <div className="bg-card-bg p-4 rounded-2xl border border-border-ui shadow-sm hover:border-accent/40 transition-all group flex flex-col justify-between min-h-[90px]">
+    <div className="bg-card-bg p-4 rounded-lg border border-border-ui shadow-sm hover:border-accent/40 transition-all group flex flex-col justify-between min-h-[90px]">
       <div className="flex justify-between items-start mb-3">
         <div className="p-1.5 bg-bg-main rounded-lg group-hover:scale-110 transition-transform">
           {icon}

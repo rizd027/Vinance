@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   ArrowRight, Plus, Wallet, TrendingUp, ArrowUpRight, ArrowDownRight,
   Utensils, Car, ShoppingBag, Receipt, Gamepad2, HeartPulse,
@@ -124,11 +123,7 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
     <div className="space-y-5 pb-4">
 
       {/* ── Greeting Header (Mobile only) ── */}
-      <motion.div
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="lg:hidden"
-      >
+      <div className="lg:hidden">
         <p className="text-xs font-semibold text-text-secondary">{greeting()},</p>
         <h2 className="text-2xl font-black text-text-primary tracking-tight leading-tight mt-0.5">
           {userName ? userName.split(' ')[0] : 'Pengguna'} 👋
@@ -137,14 +132,11 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
           ini ringkasan keuanganmu
         </p>
         <div className="h-0.5 w-10 bg-gradient-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
-      </motion.div>
+      </div>
 
       {/* ── Hero Balance Card ── */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.05 }}
-        className="relative rounded-3xl overflow-hidden shadow-xl shadow-accent/20"
+      <div
+        className="relative rounded-lg overflow-hidden shadow-xl shadow-accent/20"
       >
         {/* Gradient bg */}
         <div className="absolute inset-0 bg-gradient-to-br from-accent via-emerald-500 to-secondary" />
@@ -164,7 +156,7 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
             </div>
             <button
               onClick={onAddClick}
-              className="flex items-center gap-1.5 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30 text-white text-xs font-bold hover:bg-white/30 active:scale-95 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 text-white text-xs font-bold hover:bg-white/30 active:scale-95 transition-all"
             >
               <Plus className="w-3.5 h-3.5" />
               Catat
@@ -173,7 +165,7 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
 
           {/* Income / Expense row */}
           <div className="flex gap-4">
-            <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
+            <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
               <div className="flex items-center gap-1.5 mb-1">
                 <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
                   <ArrowUpRight className="w-3 h-3 text-white" />
@@ -182,7 +174,7 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
               </div>
               <p className="text-sm font-black text-white currency-font">{formatCurrency(income)}</p>
             </div>
-            <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20">
+            <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
               <div className="flex items-center gap-1.5 mb-1">
                 <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
                   <ArrowDownRight className="w-3 h-3 text-white" />
@@ -193,7 +185,7 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* ── Period Filter Pills ── */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar">
@@ -202,7 +194,7 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
             key={p}
             onClick={() => setPeriod(p)}
             className={cn(
-              "flex-shrink-0 px-4 py-2 rounded-2xl text-[11px] font-bold transition-all border",
+              "flex-shrink-0 px-4 py-2 rounded-lg text-[11px] font-bold transition-all border",
               period === p
                 ? "bg-accent text-white border-accent shadow-lg shadow-accent/25"
                 : "bg-card-bg text-text-secondary border-border-ui hover:border-accent/40 hover:text-text-primary"
@@ -216,12 +208,7 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
       {/* ── Stats + Donut Row ── */}
       <div className="grid grid-cols-3 gap-3">
         {/* Savings Rate */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="col-span-2 bg-card-bg rounded-2xl p-4 border border-border-ui shadow-sm"
-        >
+        <div className="col-span-2 bg-card-bg rounded-lg p-4 border border-border-ui shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest">Kesehatan Finansial</p>
             <span className={cn(
@@ -246,11 +233,9 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
                 </span>
               </div>
               <div className="h-2 bg-bg-main rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(savingsRate, 100)}%` }}
-                  transition={{ duration: 1, ease: 'easeOut' }}
+                <div
                   className={cn("h-full rounded-full", savingsRate >= 20 ? "bg-gradient-to-r from-success to-emerald-400" : "bg-gradient-to-r from-warning to-amber-400")}
+                  style={{ width: `${Math.min(savingsRate, 100)}%` }}
                 />
               </div>
             </div>
@@ -266,26 +251,21 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
                   </span>
                 </div>
                 <div className="h-2 bg-bg-main rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${budgetUsage}%` }}
-                    transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
+                  <div
                     className={cn("h-full rounded-full", budgetUsage <= 90 ? "bg-gradient-to-r from-accent to-secondary" : "bg-gradient-to-r from-warning to-danger")}
+                    style={{ width: `${budgetUsage}%` }}
                   />
                 </div>
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
 
         {/* Donut chart */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.15 }}
+        <div
           onClick={onNavigateToBudget}
           className={cn(
-            "bg-card-bg rounded-2xl p-3 border shadow-sm flex flex-col items-center relative cursor-pointer hover:bg-accent/5 active:scale-95 transition-all group justify-between",
+            "bg-card-bg rounded-lg p-3 border shadow-sm flex flex-col items-center relative cursor-pointer hover:bg-accent/5 active:scale-95 transition-all group justify-between",
             totalBudget === 0 ? "border-dashed border-accent/40" : "border-border-ui hover:border-accent/40"
           )}
         >
@@ -323,7 +303,7 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
               </p>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* ── Target Tabungan (Goals) ── */}
@@ -345,16 +325,13 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
               const gColor = (goal.color && goal.color.startsWith('#')) ? goal.color : '#059669';
 
               return (
-                <motion.div
+                <div
                   key={goal.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + i * 0.1 }}
                   onClick={onNavigateToGoals}
-                  className="bg-card-bg rounded-[1.25rem] border border-border-ui shadow-sm flex-shrink-0 w-[240px] p-3 flex flex-col gap-2 cursor-pointer hover:shadow-md hover:border-accent/30 transition-all group"
+                  className="bg-card-bg rounded-lg border border-border-ui shadow-sm flex-shrink-0 w-[240px] p-3 flex flex-col gap-2 cursor-pointer hover:shadow-md hover:border-accent/30 transition-all group"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-sm" style={{ backgroundColor: gColor }}>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-sm" style={{ backgroundColor: gColor }}>
                       <GoalIcon className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -371,7 +348,7 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
                       <div className="h-full rounded-full transition-all duration-1000" style={{ backgroundColor: gColor, width: `${pct}%` }} />
                     </div>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
@@ -396,28 +373,23 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
               const colorClass = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
               const totalExp = expense > 0 ? (amount / expense) * 100 : 0;
               return (
-                <motion.div
+                <div
                   key={category}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + i * 0.05 }}
-                  className="bg-card-bg rounded-2xl p-4 border border-border-ui shadow-sm hover:shadow-md hover:border-accent/20 transition-all group"
+                  className="bg-card-bg rounded-lg p-4 border border-border-ui shadow-sm hover:shadow-md hover:border-accent/20 transition-all group"
                 >
-                  <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center mb-3", colorClass)}>
+                  <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center mb-3", colorClass)}>
                     <Icon className="w-4.5 h-4.5" />
                   </div>
                   <p className="text-[10px] font-bold text-text-secondary uppercase tracking-wider truncate mb-0.5">{category}</p>
                   <p className="text-sm font-black text-text-primary currency-font">{formatCurrency(amount)}</p>
                   <div className="mt-2 h-1 bg-bg-main rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${totalExp}%` }}
-                      transition={{ duration: 0.8, delay: 0.2 + i * 0.05 }}
+                    <div
                       className="h-full rounded-full bg-gradient-to-r from-accent to-secondary"
+                      style={{ width: `${totalExp}%` }}
                     />
                   </div>
                   <p className="text-[9px] font-medium text-text-secondary mt-1">{totalExp.toFixed(0)}% dari total</p>
-                </motion.div>
+                </div>
               );
             })}
           </div>
@@ -436,10 +408,10 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
           </button>
         </div>
 
-        <div className="bg-card-bg rounded-2xl border border-border-ui shadow-sm overflow-hidden">
+        <div className="bg-card-bg rounded-lg border border-border-ui shadow-sm overflow-hidden">
           {recentTransactions.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-10">
-              <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-lg bg-accent/10 flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-accent" />
               </div>
               <div className="text-center">
@@ -448,7 +420,7 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
               </div>
               <button
                 onClick={onAddClick}
-                className="px-5 py-2 bg-gradient-to-r from-accent to-secondary text-white text-xs font-bold rounded-xl shadow-lg shadow-accent/20 active:scale-95 transition-all"
+                className="px-5 py-2 bg-gradient-to-r from-accent to-secondary text-white text-xs font-bold rounded-lg shadow-lg shadow-accent/20 active:scale-95 transition-all"
               >
                 + Catat Sekarang
               </button>
@@ -458,15 +430,12 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
               {recentTransactions.map((t, i) => {
                 const Icon = getCategoryIcon(t.category);
                 return (
-                  <motion.div
+                  <div
                     key={t.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.04 }}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-bg-main/40 transition-colors"
                   >
                     <div className={cn(
-                      "w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0",
+                      "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
                       t.type === 'Income' ? "bg-success/10 text-success" : "bg-danger/10 text-danger"
                     )}>
                       <Icon className="w-4.5 h-4.5" />
@@ -486,7 +455,7 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
                         {new Date(t.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
                       </p>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
@@ -497,7 +466,7 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
       {/* ── CTA Desktop ── */}
       <button
         onClick={onAddClick}
-        className="hidden lg:flex w-full bg-gradient-to-r from-accent to-secondary text-white py-3.5 rounded-2xl text-xs font-black shadow-lg shadow-accent/20 items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] transition-all"
+        className="hidden lg:flex w-full bg-gradient-to-r from-accent to-secondary text-white py-3.5 rounded-lg text-xs font-black shadow-lg shadow-accent/20 items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] transition-all"
       >
         <Plus className="w-4 h-4" /> TAMBAH TRANSAKSI
       </button>

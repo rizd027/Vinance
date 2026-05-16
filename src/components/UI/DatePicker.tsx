@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronDown
 } from 'lucide-react';
