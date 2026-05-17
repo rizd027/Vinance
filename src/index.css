@@ -1,37 +1,50 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
   
-  /* Light Theme (Clean & High Contrast) */
-  --color-bg-main: #f1f5f9; /* Slate 100 */
-  --color-sidebar-bg: #f8fafc; /* Slate 50 - clean sidebar */
-  --color-sidebar-text-primary: #0f172a; /* Slate 900 */
-  --color-sidebar-text-secondary: #64748b; /* Slate 500 */
-  --color-sidebar-border: #e2e8f0; /* Slate 200 */
+  /* Light Theme (Clean Fintech Paper) */
+  --color-bg-main: #f8fafc; /* Crisp clean paper background */
+  --color-sidebar-bg: #ffffff; /* Pure white sidebar */
+  --color-sidebar-text-primary: #0f172a; /* Deep Charcoal */
+  --color-sidebar-text-secondary: #475569; /* Slate gray */
+  --color-sidebar-border: #cbd5e1; /* Clear Slate-300 border for sidebar */
   --color-card-bg: #ffffff;
-  --color-accent: #059669; /* Emerald 600 */
-  --color-secondary: #0d9488; /* Teal 600 */
-  --color-success: #059669; /* Emerald 600 */
-  --color-danger: #dc2626; /* Red 600 */
-  --color-warning: #d97706; /* Amber 600 */
-  --color-text-primary: #0f172a; /* Slate 900 */
-  --color-text-secondary: #475569; /* Slate 600 - sharper reading */
-  --color-border-ui: #cbd5e1; /* Slate 300 - clearly visible borders */
+  --color-accent: #10b981; /* Wise Emerald */
+  --color-secondary: #0ea5e9; /* Sky Blue */
+  --color-success: #10b981; /* Emerald Green */
+  --color-danger: #f43f5e; /* Apple Crimson */
+  --color-warning: #f59e0b; /* Metal Gold */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-border-ui: #cbd5e1; /* Clear Slate-300 border for UI components */
 
-  /* Dark Theme (Blue Moon & Purple/Pink Accents) */
-  --color-dark-bg-main: #020617; /* Deep Dark */
-  --color-dark-sidebar-bg: #020617; /* Same as main for seamless look or #000000 */
-  --color-dark-sidebar-text-primary: #f1f5f9; /* Slate 100 */
-  --color-dark-sidebar-text-secondary: #94a3b8; /* Slate 400 */
-  --color-dark-sidebar-border: #1e293b; /* Slate 800 */
-  --color-dark-card-bg: #111827; /* Slightly brighter card to pop from background */
-  --color-dark-accent: #059669; /* Emerald 600 - darker green for dark mode */
-  --color-dark-secondary: #0d9488; /* Teal 600 */
-  --color-dark-text-primary: #ffffff; /* Max contrast text */
-  --color-dark-text-secondary: #cbd5e1; /* Brighter grey for readable secondary text */
-  --color-dark-border-ui: #334155; /* Distinct border to separate elements */
+  /* Dark Theme (High-Density Obsidian/Onyx) */
+  --color-dark-bg-main: #090d16; /* Deep Obsidian Blue-Black */
+  --color-dark-sidebar-bg: #090d16;
+  --color-dark-sidebar-text-primary: #f8fafc;
+  --color-dark-sidebar-text-secondary: #94a3b8;
+  --color-dark-sidebar-border: #1e293b;
+  --color-dark-card-bg: #121826; /* Obsidian Card Pop */
+  --color-dark-accent: #10b981; /* Wise Emerald */
+  --color-dark-secondary: #0ea5e9; /* Sky Blue */
+  --color-dark-text-primary: #f8fafc;
+  --color-dark-text-secondary: #94a3b8;
+  --color-dark-border-ui: #1e293b; /* Deep Navy borders */
+
+  /* Premium Elevation Shadows - Crisp and clear Slate shadows */
+  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.08);
+  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(15, 23, 42, 0.12);
+
+  --shadow-dark-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-dark-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+  --shadow-dark-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.6);
+  --shadow-dark-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.7);
+  --shadow-dark-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
 }
 
 .dark {
@@ -46,6 +59,12 @@
   --color-text-primary: var(--color-dark-text-primary);
   --color-text-secondary: var(--color-dark-text-secondary);
   --color-border-ui: var(--color-dark-border-ui);
+
+  --shadow-sm: var(--shadow-dark-sm);
+  --shadow-md: var(--shadow-dark-md);
+  --shadow-lg: var(--shadow-dark-lg);
+  --shadow-xl: var(--shadow-dark-xl);
+  --shadow-2xl: var(--shadow-dark-2xl);
 }
 
 body {
@@ -57,8 +76,6 @@ body {
 
 /* 
  * Smooth Theme Transition
- * Using lightweight CSS transitions instead of heavy JS-based animations 
- * to ensure maximum performance across all devices.
  */
 * {
   transition: none;
@@ -68,9 +85,6 @@ body {
 .no-transition {
   transition: none !important;
 }
-
-
-
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
@@ -119,11 +133,19 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* High Density Theme Overrides */
+/* Clean Fintech Premium Elevation Card */
 .card-ui {
   background: var(--color-card-bg);
   border: 1px solid var(--color-border-ui);
-  border-radius: 8px;
+  border-radius: 12px; /* Perfect modern 12px rounded corner */
+  box-shadow: var(--shadow-sm), 0 4px 12px 0 rgba(15, 23, 42, 0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-ui:hover {
+  border-color: rgba(16, 185, 129, 0.35); /* Subtle Emerald highlight */
+  box-shadow: var(--shadow-md), 0 8px 16px 0 rgba(16, 185, 129, 0.06);
+  transform: translateY(-2px);
 }
 
 .btn-accent {
@@ -135,6 +157,17 @@ body {
 .text-success { color: var(--color-success); }
 .text-danger { color: var(--color-danger); }
 .text-warning { color: var(--color-warning); }
+
+/* Springy active tactile effect */
+.btn-tactile {
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.2s;
+}
+.btn-tactile:active {
+  transform: scale(0.95);
+}
+.btn-tactile:hover {
+  transform: scale(1.03);
+}
 
 /* Recharts Focus Fix - aggressive wildcard to prevent any click outlines */
 .recharts-wrapper,
@@ -149,7 +182,9 @@ body {
 
 /* Custom Typography Utilities */
 .currency-font {
-  letter-spacing: 0.5px;
+  font-family: "Outfit", "Inter", sans-serif;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .text-timestamp {

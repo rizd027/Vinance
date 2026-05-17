@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus, Trash2, StickyNote, X, Pin, Edit2 } from 'lucide-react';
 
 import { Note } from '../types';
@@ -30,6 +31,11 @@ function getColorDef(value: string) {
 
 export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }: NotesProps) {
   const [showAdd, setShowAdd] = useState(false);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortalTarget(document.getElementById('header-action-portal'));
+  }, []);
   const [newContent, setNewContent] = useState('');
   const [newColor, setNewColor] = useState('violet');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -78,9 +84,20 @@ export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }:
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex flex-col gap-1 lg:hidden">
+      {portalTarget && createPortal(
+        <button
+          onClick={() => setShowAdd(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent to-secondary text-white rounded-lg text-xs font-bold shadow-md shadow-accent/20 hover:shadow-accent/30 hover:scale-105 active:scale-95 transition-all mr-2"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Tulis Catatan</span>
+        </button>,
+        portalTarget
+      )}
+
+      {/* Header (Mobile only) */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 lg:hidden">
+        <div className="flex flex-col gap-1">
           <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Catatan Keuangan</h2>
           <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Memo & Rencana Strategis</p>
           <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
@@ -102,7 +119,7 @@ export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }:
       {/* Notes Grid */}
       {!sortedNotes || sortedNotes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 gap-4">
-          <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-accent/20 to-secondary/20 flex items-center justify-center relative">
+          <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-accent/20 to-secondary/20 flex items-center justify-center relative">
             <StickyNote className="w-10 h-10 text-accent relative z-10" />
             <div className="absolute top-2 right-2 w-4 h-4 bg-secondary rounded-full animate-ping opacity-20" />
           </div>
@@ -124,7 +141,7 @@ export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }:
                 <div
                   key={note.id}
                   className={cn(
-                    "break-inside-avoid rounded-3xl border-t-4 border-l border-r border-b p-5 cursor-text group relative transition-all shadow-sm",
+                    "break-inside-avoid rounded-xl border-t-4 border-l border-r border-b p-5 cursor-text group relative transition-all shadow-sm",
                     colorDef.bg,
                     note.isPinned ? "ring-2 ring-accent/30 shadow-md shadow-accent/5" : "hover:shadow-md hover:border-accent/30"
                   )}
@@ -132,7 +149,7 @@ export default function Notes({ notes = [], onAdd, onUpdate, onDelete, userId }:
                   onClick={() => !isEditing && startEdit(note)}
                 >
                   {note.isPinned && (
-                    <div className="absolute top-0 left-0 bg-accent text-white text-[8px] font-black uppercase px-2 py-1 rounded-tl-2xl rounded-br-xl shadow-sm z-10 flex items-center gap-1">
+                    <div className="absolute top-0 left-0 bg-accent text-white text-[8px] font-black uppercase px-2 py-1 rounded-tl-xl rounded-br-lg shadow-sm z-10 flex items-center gap-1">
                       <Pin className="w-2.5 h-2.5 fill-white" />
                       Disematkan
                     </div>

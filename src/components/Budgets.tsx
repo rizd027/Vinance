@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Target, Edit2, AlertCircle, TrendingUp, Wallet, CheckCircle2,
   Plus, Trash2, PieChart as PieIcon, ArrowRight, ShieldCheck,
@@ -43,6 +44,11 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [customCategory, setCustomCategory] = useState('');
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortalTarget(document.getElementById('header-action-portal'));
+  }, []);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -131,9 +137,20 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div className="flex flex-col gap-1 lg:hidden">
+      {portalTarget && createPortal(
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent to-secondary text-white rounded-lg text-xs font-bold shadow-md shadow-accent/20 hover:shadow-accent/30 hover:scale-105 active:scale-95 transition-all mr-2"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Tambah Anggaran</span>
+        </button>,
+        portalTarget
+      )}
+
+      {/* Header (Mobile only) */}
+      <div className="flex justify-between items-center lg:hidden">
+        <div className="flex flex-col gap-1">
           <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Manajemen Anggaran</h2>
           <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Perencanaan & Batas Pengeluaran</p>
           <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
@@ -147,8 +164,8 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
       </div>
 
       {/* Stats Dashboard */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3 space-y-6">
           {/* Main Budget Card */}
           <div className="bg-card-bg rounded-lg border border-border-ui p-8 shadow-sm transition-colors relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-bl-full -z-10" />
@@ -305,7 +322,7 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
               <div
                 key={cat}
                 className={cn(
-                  "bg-card-bg p-3 rounded-lg border shadow-xs group transition-all relative overflow-hidden",
+                  "bg-card-bg p-4 sm:p-5 rounded-lg border shadow-xs group transition-all relative overflow-hidden",
                   isOver ? "border-danger/40 ring-1 ring-danger/10" :
                     isWarning ? "border-warning/40 ring-1 ring-warning/10" :
                       "border-border-ui hover:border-accent/30"

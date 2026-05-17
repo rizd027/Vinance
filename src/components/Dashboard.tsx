@@ -134,174 +134,180 @@ export default function Dashboard({ transactions, budgets, goals = [], onAddClic
         <div className="h-0.5 w-10 bg-gradient-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
       </div>
 
-      {/* ── Hero Balance Card ── */}
-      <div
-        className="relative rounded-lg overflow-hidden shadow-xl shadow-accent/20"
-      >
-        {/* Gradient bg */}
-        <div className="absolute inset-0 bg-gradient-to-br from-accent via-emerald-500 to-secondary" />
-        {/* Decorative circles */}
-        <div className="absolute -top-8 -right-8 w-36 h-36 bg-white/10 rounded-full blur-2xl" />
-        <div className="absolute -bottom-6 -left-6 w-28 h-28 bg-white/10 rounded-full blur-2xl" />
-        <div className="absolute top-4 right-4 w-20 h-20 bg-white/5 rounded-full" />
+      {/* ── Top Overview & Stats Grid ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
+        {/* Left Side: Balance Card & Period Filters */}
+        <div className="lg:col-span-2">
+          {/* ── Hero Balance Card ── */}
+          <div
+            className="relative rounded-lg overflow-hidden shadow-xl shadow-accent/20 h-full"
+          >
+            {/* Gradient bg */}
+            <div className="absolute inset-0 bg-gradient-to-br from-accent via-emerald-500 to-secondary" />
+            {/* Decorative circles */}
+            <div className="absolute -top-8 -right-8 w-36 h-36 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute -bottom-6 -left-6 w-28 h-28 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute top-4 right-4 w-20 h-20 bg-white/5 rounded-full" />
 
-        <div className="relative p-6 pb-5">
-          {/* Top row */}
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <p className="text-[10px] font-bold text-white/70 uppercase tracking-[0.2em]">Total Saldo</p>
-              <p className="text-3xl font-black text-white tracking-tight mt-1 currency-font leading-none">
-                {formatCurrency(balance)}
-              </p>
-            </div>
-            <button
-              onClick={onAddClick}
-              className="flex items-center gap-1.5 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 text-white text-xs font-bold hover:bg-white/30 active:scale-95 transition-all"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Catat
-            </button>
-          </div>
+            <div className="relative p-6 pb-5 h-full flex flex-col justify-between">
+              {/* Top row */}
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <p className="text-[10px] font-bold text-white/70 uppercase tracking-[0.2em]">Total Saldo</p>
+                  <p className="text-3xl font-black text-white tracking-tight mt-1 currency-font leading-none">
+                    {formatCurrency(balance)}
+                  </p>
+                </div>
+                <button
+                  onClick={onAddClick}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 text-white text-xs font-bold hover:bg-white/30 active:scale-95 transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Catat
+                </button>
+              </div>
 
-          {/* Income / Expense row */}
-          <div className="flex gap-4">
-            <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
-                  <ArrowUpRight className="w-3 h-3 text-white" />
+              {/* Income / Expense row */}
+              <div className="flex gap-4">
+                <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
+                      <ArrowUpRight className="w-3 h-3 text-white" />
+                    </div>
+                    <p className="text-[9px] font-bold text-white/70 uppercase tracking-widest">Pemasukan</p>
+                  </div>
+                  <p className="text-sm font-black text-white currency-font">{formatCurrency(income)}</p>
                 </div>
-                <p className="text-[9px] font-bold text-white/70 uppercase tracking-widest">Pemasukan</p>
-              </div>
-              <p className="text-sm font-black text-white currency-font">{formatCurrency(income)}</p>
-            </div>
-            <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
-                  <ArrowDownRight className="w-3 h-3 text-white" />
+                <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 border border-white/20">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
+                      <ArrowDownRight className="w-3 h-3 text-white" />
+                    </div>
+                    <p className="text-[9px] font-bold text-white/70 uppercase tracking-widest">Pengeluaran</p>
+                  </div>
+                  <p className="text-sm font-black text-white currency-font">{formatCurrency(expense)}</p>
                 </div>
-                <p className="text-[9px] font-bold text-white/70 uppercase tracking-widest">Pengeluaran</p>
               </div>
-              <p className="text-sm font-black text-white currency-font">{formatCurrency(expense)}</p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* ── Period Filter Pills ── */}
-      <div className="flex gap-2 overflow-x-auto no-scrollbar">
-        {(['today', 'week', 'month', 'all'] as FilterPeriod[]).map(p => (
-          <button
-            key={p}
-            onClick={() => setPeriod(p)}
-            className={cn(
-              "flex-shrink-0 px-4 py-2 rounded-lg text-[11px] font-bold transition-all border",
-              period === p
-                ? "bg-accent text-white border-accent shadow-lg shadow-accent/25"
-                : "bg-card-bg text-text-secondary border-border-ui hover:border-accent/40 hover:text-text-primary"
-            )}
-          >
-            {periodLabels[p]}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Stats + Donut Row ── */}
-      <div className="grid grid-cols-3 gap-3">
-        {/* Savings Rate */}
-        <div className="col-span-2 bg-card-bg rounded-lg p-4 border border-border-ui shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest">Kesehatan Finansial</p>
-            <span className={cn(
-              "flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-bold border",
-              savingsRate >= 20
-                ? "bg-success/10 text-success border-success/20"
-                : "bg-warning/10 text-warning border-warning/20"
-            )}>
-              {savingsRate >= 20 ? <ShieldCheck className="w-2.5 h-2.5" /> : <AlertCircle className="w-2.5 h-2.5" />}
-              {savingsRate >= 20 ? 'Sehat' : 'Waspada'}
-            </span>
+        {/* Right Side: Financial Health & Donut Chart */}
+        <div className="lg:col-span-2 grid grid-cols-3 gap-3 lg:grid-cols-3 lg:gap-4 lg:content-start">
+          {/* ── Period Filter Pills ── */}
+          <div className="col-span-3 flex gap-2 overflow-x-auto no-scrollbar lg:col-span-3">
+            {(['today', 'week', 'month', 'all'] as FilterPeriod[]).map(p => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={cn(
+                  "flex-1 min-w-[70px] px-2 py-2 rounded-lg text-[11px] font-bold transition-all border text-center",
+                  period === p
+                    ? "bg-accent text-white border-accent shadow-lg shadow-accent/25"
+                    : "bg-card-bg text-text-secondary border-border-ui hover:border-accent/40 hover:text-text-primary"
+                )}
+              >
+                {periodLabels[p]}
+              </button>
+            ))}
           </div>
-          <div className="space-y-3">
-            {/* Savings bar */}
-            <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="text-[10px] font-semibold text-text-primary flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3 text-accent" /> Tabungan
-                </span>
-                <span className={cn("text-xs font-black", savingsRate >= 20 ? "text-success" : "text-warning")}>
-                  {savingsRate.toFixed(0)}%
-                </span>
-              </div>
-              <div className="h-2 bg-bg-main rounded-full overflow-hidden">
-                <div
-                  className={cn("h-full rounded-full", savingsRate >= 20 ? "bg-gradient-to-r from-success to-emerald-400" : "bg-gradient-to-r from-warning to-amber-400")}
-                  style={{ width: `${Math.min(savingsRate, 100)}%` }}
-                />
-              </div>
+
+          {/* Savings Rate (Kesehatan Finansial) */}
+          <div className="col-span-2 bg-card-bg rounded-lg p-4 border border-border-ui shadow-sm flex flex-col justify-between lg:col-span-2">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest">Kesehatan Finansial</p>
+              <span className={cn(
+                "flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-bold border",
+                savingsRate >= 20
+                  ? "bg-success/10 text-success border-success/20"
+                  : "bg-warning/10 text-warning border-warning/20"
+              )}>
+                {savingsRate >= 20 ? <ShieldCheck className="w-2.5 h-2.5" /> : <AlertCircle className="w-2.5 h-2.5" />}
+                {savingsRate >= 20 ? 'Sehat' : 'Waspada'}
+              </span>
             </div>
-            {/* Budget usage bar */}
-            {totalBudget > 0 && (
+            <div className="space-y-3">
+              {/* Savings bar */}
               <div>
                 <div className="flex justify-between items-center mb-1.5">
                   <span className="text-[10px] font-semibold text-text-primary flex items-center gap-1">
-                    <Zap className="w-3 h-3 text-warning" /> Anggaran
+                    <TrendingUp className="w-3 h-3 text-accent" /> Tabungan
                   </span>
-                  <span className={cn("text-xs font-black", budgetUsage <= 90 ? "text-text-primary" : "text-danger")}>
-                    {budgetUsage.toFixed(0)}%
+                  <span className={cn("text-xs font-black", savingsRate >= 20 ? "text-success" : "text-warning")}>
+                    {savingsRate.toFixed(0)}%
                   </span>
                 </div>
                 <div className="h-2 bg-bg-main rounded-full overflow-hidden">
                   <div
-                    className={cn("h-full rounded-full", budgetUsage <= 90 ? "bg-gradient-to-r from-accent to-secondary" : "bg-gradient-to-r from-warning to-danger")}
-                    style={{ width: `${budgetUsage}%` }}
+                    className={cn("h-full rounded-full", savingsRate >= 20 ? "bg-gradient-to-r from-success to-emerald-400" : "bg-gradient-to-r from-warning to-amber-400")}
+                    style={{ width: `${Math.min(savingsRate, 100)}%` }}
                   />
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Donut chart */}
-        <div
-          onClick={onNavigateToBudget}
-          className={cn(
-            "bg-card-bg rounded-lg p-3 border shadow-sm flex flex-col items-center relative cursor-pointer hover:bg-accent/5 active:scale-95 transition-all group justify-between",
-            totalBudget === 0 ? "border-dashed border-accent/40" : "border-border-ui hover:border-accent/40"
-          )}
-        >
-          <div className="w-full mb-1">
-            <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest text-center">Anggaran</p>
-          </div>
-          <div className="relative flex items-center justify-center">
-            <svg width="76" height="76" viewBox="0 0 88 88" className="-rotate-90">
-              <circle cx="44" cy="44" r={radius} fill="none" stroke="currentColor" strokeWidth="8" className="text-bg-main" />
-              <circle
-                cx="44" cy="44" r={radius} fill="none"
-                stroke="url(#dashGrad)" strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray={`${expenseDash} ${circ}`}
-              />
-              <defs>
-                <linearGradient id="dashGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#059669" />
-                  <stop offset="100%" stopColor="#10b981" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-xs font-black text-text-primary mt-0.5">{totalBudget > 0 ? `${budgetUsage.toFixed(0)}%` : '—'}</span>
+              {/* Budget usage bar */}
+              {totalBudget > 0 && (
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-[10px] font-semibold text-text-primary flex items-center gap-1">
+                      <Zap className="w-3 h-3 text-warning" /> Anggaran
+                    </span>
+                    <span className={cn("text-xs font-black", budgetUsage <= 90 ? "text-text-primary" : "text-danger")}>
+                      {budgetUsage.toFixed(0)}%
+                    </span>
+                  </div>
+                  <div className="h-2 bg-bg-main rounded-full overflow-hidden">
+                    <div
+                      className={cn("h-full rounded-full", budgetUsage <= 90 ? "bg-gradient-to-r from-accent to-secondary" : "bg-gradient-to-r from-warning to-danger")}
+                      style={{ width: `${budgetUsage}%` }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          <div className="mt-1">
-            {totalBudget === 0 ? (
-              <p className="text-[8px] font-bold text-accent uppercase tracking-wider text-center leading-tight group-hover:underline whitespace-pre-line">
-                {'Ketuk\nUntuk Atur'}
-              </p>
-            ) : (
-              <p className="text-[8px] font-bold text-text-secondary uppercase tracking-wider text-center leading-tight whitespace-pre-line group-hover:text-accent transition-colors">
-                {'Ketuk\nUntuk Atur'}
-              </p>
+
+          {/* Donut chart (Anggaran) */}
+          <div
+            onClick={onNavigateToBudget}
+            className={cn(
+              "col-span-1 bg-card-bg rounded-lg p-3 border shadow-sm flex flex-col items-center relative cursor-pointer hover:bg-accent/5 active:scale-95 transition-all group justify-between lg:col-span-1",
+              totalBudget === 0 ? "border-dashed border-accent/40" : "border-border-ui hover:border-accent/40"
             )}
+          >
+            <div className="w-full mb-1">
+              <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest text-center">Anggaran</p>
+            </div>
+            <div className="relative flex items-center justify-center">
+              <svg width="76" height="76" viewBox="0 0 88 88" className="-rotate-90">
+                <circle cx="44" cy="44" r={radius} fill="none" stroke="currentColor" strokeWidth="8" className="text-bg-main" />
+                <circle
+                  cx="44" cy="44" r={radius} fill="none"
+                  stroke="url(#dashGrad)" strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeDasharray={`${expenseDash} ${circ}`}
+                />
+                <defs>
+                  <linearGradient id="dashGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#059669" />
+                    <stop offset="100%" stopColor="#10b981" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-xs font-black text-text-primary mt-0.5">{totalBudget > 0 ? `${budgetUsage.toFixed(0)}%` : '—'}</span>
+              </div>
+            </div>
+            <div className="mt-1">
+              {totalBudget === 0 ? (
+                <p className="text-[8px] font-bold text-accent uppercase tracking-wider text-center leading-tight group-hover:underline whitespace-pre-line">
+                  {'Ketuk\nUntuk Atur'}
+                </p>
+              ) : (
+                <p className="text-[8px] font-bold text-text-secondary uppercase tracking-wider text-center leading-tight whitespace-pre-line group-hover:text-accent transition-colors">
+                  {'Ketuk\nUntuk Atur'}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

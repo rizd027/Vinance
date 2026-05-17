@@ -256,6 +256,7 @@ export default function Layout({
             </div>
 
             <div className="flex items-center gap-2 sm:gap-2.5 relative">
+              <div id="header-action-portal" className="hidden lg:block" />
               <div className="relative">
                 <button
                   onClick={(e) => {

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Target, Plus, Trash2, Edit2, X, CheckCircle2, Clock, TrendingUp, PiggyBank,
   Home, Car, Plane, Smartphone, GraduationCap, HeartPulse, ShoppingBag, Gamepad2, Camera, Globe, Briefcase, Coffee,
@@ -37,6 +38,11 @@ const GOAL_ICONS = [
 
 export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavings, userId }: GoalsProps) {
   const [showModal, setShowModal] = useState(false);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortalTarget(document.getElementById('header-action-portal'));
+  }, []);
   const [showSavingsModal, setShowSavingsModal] = useState<Goal | null>(null);
   const [editGoal, setEditGoal] = useState<Goal | null>(null);
   const [savingsAmount, setSavingsAmount] = useState('');
@@ -100,9 +106,20 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex flex-col gap-1 lg:hidden">
+      {portalTarget && createPortal(
+        <button
+          onClick={openAdd}
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent to-secondary text-white rounded-lg text-xs font-bold shadow-md shadow-accent/20 hover:shadow-accent/30 hover:scale-105 active:scale-95 transition-all mr-2"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Tambah Tujuan</span>
+        </button>,
+        portalTarget
+      )}
+
+      {/* Header (Mobile only) */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 lg:hidden">
+        <div className="flex flex-col gap-1">
           <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Target & Tujuan</h2>
           <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Perencanaan & Progres Tabungan</p>
           <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />

@@ -1900,7 +1900,7 @@ function handleDeleteNote(data) {
       budgets={data.budgets || []}
       syncing={loading || syncing}
       syncStatus={loading ? 'Memuat Data...' : (syncing ? 'Sinkronisasi...' : '')}
-      onAddClick={() => setShowAddModal(true)}
+      onAddClick={() => { handleTabChange('transactions'); setShowAddModal(true); }}
       onLogout={handleLogout}
       toasts={toasts}
       activeDialog={activeDialog}
