@@ -698,8 +698,9 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
           stream.getTracks().forEach(track => track.stop());
 
           const duration = performance.now() - pressStartTimeRef.current;
-          if (duration < 350 || audioBlob.size < 500) {
-            console.log("Hold duration too short, ignoring voice result");
+          if (duration < 500) {
+            console.log("Hold duration too short, alerting user");
+            alert("Ketuk dan tahan untuk berbicara.");
             return;
           }
 
