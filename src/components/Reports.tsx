@@ -199,7 +199,8 @@ export default function Reports({ transactions }: ReportsProps) {
     <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto">
       {/* Header & Filter */}
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
-        <div className="flex flex-col gap-1">
+        {/* Title Header - Covered globally by premium mobile header */}
+        <div className="hidden lg:flex flex-col gap-1">
           <h2 className="text-3xl font-black text-text-primary tracking-tighter leading-none">Analisis Laporan</h2>
           <div className="flex items-center gap-2 mt-1.5">
             <span className="w-8 h-1 bg-accent rounded-full" />

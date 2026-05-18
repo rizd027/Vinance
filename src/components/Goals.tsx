@@ -117,19 +117,13 @@ export default function Goals({ goals = [], onAdd, onUpdate, onDelete, onAddSavi
         portalTarget
       )}
 
-      {/* Header (Mobile only) */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 lg:hidden">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Target & Tujuan</h2>
-          <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Perencanaan & Progres Tabungan</p>
-          <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
-        </div>
+      {/* Header (Mobile only) - Title hidden since it is covered globally by premium mobile header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 lg:hidden mb-4">
         <button
           onClick={openAdd}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-linear-to-r from-accent to-secondary text-white rounded-lg text-xs font-black shadow-lg shadow-accent/20 hover:shadow-accent/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+          className="w-full flex items-center justify-center gap-2 py-3 bg-linear-to-r from-accent to-secondary text-white rounded-xl text-xs font-black shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
-          <Plus className="w-4 h-4" />
-          Tambah Tujuan
+          <Plus className="w-4 h-4" /> TAMBAH TUJUAN BARU
         </button>
       </div>
 

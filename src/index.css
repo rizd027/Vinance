@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
   
@@ -11,7 +13,7 @@
   --color-sidebar-text-secondary: #475569; /* Slate gray */
   --color-sidebar-border: #cbd5e1; /* Clear Slate-300 border for sidebar */
   --color-card-bg: #ffffff;
-  --color-accent: #10b981; /* Wise Emerald */
+  --color-accent: #2D4DB5; /* New Royal Blue Accent */
   --color-secondary: #0ea5e9; /* Sky Blue */
   --color-success: #10b981; /* Emerald Green */
   --color-danger: #f43f5e; /* Apple Crimson */
@@ -27,11 +29,17 @@
   --color-dark-sidebar-text-secondary: #94a3b8;
   --color-dark-sidebar-border: #1e293b;
   --color-dark-card-bg: #121826; /* Obsidian Card Pop */
-  --color-dark-accent: #10b981; /* Wise Emerald */
+  --color-dark-accent: #2D4DB5; /* New Royal Blue Accent */
   --color-dark-secondary: #0ea5e9; /* Sky Blue */
   --color-dark-text-primary: #f8fafc;
   --color-dark-text-secondary: #94a3b8;
   --color-dark-border-ui: #1e293b; /* Deep Navy borders */
+
+  /* Navy Blue — Design Reference Colors */
+  --color-navy-primary: #1A2C5B;
+  --color-navy-mid: #1e3a8a;
+  --color-navy-secondary: #2D4DB5;
+  --color-navy-light: #3b63d4;
 
   /* Premium Elevation Shadows - Crisp and clear Slate shadows */
   --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.08);
@@ -143,8 +151,8 @@ body {
 }
 
 .card-ui:hover {
-  border-color: rgba(16, 185, 129, 0.35); /* Subtle Emerald highlight */
-  box-shadow: var(--shadow-md), 0 8px 16px 0 rgba(16, 185, 129, 0.06);
+  border-color: rgba(45, 77, 181, 0.35); /* Subtle Royal Blue highlight */
+  box-shadow: var(--shadow-md), 0 8px 16px 0 rgba(45, 77, 181, 0.06);
   transform: translateY(-2px);
 }
 
@@ -191,5 +199,152 @@ body {
   font-size: 10px;
   color: var(--color-text-secondary);
   opacity: 0.8;
+}
+
+/* Quick Action Button (Dashboard Hero) */
+.quick-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.2s, transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  flex: 1;
+}
+
+.quick-action-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.quick-action-btn:active {
+  transform: scale(0.93);
+}
+
+.quick-action-btn .qa-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-action-btn .qa-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+/* Transaction filter pill tabs */
+.tx-filter-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--color-border-ui);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tx-filter-pill.active {
+  background: #1A2C5B;
+  border-color: #1A2C5B;
+  color: #fff;
+}
+
+.dark .tx-filter-pill.active {
+  background: #2D4DB5;
+  border-color: #2D4DB5;
+}
+
+.tx-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Transaction date group label */
+.tx-date-group {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 12px 0 6px;
+  opacity: 0.7;
+}
+
+/* 
+ * Premium Global Inputs & Textareas Styling
+ */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+select,
+textarea:not(.bg-transparent):not([class*="bg-transparent"]) {
+  background-color: var(--color-bg-main) !important;
+  border: 1px solid var(--color-border-ui) !important;
+  border-radius: 12px !important; /* Premium rounded-xl */
+  font-size: 13.5px !important;
+  font-weight: 600 !important; /* Bold premium values */
+  color: var(--color-text-primary) !important;
+  outline: none !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02) !important; /* Subtle inner shadow */
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+textarea::placeholder {
+  color: var(--color-text-secondary) !important;
+  opacity: 0.5 !important;
+  font-weight: 500 !important;
+}
+
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="number"]:hover,
+textarea:not(.bg-transparent):not([class*="bg-transparent"]):hover {
+  border-color: rgba(45, 77, 181, 0.45) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.015), 0 2px 8px rgba(45, 77, 181, 0.02) !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+textarea:not(.bg-transparent):not([class*="bg-transparent"]):focus {
+  border-color: var(--color-accent) !important;
+  background-color: var(--color-card-bg) !important; /* Premium elevation background shift on focus */
+  box-shadow: 0 0 0 4px rgba(45, 77, 181, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.01) !important;
+}
+
+/* Also style custom select wrappers and date pickers for visual parity */
+.focus-within\:border-accent:focus-within {
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 4px rgba(45, 77, 181, 0.15) !important;
 }
 

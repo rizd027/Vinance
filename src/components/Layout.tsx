@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useTransition } from 'react';
-import { Home, List, PieChart, Target, User, LogOut, Moon, Sun, Plus, RefreshCw, TrendingUp, Wallet, StickyNote, Flag, Cloud, CloudOff, LayoutGrid, X, Bell, AlertCircle, CheckCircle2, AlertOctagon, AlertTriangle, Info } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Home, List, PieChart, Target, User, LogOut, Moon, Sun, Plus, RefreshCw, TrendingUp, Wallet, StickyNote, Flag, Cloud, CloudOff, LayoutGrid, X, Bell, AlertCircle, CheckCircle2, AlertOctagon, AlertTriangle, Info, ArrowLeft } from 'lucide-react';
 
 import { cn, formatCurrency } from '../lib/utils';
 import { Transaction, Budget, User as UserType } from '../types';
@@ -21,10 +22,14 @@ interface LayoutProps {
   wallpaper?: string;
   toasts?: any[];
   activeDialog?: any;
+  showNotifications?: boolean;
+  setShowNotifications?: (show: boolean) => void;
 }
 
 export default function Layout({
-  children, activeTab, setActiveTab, user, isDark, toggleTheme, transactions, budgets, syncing, syncStatus, onAddClick, onLogout, wallpaper = 'none', toasts = [], activeDialog
+  children, activeTab, setActiveTab, user, isDark, toggleTheme, transactions, budgets, syncing, syncStatus, onAddClick, onLogout, wallpaper = 'none', toasts = [], activeDialog,
+  showNotifications: propShowNotifications,
+  setShowNotifications: propSetShowNotifications
 }: LayoutProps) {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isPending, startTransition] = useTransition();
@@ -66,7 +71,7 @@ export default function Layout({
     { id: 'notes', icon: StickyNote, label: 'Catatan' },
   ];
 
-  const allTabs = [...mainTabs, { id: 'profile', icon: User, label: 'Akun' }];
+  const allTabs = [...mainTabs, { id: 'profile', icon: User, label: 'Akun' }, { id: 'menu', icon: LayoutGrid, label: 'Menu Utama' }];
 
   // Live stats for sidebar badges
   const sidebarStats = useMemo(() => {
@@ -78,11 +83,13 @@ export default function Layout({
 
   const activeTabDef = allTabs.find(t => t.id === activeTab);
 
-  const [showNotifications, setShowNotifications] = useState(false);
+  const [localShowNotifications, setLocalShowNotifications] = useState(false);
+  const showNotifications = propShowNotifications !== undefined ? propShowNotifications : localShowNotifications;
+  const setShowNotifications = propSetShowNotifications !== undefined ? propSetShowNotifications : setLocalShowNotifications;
   const notificationCount = (toasts?.length || 0) + (activeDialog ? 1 : 0);
 
   return (
-    <div className="h-screen bg-bg-main flex overflow-hidden relative" onClick={() => setShowNotifications(false)}>
+    <div className="h-[100dvh] bg-bg-main flex overflow-hidden relative" onClick={() => setShowNotifications(false)}>
 
       {/* Sidebar for Desktop */}
       <aside 
@@ -181,7 +188,7 @@ export default function Layout({
       </aside>
 
       <div
-        className="flex-1 flex flex-col h-screen overflow-y-auto pb-24 lg:pb-0 min-w-0 no-scrollbar sm:custom-scrollbar relative transition-colors"
+        className="flex-1 flex flex-col h-[100dvh] overflow-y-auto pb-20 lg:pb-0 min-w-0 no-scrollbar sm:custom-scrollbar relative transition-colors"
       >
         {/* Wallpaper Background Layer */}
         {wallpaper !== 'none' && (
@@ -214,7 +221,7 @@ export default function Layout({
 
         <header className={cn(
           "bg-card-bg/80 backdrop-blur-xl border-b border-border-ui/50 px-4 sm:px-6 py-4 flex items-center justify-between z-20 sticky top-0 shadow-sm transition-all",
-          isMobile && activeTab !== 'home' && "hidden"
+          isMobile && "hidden"
         )}>
           <div className="relative z-10 w-full flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -423,61 +430,88 @@ export default function Layout({
           </div>
         </header>
 
-        <main className="flex-1 p-4 lg:p-5 max-w-[1600px] mx-auto w-full relative z-10">
-          {children}
-        </main>
-
-        {/* Mobile Menu Overlay */}
-        {isMenuOpen && (
-          <div className="lg:hidden">
-            <div
-              onClick={() => setIsMenuOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-20"
-            />
-            <div
-              className="fixed bottom-[110px] left-6 right-6 z-30"
-            >
-              <div className="bg-card-bg/95 backdrop-blur-xl border border-border-ui rounded-lg p-6 shadow-[0_12px_40px_rgba(0,0,0,0.3)]">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-bold text-text-primary">Menu Utama</h3>
-                  <button onClick={() => setIsMenuOpen(false)} className="w-8 h-8 rounded-full bg-bg-main flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-border-ui transition-all">
-                    <X className="w-4.5 h-4.5" />
-                  </button>
-                </div>
-                <div className="grid grid-cols-3 gap-y-6 gap-x-4">
-                  {mainTabs.filter(tab => !['home', 'transactions'].includes(tab.id)).map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => {
-                        handleTabClick(tab.id);
-                        setIsMenuOpen(false);
-                      }}
-                      className="flex flex-col items-center gap-2.5 group"
-                    >
-                      <div className={cn(
-                        "w-14 h-14 rounded-lg flex items-center justify-center transition-all duration-300 relative",
-                        activeTab === tab.id
-                          ? "bg-accent text-white shadow-lg shadow-accent/30 scale-105"
-                          : "bg-bg-main text-text-secondary group-hover:bg-accent/10 group-hover:text-accent"
-                      )}>
-                        <tab.icon className="w-6 h-6" />
-                        {tab.id === 'transactions' && transactionBadge && (
-                          <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-danger text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-card-bg shadow-sm">
-                            {transactionBadge > 9 ? '9+' : transactionBadge}
-                          </span>
+        <main className={cn(
+          "flex-1 max-w-[1600px] mx-auto w-full relative z-10",
+          isMobile ? "p-0" : "p-5"
+        )}>
+          {isMobile && activeTab !== 'home' ? (
+            <div>
+              {/* Navy Blue header block for other pages */}
+              <div 
+                className="relative pt-6 pb-11 px-6 text-white overflow-hidden rounded-b-[40px] shadow-lg" 
+                style={{ background: 'linear-gradient(180deg, #1A2C5B 0%, #15254e 100%)' }}
+              >
+                {/* Decorative gradients */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
+                <div className="absolute -bottom-10 -left-10 w-44 h-44 bg-blue-400/10 rounded-full blur-2xl" />
+                
+                <div className="relative">
+                  {/* Top row: Page Title + Avatar/Bell */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[28px] font-black text-white tracking-tight leading-none">
+                        {activeTabDef?.label || 'Vinance'}
+                      </p>
+                      <p className="text-[10px] font-semibold text-white/50 uppercase tracking-widest mt-2">
+                        {activeTabDef?.id === 'transactions' ? 'Catatan Transaksi' :
+                          activeTabDef?.id === 'budgets' ? 'Manajemen Anggaran' :
+                            activeTabDef?.id === 'reports' ? 'Analisis Arus Kas' :
+                              activeTabDef?.id === 'goals' ? 'Target Tabungan' :
+                                activeTabDef?.id === 'notes' ? 'Memo Finansial' :
+                                  activeTabDef?.id === 'menu' ? 'Eksplorasi Fitur' : 'Pengaturan Akun'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {activeTabDef?.id !== 'profile' && (
+                        <button
+                          onClick={toggleTheme}
+                          className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/15 active:scale-90 hover:bg-white/20 transition-all text-white/95"
+                          title={isDark ? "Mode Terang" : "Mode Gelap"}
+                        >
+                          {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        </button>
+                      )}
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowNotifications(!showNotifications);
+                        }}
+                        className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/15 active:scale-90 transition-transform relative"
+                      >
+                        <Bell className="w-4.5 h-4.5 text-white/90" />
+                        {notificationCount > 0 && (
+                          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border border-[#1A2C5B] animate-pulse" />
                         )}
-                      </div>
-                      <span className={cn(
-                        "text-[11px] font-bold text-center tracking-wide",
-                        activeTab === tab.id ? "text-accent" : "text-text-secondary"
-                      )}>{tab.label}</span>
-                    </button>
-                  ))}
+                      </button>
+                      {activeTabDef?.id !== 'profile' && (
+                        <button 
+                          onClick={() => handleTabClick('profile')}
+                          className="w-10 h-10 rounded-full active:scale-90 hover:scale-105 transition-all focus:outline-none"
+                          title="Ke Halaman Profil"
+                        >
+                          {user?.photoUrl ? (
+                            <img src={user.photoUrl} alt="profil" className="w-10 h-10 rounded-full object-cover border-2 border-white/50 shadow-md" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center">
+                              <span className="text-white font-bold text-sm">{user?.name ? user.name[0].toUpperCase() : 'U'}</span>
+                            </div>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              {/* Curved content sheet overlay */}
+              <div className="bg-bg-main rounded-t-[36px] mt-[-28px] relative z-10 px-5 pt-7 pb-20 shadow-[0_-8px_30px_rgba(0,0,0,0.03)] min-h-[calc(100dvh-120px)]">
+                {children}
+              </div>
             </div>
-          </div>
-        )}
+          ) : (
+            children
+          )}
+        </main>
 
         {/* Mobile Bottom Nav Bar */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 w-full z-30 transition-all duration-500">
@@ -494,60 +528,153 @@ export default function Layout({
           {/* Interactive Content Container */}
           <div className="relative px-6 py-2 flex justify-between items-center h-[65px] pb-safe">
             {/* Left Side Tabs */}
-            <div className="flex justify-around flex-1 pr-6">
+            <div className="flex justify-center flex-1 pr-6">
               <button onClick={() => handleTabClick('home')} className="flex flex-col items-center justify-center gap-1 h-full w-14 group">
-                <Home className={cn("w-5 h-5 transition-colors", activeTab === 'home' ? "text-accent" : "text-text-secondary group-hover:text-text-primary")} />
-                <span className={cn("text-[9px] font-bold transition-colors", activeTab === 'home' ? "text-accent" : "text-text-secondary group-hover:text-text-primary")}>Beranda</span>
-              </button>
-              <button onClick={() => handleTabClick('transactions')} className="flex flex-col items-center justify-center gap-1 h-full w-14 group">
-                <div className="relative">
-                  <List className={cn("w-5 h-5 transition-colors", activeTab === 'transactions' ? "text-accent" : "text-text-secondary group-hover:text-text-primary")} />
-                  {transactionBadge && (
-                    <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 bg-danger text-white text-[8px] font-bold rounded-full flex items-center justify-center border border-card-bg">
-                      {transactionBadge > 9 ? '9+' : transactionBadge}
-                    </span>
-                  )}
-                </div>
-                <span className={cn("text-[9px] font-bold transition-colors", activeTab === 'transactions' ? "text-accent" : "text-text-secondary group-hover:text-text-primary")}>Riwayat</span>
+                <Home className={cn("w-5 h-5 transition-colors", activeTab === 'home' ? "text-[#1A2C5B] dark:text-blue-400" : "text-text-secondary group-hover:text-text-primary")} />
+                <span className={cn("text-[9px] font-bold transition-colors", activeTab === 'home' ? "text-[#1A2C5B] dark:text-blue-400" : "text-text-secondary group-hover:text-text-primary")}>Beranda</span>
               </button>
             </div>
 
             {/* Center: Add (+) Floating Button */}
             <div className="absolute left-1/2 -translate-x-1/2 -top-6">
               <button
-                onClick={() => {
-                  onAddClick();
-                  setIsMenuOpen(false);
-                }}
-                className="w-[56px] h-[56px] rounded-full bg-linear-to-tr from-accent to-secondary flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95 shadow-[0_8px_20px_rgba(5,150,105,0.4)]"
-              >
+                onClick={onAddClick}
+                className="w-[56px] h-[56px] rounded-full flex items-center justify-center text-white transition-transform hover:scale-105 active:scale-95 shadow-[0_8px_24px_rgba(26,44,91,0.45)]" style={{ background: 'linear-gradient(135deg, #1A2C5B 0%, #2D4DB5 100%)' }}>
                 <Plus className="w-7 h-7" />
               </button>
             </div>
 
             {/* Right Side Tabs */}
-            <div className="flex justify-around flex-1 pl-6">
-              <button onClick={() => setIsMenuOpen(true)} className="flex flex-col items-center justify-center gap-1 h-full w-14 group">
-                <LayoutGrid className={cn("w-5 h-5 transition-colors", isMenuOpen ? "text-accent" : "text-text-secondary group-hover:text-text-primary")} />
-                <span className={cn("text-[9px] font-bold transition-colors", isMenuOpen ? "text-accent" : "text-text-secondary group-hover:text-text-primary")}>Menu</span>
-              </button>
-              <button onClick={() => handleTabClick('profile')} className="flex flex-col items-center justify-center gap-1 h-full w-14 group">
-                {user.photoUrl ? (
-                  <div className={cn(
-                    "w-5 h-5 rounded-full overflow-hidden border transition-all",
-                    activeTab === 'profile' ? "border-accent ring-1 ring-accent/30" : "border-text-secondary"
-                  )}>
-                    <img src={user.photoUrl} alt="Profile" className="w-full h-full object-cover" />
-                  </div>
-                ) : (
-                  <User className={cn("w-5 h-5 transition-colors", activeTab === 'profile' ? "text-accent" : "text-text-secondary group-hover:text-text-primary")} />
-                )}
-                <span className={cn("text-[9px] font-bold transition-colors", activeTab === 'profile' ? "text-accent" : "text-text-secondary group-hover:text-text-primary")}>Profil</span>
+            <div className="flex justify-center flex-1 pl-6">
+              <button onClick={() => handleTabClick('menu')} className="flex flex-col items-center justify-center gap-1 h-full w-14 group">
+                <LayoutGrid className={cn("w-5 h-5 transition-colors", activeTab === 'menu' ? "text-[#1A2C5B] dark:text-blue-400" : "text-text-secondary group-hover:text-text-primary")} />
+                <span className={cn("text-[9px] font-bold transition-colors", activeTab === 'menu' ? "text-[#1A2C5B] dark:text-blue-400" : "text-text-secondary group-hover:text-text-primary")}>Menu</span>
               </button>
             </div>
           </div>
         </div>
+      {/* Mobile Fullscreen Notifications Page */}
+      {isMobile && showNotifications && createPortal(
+        <div className="fixed inset-0 z-[10000] bg-bg-main flex flex-col animate-fade-in overflow-hidden">
+          {/* Navy Blue header block */}
+          <div 
+            className="relative pt-6 pb-11 px-6 text-white overflow-hidden rounded-b-[40px] shadow-lg shrink-0" 
+            style={{ background: 'linear-gradient(180deg, #1A2C5B 0%, #15254e 100%)' }}
+          >
+            {/* Decorative gradients */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-10 -left-10 w-44 h-44 bg-blue-400/10 rounded-full blur-2xl" />
+            
+            <div className="relative">
+              {/* Top row: Back Button + Title + Count */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => setShowNotifications(false)}
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/15 active:scale-90 hover:bg-white/20 transition-all text-white/95"
+                    title="Kembali"
+                  >
+                    <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+                  </button>
+                  <div>
+                    <h1 className="text-xl font-black text-white tracking-tight leading-none">
+                      Pemberitahuan
+                    </h1>
+                    <p className="text-[9px] font-semibold text-white/50 uppercase tracking-widest mt-1.5">
+                      Informasi & Aktivitas
+                    </p>
+                  </div>
+                </div>
 
+                {notificationCount > 0 && (
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-500/25">
+                    {notificationCount} Baru
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Curved content sheet overlay */}
+          <div className="flex-1 bg-bg-main rounded-t-[36px] mt-[-28px] relative z-10 px-5 pt-8 pb-12 shadow-[0_-8px_30px_rgba(0,0,0,0.03)] overflow-y-auto no-scrollbar">
+            <div className="space-y-4 max-w-lg mx-auto">
+              {notificationCount === 0 ? (
+                <div className="flex flex-col items-center justify-center py-28 text-text-secondary/30">
+                  <div className="w-16 h-16 rounded-full bg-accent/5 flex items-center justify-center border border-accent/10 mb-4 animate-pulse">
+                    <Bell className="w-8 h-8 text-accent/60 stroke-[1.5]" />
+                  </div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-center animate-bounce">Tidak ada notifikasi baru</p>
+                  <p className="text-[10px] text-text-secondary/50 text-center mt-1.5 px-4 leading-relaxed">
+                    Semua update sistem, peringatan anggaran, dan aktivitas keuangan Anda akan ditampilkan di sini.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Active Dialog (Priority) */}
+                  {activeDialog && (
+                    <div className="p-4 bg-accent/5 border border-accent/20 rounded-2xl space-y-4 shadow-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0 border border-accent/15">
+                          <AlertCircle className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-bold text-text-primary leading-tight">{activeDialog.title}</p>
+                          <p className="text-xs text-text-secondary mt-1.5 leading-relaxed">{activeDialog.message}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2.5">
+                        <button
+                          onClick={() => {
+                            activeDialog.onConfirm();
+                            setShowNotifications(false);
+                          }}
+                          className="flex-1 py-3.5 bg-accent text-white rounded-xl text-xs font-black shadow-lg shadow-accent/25 active:scale-95 transition-transform"
+                        >
+                          {activeDialog.confirmText?.toUpperCase()}
+                        </button>
+                        {activeDialog.type === 'confirm' && (
+                          <button
+                            onClick={() => {
+                              activeDialog.onCancel();
+                              setShowNotifications(false);
+                            }}
+                            className="flex-1 py-3.5 bg-bg-main text-text-secondary rounded-xl text-xs font-bold border border-border-ui active:scale-95 transition-transform"
+                          >
+                            {activeDialog.cancelText?.toUpperCase()}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Toasts */}
+                  {toasts?.map((toast) => (
+                    <div
+                      key={toast.id}
+                      className={cn(
+                        "p-4.5 rounded-2xl flex items-start gap-3.5 border transition-colors shadow-sm",
+                        toast.type === 'success' && "bg-success/5 border-success/20 text-success",
+                        toast.type === 'error' && "bg-danger/5 border-danger/20 text-danger",
+                        toast.type === 'warning' && "bg-warning/5 border-warning/20 text-warning",
+                        toast.type === 'info' && "bg-accent/5 border-accent/20 text-accent"
+                      )}
+                    >
+                      <div className="w-8.5 h-8.5 rounded-xl bg-current/10 flex items-center justify-center shrink-0 border border-current/10">
+                        {toast.type === 'success' && <CheckCircle2 className="w-5 h-5" />}
+                        {toast.type === 'error' && <AlertOctagon className="w-5 h-5" />}
+                        {toast.type === 'warning' && <AlertTriangle className="w-5 h-5" />}
+                        {toast.type === 'info' && <Info className="w-5 h-5" />}
+                      </div>
+                      <p className="text-xs font-bold leading-normal flex-1 mt-1">{toast.message}</p>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       </div>
     </div>

@@ -4,7 +4,7 @@ import {
   Calendar as CalendarIcon, List as ListIcon, ChevronLeft, ChevronRight,
   ArrowUpRight, ArrowDownRight, Utensils, Car, ShoppingBag, Receipt,
   Gamepad2, HeartPulse, Wallet, Settings2, SlidersHorizontal, ChevronDown,
-  ArrowUpDown, FileDown, FileUp, TrendingUp, Mic, Camera, Loader2
+  ArrowUpDown, FileDown, FileUp, TrendingUp, Mic, Camera, Loader2, ArrowLeft
 } from 'lucide-react';
 import { aiService } from '../lib/ai';
 import { Transaction } from '../types';
@@ -189,8 +189,8 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
 
   return (
     <div className="space-y-4">
-      {/* Title Header */}
-      <div className="flex flex-col gap-1 lg:hidden mb-2">
+      {/* Title Header - Covered globally by premium mobile header */}
+      <div className="hidden flex-col gap-1 lg:flex mb-2">
         <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Riwayat Transaksi</h2>
         <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Pencatatan & Arus Kas</p>
         <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
@@ -665,58 +665,134 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
   const [isListening, setIsListening] = useState(false);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const recognitionRef = React.useRef<any>(null);
+  const voiceBtnRef = React.useRef<HTMLButtonElement>(null);
+  const startVoiceInputRef = React.useRef<any>(null);
+  const stopVoiceInputRef = React.useRef<any>(null);
+  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
+  const audioChunksRef = React.useRef<Blob[]>([]);
+  const pressStartTimeRef = React.useRef<number>(0);
 
   const startVoiceInput = () => {
-    console.log("Voice Input Clicked");
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Browser Anda tidak mendukung Voice Input.");
-      return;
-    }
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'id-ID';
-    recognition.onstart = () => {
-      console.log("Speech Recognition Started");
-      setIsListening(true);
-    };
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = () => setIsListening(false);
-    recognition.onresult = async (event: any) => {
-      const text = event.results[0][0].transcript;
-      if (!text) return;
-      
-      setIsProcessingAI(true);
-      try {
-        const result = await aiService.parseVoiceCommand(text);
-        if (result) {
-          setType(result.type);
-          
-          // Flexible category matching
-          const matchedCategory = categories.find(c => 
-            c.toLowerCase() === result.category.toLowerCase()
-          );
-          
-          if (matchedCategory) {
-            setCategory(matchedCategory);
-            setCustomCategory('');
-          } else {
-            setCategory('Lainnya');
-            setCustomCategory(result.category);
+    if (isListening || isProcessingAI) return;
+    console.log("Voice Input Started (Hold & Local Recording)");
+    pressStartTimeRef.current = performance.now();
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        setIsListening(true);
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
           }
-          setAmount(formatInputNumber(result.amount.toString()));
-          setNote(result.note);
-        } else {
-          alert("AI gagal memproses suara Anda. Silakan coba lagi.");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Terjadi kesalahan saat menghubungi AI.");
-      } finally {
-        setIsProcessingAI(false);
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          
+          // Stop all tracks on the stream to release the mic
+          stream.getTracks().forEach(track => track.stop());
+
+          const duration = performance.now() - pressStartTimeRef.current;
+          if (duration < 350 || audioBlob.size < 500) {
+            console.log("Hold duration too short, ignoring voice result");
+            return;
+          }
+
+          setIsProcessingAI(true);
+          try {
+            console.log("Uploading audio and transcribing via Groq Whisper...");
+            const text = await aiService.transcribeAudio(audioBlob);
+            if (!text) {
+              alert("Gagal mentranskripsi suara. Pastikan mikrofon berfungsi dan coba lagi.");
+              return;
+            }
+            console.log("Whisper transcription result:", text);
+
+            const result = await aiService.parseVoiceCommand(text);
+            if (result) {
+              setType(result.type);
+              
+              // Flexible category matching
+              const matchedCategory = categories.find(c => 
+                c.toLowerCase() === result.category.toLowerCase()
+              );
+              
+              if (matchedCategory) {
+                setCategory(matchedCategory);
+                setCustomCategory('');
+              } else {
+                setCategory('Lainnya');
+                setCustomCategory(result.category);
+              }
+              setAmount(formatInputNumber(result.amount.toString()));
+              setNote(result.note);
+            } else {
+              alert("AI gagal mengekstrak rincian transaksi dari teks.");
+            }
+          } catch (err) {
+            console.error("Voice process error:", err);
+            alert("Terjadi kesalahan saat memproses suara via AI.");
+          } finally {
+            setIsProcessingAI(false);
+          }
+        };
+
+        mediaRecorder.start();
+      })
+      .catch(err => {
+        console.error("Microphone Access Error:", err);
+        alert("Izin akses mikrofon ditolak atau tidak tersedia.");
+      });
+  };
+
+  const stopVoiceInput = () => {
+    console.log("Voice Input Stopped");
+    setIsListening(false);
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (e) {
+        console.error("Error stopping media recorder:", e);
+      }
+    }
+  };
+
+  useEffect(() => {
+    startVoiceInputRef.current = startVoiceInput;
+    stopVoiceInputRef.current = stopVoiceInput;
+  });
+
+  useEffect(() => {
+    const voiceBtn = voiceBtnRef.current;
+    if (!voiceBtn) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      if (startVoiceInputRef.current) {
+        startVoiceInputRef.current();
       }
     };
-    recognition.start();
-  };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      e.preventDefault();
+      if (stopVoiceInputRef.current) {
+        stopVoiceInputRef.current();
+      }
+    };
+
+    voiceBtn.addEventListener('touchstart', handleTouchStart, { passive: false });
+    voiceBtn.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    return () => {
+      voiceBtn.removeEventListener('touchstart', handleTouchStart);
+      voiceBtn.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
 
   const handleReceiptScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log("Receipt Scan Triggered");
@@ -826,163 +902,195 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
     : ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Lainnya'];
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex flex-col overflow-y-auto bg-card-bg">
-          <div 
-            className="relative w-full flex-1 flex flex-col items-center py-12 px-6 md:px-12 lg:px-24"
-          >
-            <div className="w-full max-w-4xl">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h3 className="text-xl md:text-2xl font-black text-text-primary tracking-tight">{editId ? 'Edit Transaksi' : 'Catat Transaksi Baru'}</h3>
-            <div className="flex items-center gap-2 mt-1.5">
-              <div className={cn("w-2 h-2 rounded-full", isListening ? "bg-accent animate-pulse" : (isProcessingAI ? "bg-accent/40" : "bg-border-ui"))} />
-              <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">
-                {isListening ? 'Mendengarkan...' : (isProcessingAI ? 'AI sedang memproses...' : 'Input Data Manual atau AI')}
-              </p>
+    <div className="fixed inset-0 z-[9999] bg-bg-main flex flex-col animate-fade-in overflow-hidden">
+      {/* Navy Blue header block */}
+      <div 
+        className="relative pt-6 pb-11 px-6 text-white overflow-hidden rounded-b-[40px] shadow-lg shrink-0" 
+        style={{ background: 'linear-gradient(180deg, #1A2C5B 0%, #15254e 100%)' }}
+      >
+        {/* Decorative gradients */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-10 -left-10 w-44 h-44 bg-blue-400/10 rounded-full blur-2xl" />
+        
+        <div className="relative">
+          {/* Top row: Back Button + Title + pulsing state */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={onClose}
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/15 active:scale-90 hover:bg-white/20 transition-all text-white/95"
+                title="Kembali"
+              >
+                <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+              </button>
+              <div>
+                <h1 className="text-xl font-black text-white tracking-tight leading-none">
+                  {editId ? 'Edit Transaksi' : 'Catat Transaksi Baru'}
+                </h1>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <div className={cn("w-2 h-2 rounded-full", isListening ? "bg-accent animate-pulse" : (isProcessingAI ? "bg-accent/40" : "bg-white/40"))} />
+                  <p className="text-[9px] font-semibold text-white/50 uppercase tracking-widest mt-0.5">
+                    {isListening ? 'Mendengarkan...' : (isProcessingAI ? 'AI sedang memproses...' : 'Input Data Manual atau AI')}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-          <button onClick={onClose} className="w-10 h-10 rounded-lg bg-bg-main flex items-center justify-center text-text-secondary hover:text-danger hover:bg-danger/5 transition-all">
-            <X className="w-5 h-5" />
-          </button>
         </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="flex bg-bg-main p-1.5 rounded-lg border border-border-ui/50 transition-colors">
-            <button
-              type="button"
-              onClick={() => setType('Expense')}
-              className={cn(
-                "flex-1 py-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-2",
-                type === 'Expense' ? 'bg-card-bg text-danger shadow-sm border border-border-ui/30' : 'text-text-secondary hover:text-text-primary'
-              )}
-            >
-              <ArrowDownRight className="w-4 h-4" /> Pengeluaran
-            </button>
-            <button
-              type="button"
-              onClick={() => setType('Income')}
-              className={cn(
-                "flex-1 py-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-2",
-                type === 'Income' ? 'bg-card-bg text-success shadow-sm border border-border-ui/30' : 'text-text-secondary hover:text-text-primary'
-              )}
-            >
-              <ArrowUpRight className="w-4 h-4" /> Pemasukan
-            </button>
-          </div>
+      {/* Curved content sheet overlay */}
+      <div className="flex-1 bg-bg-main rounded-t-[36px] mt-[-28px] relative z-10 px-5 pt-8 pb-48 md:pb-12 shadow-[0_-8px_30px_rgba(0,0,0,0.03)] overflow-y-auto no-scrollbar">
+        <div className="w-full max-w-xl mx-auto min-h-full flex flex-col justify-between">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between mt-2">
+            <div className="space-y-5 md:space-y-8 flex-1">
+              <div className="flex bg-bg-main p-1.5 rounded-lg border border-border-ui/50 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setType('Expense')}
+                  className={cn(
+                    "flex-1 py-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-2",
+                    type === 'Expense' ? 'bg-card-bg text-danger shadow-sm border border-border-ui/30' : 'text-text-secondary hover:text-text-primary'
+                  )}
+                >
+                  <ArrowDownRight className="w-4 h-4" /> Pengeluaran
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setType('Income')}
+                  className={cn(
+                    "flex-1 py-3 rounded-lg text-xs font-black transition-all flex items-center justify-center gap-2",
+                    type === 'Income' ? 'bg-card-bg text-success shadow-sm border border-border-ui/30' : 'text-text-secondary hover:text-text-primary'
+                  )}
+                >
+                  <ArrowUpRight className="w-4 h-4" /> Pemasukan
+                </button>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            <div className="space-y-2">
-              <label className="block text-[10px] font-black text-text-secondary mb-1 uppercase tracking-widest px-1">Kategori</label>
-              <CustomSelect
-                required
-                value={category}
-                onChange={setCategory}
-                options={categories}
-                placeholder="Pilih Kategori"
-                className="h-[52px] rounded-lg border-border-ui/60"
-              />
-              {category === 'Lainnya' && (
-                <div className="mt-3 animate-in fade-in slide-in-from-top-1 duration-300">
-                  <input
-                    type="text"
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-text-secondary mb-1 uppercase tracking-widest px-1">Kategori</label>
+                  <CustomSelect
                     required
-                    value={customCategory}
-                    onChange={(e) => setCustomCategory(e.target.value)}
-                    className="w-full h-[52px] px-4 rounded-lg border border-border-ui bg-card-bg text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-all shadow-inner"
-                    placeholder="Ketik kategori kustom..."
-                    autoFocus
+                    value={category}
+                    onChange={setCategory}
+                    options={categories}
+                    placeholder="Pilih Kategori"
+                    className="h-[52px] rounded-lg border-border-ui/60"
+                  />
+                  {category === 'Lainnya' && (
+                    <div className="mt-3 animate-in fade-in slide-in-from-top-1 duration-300">
+                      <input
+                        type="text"
+                        required
+                        value={customCategory}
+                        onChange={(e) => setCustomCategory(e.target.value)}
+                        className="w-full h-[52px] px-4 rounded-lg border border-border-ui bg-card-bg text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-all shadow-inner"
+                        placeholder="Ketik kategori kustom..."
+                        autoFocus
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-text-secondary mb-1 uppercase tracking-widest px-1">Jumlah (RP)</label>
+                  <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-text-secondary/50 group-focus-within:text-accent transition-colors">Rp</div>
+                    <input
+                      type="text"
+                      required
+                      value={amount}
+                      onChange={(e) => setAmount(formatInputNumber(e.target.value))}
+                      className="w-full h-[52px] pl-10 pr-4 rounded-lg border border-border-ui bg-card-bg text-text-primary font-bold outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-all shadow-inner"
+                      placeholder="0"
+                      inputMode="decimal"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-text-secondary mb-1 uppercase tracking-widest px-1">Tanggal Transaksi</label>
+                  <DatePicker 
+                    value={date} 
+                    onChange={setDate} 
+                    placeholder="Pilih Tanggal"
+                    className="w-full h-[52px] rounded-lg border-border-ui/60"
+                    dropUp={!isMobile}
                   />
                 </div>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <label className="block text-[10px] font-black text-text-secondary mb-1 uppercase tracking-widest px-1">Jumlah (RP)</label>
-              <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-text-secondary/50 group-focus-within:text-accent transition-colors">Rp</div>
-                <input
-                  type="text"
-                  required
-                  value={amount}
-                  onChange={(e) => setAmount(formatInputNumber(e.target.value))}
-                  className="w-full h-[52px] pl-10 pr-4 rounded-lg border border-border-ui bg-card-bg text-text-primary font-bold outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-all shadow-inner"
-                  placeholder="0"
-                  inputMode="decimal"
-                />
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-text-secondary mb-1 uppercase tracking-widest px-1">Keterangan (Opsional)</label>
+                  <input
+                    type="text"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    className="w-full h-[52px] px-4 rounded-lg border border-border-ui bg-card-bg text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-all shadow-inner"
+                    placeholder="Contoh: Belanja bulanan ke pasar"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-[10px] font-black text-text-secondary mb-1 uppercase tracking-widest px-1">Tanggal Transaksi</label>
-              <DatePicker 
-                value={date} 
-                onChange={setDate} 
-                placeholder="Pilih Tanggal"
-                className="w-full h-[52px] rounded-lg border-border-ui/60"
-                dropUp={!isMobile}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-[10px] font-black text-text-secondary mb-1 uppercase tracking-widest px-1">Keterangan (Opsional)</label>
-              <input
-                type="text"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className="w-full h-[52px] px-4 rounded-lg border border-border-ui bg-card-bg text-text-primary outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent text-sm transition-all shadow-inner"
-                placeholder="Contoh: Belanja bulanan ke pasar"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center gap-3 pt-4">
-            <button
-              type="submit"
-              className="w-full sm:flex-1 bg-linear-to-r from-accent to-secondary text-white h-[56px] rounded-lg font-black text-sm shadow-xl shadow-accent/20 hover:shadow-accent/30 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
-            >
-              {editId ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-              {editId ? 'SIMPAN PERUBAHAN' : 'SIMPAN TRANSAKSI'}
-            </button>
-            {!editId && (
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <button 
-                  type="button" 
-                  onClick={startVoiceInput} 
-                  disabled={isProcessingAI}
-                  className={cn(
-                    "h-[56px] flex-1 sm:flex-none px-6 rounded-lg transition-all border flex items-center justify-center gap-2 group",
-                    isListening ? "bg-accent/20 border-accent text-accent animate-pulse" : "bg-bg-main border-border-ui text-text-secondary hover:text-accent hover:border-accent/40"
-                  )}
-                  title="Voice Input"
+            <div className={cn(
+              "bg-bg-main shrink-0 z-20 transition-all",
+              isMobile ? "fixed bottom-0 left-0 right-0 p-4 border-t border-border-ui/50 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md bg-bg-main/95" : "pt-6 mt-auto"
+            )}>
+              <div className="w-full max-w-xl mx-auto flex flex-col sm:flex-row items-center gap-3">
+                <button
+                  type="submit"
+                  className="w-full sm:flex-1 bg-linear-to-r from-accent to-secondary text-white h-[56px] rounded-lg font-black text-sm shadow-xl shadow-accent/20 hover:shadow-accent/30 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
                 >
-                  <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span className="text-[10px] font-black sm:hidden uppercase">Voice</span>
+                  {editId ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                  {editId ? 'SIMPAN PERUBAHAN' : 'SIMPAN TRANSAKSI'}
                 </button>
-                <button 
-                  type="button" 
-                  onClick={() => fileInputRef.current?.click()} 
-                  disabled={isProcessingAI}
-                  className="h-[56px] flex-1 sm:flex-none px-6 rounded-lg bg-bg-main border border-border-ui text-text-secondary hover:text-accent hover:border-accent/40 transition-all flex items-center justify-center gap-2 group"
-                  title="Scan Struk"
-                >
-                  {isProcessingAI ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />}
-                  <span className="text-[10px] font-black sm:hidden uppercase">Scan</span>
-                </button>
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleReceiptScan} 
-                  accept="image/*" 
-                  className="hidden" 
-                  capture="environment"
-                />
+                {!editId && (
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <button 
+                      ref={voiceBtnRef}
+                      type="button" 
+                      onMouseDown={startVoiceInput}
+                      onMouseUp={stopVoiceInput}
+                      onMouseLeave={stopVoiceInput}
+                      disabled={isProcessingAI}
+                      className={cn(
+                        "h-[56px] flex-1 sm:flex-none px-6 rounded-lg transition-all border flex items-center justify-center gap-2 group select-none touch-none",
+                        isListening ? "bg-accent/20 border-accent text-accent animate-pulse" : "bg-bg-main border-border-ui text-text-secondary hover:text-accent hover:border-accent/40"
+                      )}
+                      title="Tahan untuk Voice Input"
+                    >
+                      <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                      <span className="text-[10px] font-black sm:hidden uppercase">
+                        {isListening ? 'Tahan...' : 'Voice'}
+                      </span>
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => fileInputRef.current?.click()} 
+                      disabled={isProcessingAI}
+                      className="h-[56px] flex-1 sm:flex-none px-6 rounded-lg bg-bg-main border border-border-ui text-text-secondary hover:text-accent hover:border-accent/40 transition-all flex items-center justify-center gap-2 group"
+                      title="Scan Struk"
+                    >
+                      {isProcessingAI ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+                      <span className="text-[10px] font-black sm:hidden uppercase">Scan</span>
+                    </button>
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      onChange={handleReceiptScan} 
+                      accept="image/*" 
+                      className="hidden" 
+                      capture="environment"
+                    />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </form>
-          </div>
+            </div>
+          </form>
         </div>
-      </div>,
-      document.body
-    );
-    });
+      </div>
+    </div>,
+    document.body
+  );
+  });

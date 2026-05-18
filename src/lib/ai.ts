@@ -29,7 +29,7 @@ export const aiService = {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: "meta-llama/llama-4-maverick-17b-128e-instruct",
+          model: "llama-3.3-70b-versatile",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.1,
           max_tokens: 1024
@@ -44,8 +44,18 @@ export const aiService = {
       const content = data.choices[0].message.content;
       console.log("AI Voice Response:", content);
       
-      // Clean up potential markdown formatting in response
-      const jsonStr = content.replace(/```json\n?|```/g, '').trim();
+      // Clean up potential markdown formatting or extra text in response
+      let jsonStr = content.trim();
+      const markdownMatch = jsonStr.match(/```json?\s*([\s\S]*?)\s*```/);
+      if (markdownMatch) {
+        jsonStr = markdownMatch[1].trim();
+      } else {
+        const firstBrace = jsonStr.indexOf('{');
+        const lastBrace = jsonStr.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1) {
+          jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+        }
+      }
       return JSON.parse(jsonStr) as AITransactionResult;
     } catch (error) {
       console.error("AI Voice Parse Error:", error);
@@ -54,7 +64,6 @@ export const aiService = {
   },
 
   async scanReceipt(base64Image: string): Promise<AITransactionResult | null> {
-    // Note: base64Image should include the data:image/jpeg;base64, prefix
     const prompt = `Analisis struk/receipt ini dan ekstrak detail transaksinya.
     Kembalikan dalam format JSON:
     {
@@ -99,11 +108,49 @@ export const aiService = {
       const content = data.choices[0].message.content;
       console.log("AI Vision Response:", content);
       
-      // Clean up potential markdown formatting in response
-      const jsonStr = content.replace(/```json\n?|```/g, '').trim();
+      // Clean up potential markdown formatting or extra text in response
+      let jsonStr = content.trim();
+      const markdownMatch = jsonStr.match(/```json?\s*([\s\S]*?)\s*```/);
+      if (markdownMatch) {
+        jsonStr = markdownMatch[1].trim();
+      } else {
+        const firstBrace = jsonStr.indexOf('{');
+        const lastBrace = jsonStr.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1) {
+          jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+        }
+      }
       return JSON.parse(jsonStr) as AITransactionResult;
     } catch (error) {
       console.error("AI Vision Parse Error:", error);
+      return null;
+    }
+  },
+
+  async transcribeAudio(audioBlob: Blob): Promise<string | null> {
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'recording.webm');
+    formData.append('model', 'whisper-large-v3');
+    formData.append('language', 'id');
+
+    try {
+      const response = await fetch('/api-groq/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${GROQ_API_KEY}`
+          // Note: DO NOT set 'Content-Type' header when sending FormData! Browser sets it automatically with the correct boundary!
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        console.error("Groq Whisper Error:", data.error);
+        return null;
+      }
+      return data.text || null;
+    } catch (error) {
+      console.error("Audio Transcription Error:", error);
       return null;
     }
   }

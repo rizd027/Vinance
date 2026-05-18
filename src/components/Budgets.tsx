@@ -148,18 +148,13 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
         portalTarget
       )}
 
-      {/* Header (Mobile only) */}
-      <div className="flex justify-between items-center lg:hidden">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Manajemen Anggaran</h2>
-          <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Perencanaan & Batas Pengeluaran</p>
-          <div className="h-1 w-12 bg-linear-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
-        </div>
+      {/* Header (Mobile only) - Title hidden since it is covered globally by premium mobile header */}
+      <div className="flex justify-between items-center lg:hidden mb-4">
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-accent to-secondary text-white rounded-lg text-xs font-bold shadow-lg shadow-accent/20 hover:shadow-accent/30 hover:scale-105 active:scale-95 transition-all"
+          className="w-full flex items-center justify-center gap-2 py-3 bg-linear-to-r from-accent to-secondary text-white rounded-xl text-xs font-black shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4" /> TAMBAH ANGGARAN BARU
         </button>
       </div>
 
@@ -430,45 +425,65 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
       </div>
 
       {/* Add Category Modal */}
-      {showAddModal && (
-          <div className="fixed inset-0 z-50 flex sm:p-4 overflow-y-auto">
-            <div 
-              onClick={() => setShowAddModal(false)} 
-              className={cn(
-                "fixed inset-0 bg-slate-900/60",
-                !isMobile ? "backdrop-blur-sm" : "hidden"
-              )} 
-            />
-            <div 
-              className="relative bg-card-bg p-8 sm:rounded-lg border border-border-ui shadow-2xl w-full min-h-full sm:min-h-0 sm:max-w-sm sm:m-auto z-10"
-            >
-              <h3 className="text-lg font-bold text-text-primary mb-6">Tambah Kategori Anggaran</h3>
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  value={customCategory}
-                  onChange={(e) => setCustomCategory(e.target.value)}
-                  placeholder="Nama Kategori (Contoh: Liburan)"
-                  className="w-full px-4 py-3 rounded-lg border border-border-ui bg-bg-main text-text-primary outline-none focus:ring-2 focus:ring-accent"
-                  autoFocus
-                />
-                <button
-                  onClick={() => {
-                    if (customCategory) {
-                      setEditing(customCategory);
-                      setNewLimit('');
-                      setShowAddModal(false);
-                      setCustomCategory('');
-                    }
-                  }}
-                  className="w-full py-4 bg-linear-to-r from-accent to-secondary text-white rounded-lg font-bold hover:shadow-lg hover:shadow-accent/20 transition-all"
-                >
-                  Lanjut ke Limit
-                </button>
-              </div>
+      {showAddModal && createPortal(
+        <div className="fixed inset-0 z-[10000] flex sm:p-4 overflow-y-auto">
+          <div 
+            onClick={() => setShowAddModal(false)} 
+            className={cn(
+              "fixed inset-0 bg-slate-900/60",
+              !isMobile ? "backdrop-blur-sm" : "hidden"
+            )} 
+          />
+          <div 
+            className="relative bg-card-bg p-8 sm:rounded-lg border border-border-ui shadow-2xl w-full min-h-full sm:min-h-0 sm:max-w-sm sm:m-auto z-10"
+          >
+            <h3 className="text-lg font-bold text-text-primary mb-6">Tambah Kategori Anggaran</h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                placeholder="Nama Kategori (Contoh: Liburan)"
+                className="w-full px-4 py-3 rounded-lg border border-border-ui bg-bg-main text-text-primary outline-none focus:ring-2 focus:ring-accent"
+                autoFocus
+              />
+              <button
+                onClick={() => {
+                  if (customCategory) {
+                    setEditing(customCategory);
+                    setNewLimit('');
+                    setShowAddModal(false);
+                    setCustomCategory('');
+                  }
+                }}
+                className="w-full py-4 bg-linear-to-r from-accent to-secondary text-white rounded-lg font-bold hover:shadow-lg hover:shadow-accent/20 transition-all"
+              >
+                Lanjut ke Limit
+              </button>
             </div>
           </div>
-        )}
+        </div>,
+        document.body
+      )}
+
+      {/* 50/30/20 Info Modal */}
+      {showInfoModal && createPortal(
+        <div className="fixed inset-0 z-[10000] flex sm:p-4 items-center justify-center">
+          <div 
+            onClick={() => setShowInfoModal(false)} 
+            className={cn(
+              "fixed inset-0",
+              isMobile ? "bg-black/80" : "bg-slate-900/60 backdrop-blur-sm"
+            )} 
+          />
+          <div 
+            className="relative bg-card-bg sm:rounded-lg border border-border-ui shadow-2xl w-full h-[100dvh] sm:h-auto sm:max-w-4xl mx-auto z-10 overflow-hidden flex flex-col max-h-full sm:max-h-[90vh]"
+          >
+            <InfoModalContent onClose={() => setShowInfoModal(false)} />
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Tips Section */}
       <div className="bg-card-bg p-6 rounded-lg border border-border-ui flex flex-col md:flex-row gap-6 items-center shadow-sm relative z-10">

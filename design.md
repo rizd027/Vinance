@@ -1,184 +1,256 @@
-# Clean Fintech Neo-Minimalism
-### Style & Interface Design Specification | **Cuan (Vinance Ecosystem)**
+# Design Reference — Finance App UI/UX
 
-This document defines the design guidelines, structural patterns, and aesthetic principles for the **Cuan** application. Inspired by the market leaders of modern fintech—**Apple Card**, **Wise**, and **Revolut**—this system outlines how to deliver a world-class, premium, and highly tactile user experience that feels alive, mathematically balanced, and beautiful.
-
----
-
-## 1. Core Philosophy: Neo-Minimalism in Wealth Tech
-
-Neo-Minimalism is not about empty space; it is about **absolute clarity, spatial ergonomics, and premium tactile feedback**. In financial applications, users demand speed, trustworthiness, and effortless readability. We achieve this through four pillars:
-
-*   **Typographic Dominance**: Numbers and financial values are treated as hero components. We use high-precision tracking, mathematical weights, and specific layout rules to make balances readable at a glance.
-*   **Layered Spatial Elevation**: Instead of generic flat cards, we use high-contrast borders combined with glassmorphism and layered shadows, simulating physical panels with real elevation.
-*   **Curated Tactile Responses**: Every interactable element (buttons, tabs, selectors) must feel springy and responsive to the user's touch or cursor hover.
-*   **Curated Financial Hues**: Avoiding generic primaries. We use HSL-tailored harmonious gradients, slate backdrops, and functional feedback colors that indicate status without introducing visual noise.
+> Referensi desain dari gambar mockup aplikasi keuangan mobile yang menjadi acuan pengembangan Keluarga Berkah Finance.
 
 ---
 
-## 2. The Color System: Luxury Fintech Palette
+## 1. Gambaran Umum (Overview)
 
-Our palette balances the clean usability of **Wise**, the premium metal and glass of **Revolut**, and the organic, luxurious gradients of **Apple Card**.
+Mockup ini menampilkan **aplikasi keuangan personal berbasis mobile** dengan gaya desain modern, bersih, dan minimalis. Aplikasi menggunakan pendekatan **card-based UI** dengan skema warna dominan **biru gelap (navy/royal blue)** pada bagian atas dan **putih/abu-abu terang** pada bagian bawah, menciptakan kontras visual yang jelas antara area informasi utama dan area konten sekunder.
 
-### A. Base Foundation (Slate & Dark Mode Ecosystem)
-```css
-:root {
-  /* Light Mode (Sophisticated Paper) */
-  --bg-main: #f8fafc;         /* Crisp, high-end background */
-  --card-bg: #ffffff;         /* Pure white elevation */
-  --border-ui: #e2e8f0;       /* Razor-thin subtle divider */
-  --text-primary: #0f172a;    /* Deep charcoal */
-  --text-secondary: #475569;  /* Balanced slate gray */
-  --accent: #6366f1;          /* Royal Indigo (Primary Action) */
-  --secondary: #d946ef;       /* Hyper Magenta */
+Ukuran layar yang ditampilkan mengacu pada **smartphone standar (±375×812 px / iPhone-like)** dengan status bar pukul **9:41** di bagian atas.
 
-  /* Dark Mode (High-Density Onyx) */
-  --bg-main-dark: #090d16;    /* Deep luxury space */
-  --card-bg-dark: #121826;    /* Obsidian glass card */
-  --border-ui-dark: #1e293b;  /* Deep navy borders */
-  --text-primary-dark: #f8fafc; /* Crisp snow text */
-  --text-secondary-dark: #94a3b8; /* Cool silver slate */
-}
+---
+
+## 2. Struktur Layout
+
+Layar dibagi menjadi **4 zona utama** secara vertikal:
+
 ```
-
-### B. Functional Colors (Fintech Hues)
-We avoid bright neon primaries. Instead, we use highly saturated, tailored functional feedback colors:
-*   **Income / Surplus (Wise Emerald)**: `#10b981` (HSL: `160, 84%, 39%`) -> Represents growth and security.
-*   **Expense / Debt (Apple Crimson)**: `#f43f5e` (HSL: `350, 89%, 60%`) -> Represents warnings and active out-flows.
-*   **Alert / Warning (Metal Gold)**: `#f59e0b` (HSL: `38, 92%, 50%`) -> Represents pending status or critical allocation.
-
-### C. Glassmorphism & Micro-Gradients (Revolut/Apple Inspired)
-To emulate a physical card or glass surface:
-*   **Apple Card Hues**: `linear-gradient(135deg, #8b5cf6, #d946ef)` (Indigo to Magenta) or `linear-gradient(135deg, #0ea5e9, #10b981)` (Sky to Emerald).
-*   **Tactile Frosted Glass**: `rgba(255, 255, 255, 0.7)` with `backdrop-filter: blur(20px)` and an inner `1px` border of `rgba(255, 255, 255, 0.4)`.
-
----
-
-## 3. Typography: Typographic Mathematical Scale
-
-Financial metrics must look sharp and perfectly aligned. The font system uses **Inter** (for dense data tables) and **Outfit** or **SF Pro Display** (for hero values and titles).
-
-| Level | Size (px) | Weight | Tracking (Letter Spacing) | Purpose / Context |
-| :--- | :--- | :--- | :--- | :--- |
-| **Hero Balance** | `36px` / `2.25rem` | **900 (Black)** | `-0.05em` (Tighter) | Global net worth, total budget values |
-| **Tab Header** | `24px` / `1.5rem` | **900 (Black)** | `-0.03em` | Main section titles (Desktop & Mobile) |
-| **Section Title** | `14px` / `0.875rem` | **700 (Bold)** | `+0.05em` | Card labels, widget headers |
-| **Metric Label** | `10px` / `0.625rem` | **900 (Black)** | `+0.2em` (Spaced) | Uppercase sub-headers, indicators |
-| **Body Primary** | `13px` / `0.8125rem` | **500 (Medium)** | `-0.01em` | Standard list items, transaction notes |
-| **Micro Timestamp** | `10px` / `0.625rem` | **500 (Medium)** | `0` | Date and time markings, secondary logs |
-
-### Monospace for Numbers (Crucial Rule)
-All financial figures (e.g., `Rp 120.000.000`) should use a tabular or monospaced digit style (`font-variant-numeric: tabular-nums;` or custom font family) to prevent visual layout shifts during real-time syncs or filter transitions.
-
----
-
-## 4. Spacing, Grids & Elevation Layering
-
-Fintech Neo-Minimalism relies heavily on **uncluttered asymmetry** and **purposeful spacing**.
-
-### A. The 5-Column Dashboard Grid
-We replace standard 50/50 splits with an asymmetrical, high-density dashboard structure to align stats and visual representations correctly:
-*   **Widget & Stats Columns (60% Width)**: Large space for values, transaction list details, progress bar indicators, and notes.
-*   **Visual Chart Column (40% Width)**: Perfectly bound space for compact radial dials or pie chart legendary scales.
-
-### B. Elevation Levels (Borders & Shadows)
-Instead of relying on deep blurred shadows that look muddy, we utilize crisp, micro-borders combined with flat tactile offsets:
-
-```css
-/* Card Elevation Layer 1 (Wise Style) */
-.card-level-1 {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-ui);
-  border-radius: 12px; /* Decreased corner radius for high-end look */
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03), 
-              0 1px 2px -1px rgba(15, 23, 42, 0.03);
-}
-
-/* Premium Hover State (Revolut Style) */
-.card-level-1:hover {
-  border-color: rgba(99, 102, 241, 0.3); /* Subtle indigo highlight */
-  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.05), 
-              0 4px 6px -4px rgba(15, 23, 42, 0.05);
-  transform: translateY(-2px);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
+┌─────────────────────────────────┐
+│         STATUS BAR (OS)         │
+├─────────────────────────────────┤
+│   HEADER / BALANCE CARD (Biru)  │  ← Hero Section
+│   Quick Action Buttons          │
+├─────────────────────────────────┤
+│   RECENT TRANSACTIONS (Putih)   │  ← Content Section
+│   Filter Tabs + Transaction List│
+├─────────────────────────────────┤
+│      BOTTOM NAVIGATION BAR      │  ← Nav Section
+└─────────────────────────────────┘
 ```
 
 ---
 
-## 5. Micro-Animations & Tactile Physics
+## 3. Header / Balance Card
 
-Fintech interactions must feel satisfying. Elements should feel like physical buttons that compress slightly under pressure.
+### 3.1 Warna & Latar Belakang
+- **Background**: Gradasi biru gelap (navy blue → royal blue), kemungkinan menggunakan `linear-gradient` dari kiri-atas ke kanan-bawah.
+- **Border radius**: Pojok bawah kartu melengkung signifikan (≈ 24–32px), memberikan kesan "kartu mengambang" di atas konten putih di bawahnya.
+- **Padding**: Horizontal ±20px, Vertikal ±24px.
 
-### A. The "Springy" Active Effect
-Every primary button or navigation icon must compress on click:
-```css
-.btn-tactile {
-  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.btn-tactile:active {
-  transform: scale(0.95);
-}
-.btn-tactile:hover {
-  transform: scale(1.03);
-}
-```
+### 3.2 Baris Pertama — Saldo Utama
+- **Angka saldo**: `$2,589.50` — ditampilkan dengan tipografi **bold, besar (≈ 32–36px)**, warna **putih murni**.
+- **Label**: `Available Balance` — teks kecil (≈ 12–13px), warna **putih transparan (opacity ±70%)**, diletakkan di bawah angka saldo.
+- **Ikon notifikasi (lonceng)**: Berada di pojok kanan atas area header, ikon outline putih, ukuran ±22px.
+- **Avatar pengguna**: Foto profil bulat (circle crop, diameter ±36px) berada di sebelah kanan ikon notifikasi. Memiliki **border putih tipis** sebagai separator.
 
-### B. Smooth Tab Transitions
-When moving buttons to the portal (global header) or changing tabs:
-*   Use `ease-out` transitions for position shifts (duration: `200ms` max).
-*   Avoid flashy entrance animations; rely instead on subtle opacity sweeps (`opacity 0.15s ease-out`).
+### 3.3 Baris Kedua — Quick Action Buttons
+Terdapat **4 tombol aksi cepat** yang tersusun horizontal dengan jarak yang merata (justify-evenly):
 
----
+| Ikon | Label |
+|------|-------|
+| 📤 Send (panah keluar) | Send |
+| 📥 Request (panah masuk) | Request |
+| 💰 Loan (kantong uang) | Loan |
+| 💳 Topup (dompet/kartu) | Topup |
 
-## 6. Concrete Styling Recipes
-
-### A. The Wise-Style Premium Transaction Card
-A clean, high-density layout featuring category icons, transaction details, and HSL currency coloring.
-
-```html
-<div class="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl hover:border-indigo-100 hover:shadow-lg hover:shadow-indigo-50/20 transition-all group">
-  <!-- Left Side: Icon & Details -->
-  <div class="flex items-center gap-3.5">
-    <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner group-hover:bg-emerald-100 transition-colors">
-      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <!-- Lucide Wallet/Icon -->
-      </svg>
-    </div>
-    <div class="flex flex-col">
-      <span class="text-xs font-bold text-slate-900 tracking-tight">Investasi Saham</span>
-      <span class="text-[10px] font-medium text-slate-400 mt-0.5">17 May 2026, 10:30</span>
-    </div>
-  </div>
-
-  <!-- Right Side: Amount & Action -->
-  <div class="flex items-center gap-4">
-    <span class="text-xs font-black text-emerald-600 tracking-tight currency-font">+Rp 5.000.000</span>
-    <button class="p-1.5 opacity-0 group-hover:opacity-100 text-slate-300 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all">
-      <!-- Edit/Action Icon -->
-    </button>
-  </div>
-</div>
-```
-
-### B. The Apple-Style Glassmorphic Header Action
-A clean, premium button designed to reside in the global top header via dynamic Portal rendering.
-
-```html
-<button class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-fuchsia-500 hover:from-indigo-600 hover:to-fuchsia-600 text-white rounded-lg text-xs font-bold shadow-md shadow-indigo-500/10 hover:shadow-indigo-500/20 hover:scale-105 active:scale-95 transition-all mr-2">
-  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-  </svg>
-  <span>Tambah Anggaran</span>
-</button>
-```
+**Spesifikasi tombol:**
+- **Kontainer ikon**: Kotak persegi panjang dengan sudut membulat (rounded square), warna **putih transparan / semi-opaque** (seperti glassmorphism ringan).
+- **Ikon**: Warna putih atau biru muda, ukuran ikon ±20–22px.
+- **Label**: Teks kecil di bawah ikon, warna **putih**, ukuran ±11–12px.
+- **Ukuran tombol**: Sekitar 56×56px untuk area kontainer ikon.
+- **Efek visual**: Kemungkinan terdapat efek hover/press (ripple atau opacity change).
 
 ---
 
-## 7. Implementation Checklist (Design System Quality Audit)
+## 4. Konten Utama — Recent Transactions
 
-*   [ ] **Strict Corner Radii**: No card exceeds `rounded-xl` (12px) to ensure a premium look. Popups/modals limit to `rounded-2xl` (16px).
-*   [ ] **No Floating Action Buttons**: Critical desktop action buttons render in the global sticky top header via `createPortal`, removing clutter.
-*   [ ] **Asymmetric Visual Balances**: Layout structures utilize the 3:2 (60% to 40%) desktop ratio to keep charts and statistics proportioned.
-*   [ ] **Letter Spacing Controls**: Tighter letter spacing (`tracking-tight` / `-0.03em`) on large financial balances, and loose spacing (`tracking-[0.2em]`) on micro uppercase tags.
-*   [ ] **Hover/Active Responsiveness**: Interactable elements implement tactile scaling physics (`hover:scale-[1.02]`, `active:scale-[0.98]`).
+### 4.1 Header Seksi
+- **Judul**: `Recent Transactions` — teks **bold**, ukuran ±17–18px, warna **biru gelap/navy**.
+- **Tautan**: `See all` — teks kecil ±13px, warna **biru terang/cobalt**, diletakkan rata kanan (align-right), berfungsi sebagai navigasi ke halaman riwayat lengkap.
+
+### 4.2 Filter Tabs (Pill/Chip Style)
+Tiga tab filter berbentuk **pill (rounded-full)** tersusun horizontal di bawah judul seksi:
+
+| Tab | Status Visual |
+|-----|---------------|
+| **All** | Aktif — background biru gelap, teks putih |
+| **Income** | Tidak aktif — outline/border tipis, teks abu-abu gelap, terdapat **dot hijau** di sebelah kiri teks |
+| **Expense** | Tidak aktif — outline/border tipis, teks abu-abu gelap, terdapat **dot merah/oranye** di sebelah kiri teks |
+
+**Detail tab aktif:**
+- Background: biru navy (`#1a2c5b` atau serupa)
+- Teks: putih bold
+- Border-radius: ±20px (pill penuh)
+
+**Detail tab tidak aktif:**
+- Background: transparan atau putih
+- Border: 1px solid abu-abu terang
+- Dot warna: hijau (#4CAF50-ish) untuk Income, oranye/merah (#FF6B6B-ish) untuk Expense
+
+### 4.3 Daftar Transaksi
+
+Transaksi dikelompokkan berdasarkan **label tanggal** (waktu relatif):
+
+---
+
+#### Kelompok: TODAY
+**Separator label**: Teks `TODAY`, ukuran ±11px, warna abu-abu terang (`#999` atau serupa), huruf kapital semua (uppercase), berfungsi sebagai pemisah waktu.
+
+---
+
+**Transaksi 1 — Grocery**
+- **Ikon**: Ilustrasi belanja (keranjang belanja / tas belanja), warna biru muda, dalam lingkaran abu-abu terang sebagai background.
+- **Nama transaksi**: `Grocery` — bold, ±15px, warna hitam/navy gelap.
+- **Sub-label**: `Eataly downtown` — regular, ±12px, warna abu-abu.
+- **Jumlah**: `- $50.68` — bold, ±15px, warna **merah** (menandakan pengeluaran).
+- **Tanggal**: `Aug 26` — regular, ±12px, warna abu-abu, rata kanan.
+- **Layout**: Ikon di kiri | Nama+sub di tengah (flex-grow) | Jumlah+tanggal di kanan (column).
+
+---
+
+**Transaksi 2 — Transport**
+- **Ikon**: Ilustrasi mobil/kendaraan, warna biru muda, dalam lingkaran abu-abu terang.
+- **Nama transaksi**: `Transport` — bold, ±15px.
+- **Sub-label**: `UBER Pool` — regular, ±12px, abu-abu.
+- **Jumlah**: `- $6.00` — bold, ±15px, warna **merah**.
+- **Tanggal**: `Aug 26` — regular, ±12px, abu-abu.
+
+---
+
+#### Kelompok: YESTERDAY
+**Separator label**: Teks `YESTERDAY`, sama styling dengan `TODAY`.
+
+---
+
+**Transaksi 3 — Payment**
+- **Ikon**: Ilustrasi pembayaran (kartu/tanda terima), warna biru muda, lingkaran abu-abu.
+- **Nama transaksi**: `Payment` — bold, ±15px.
+- **Sub-label**: `Payment from Andre` — regular, ±12px, abu-abu.
+- **Jumlah**: `+ $650.00` — bold, ±15px, warna **hijau** (menandakan pemasukan).
+- **Tanggal**: `Aug 25` — regular, ±12px, abu-abu.
+
+---
+
+### 4.4 Spacing & Divider Antar Transaksi
+- Setiap item transaksi memiliki **padding vertikal ±14–16px**.
+- **Tidak ada garis pemisah (divider line)** yang terlihat antar item — pemisahan dilakukan murni via whitespace (padding).
+- Latar belakang seluruh area konten: **putih bersih** (`#FFFFFF`).
+
+---
+
+## 5. Bottom Navigation Bar
+
+### 5.1 Struktur Tab
+Terdapat **5 item navigasi** yang tersusun horizontal merata:
+
+| Urutan | Ikon | Label | Status |
+|--------|------|-------|--------|
+| 1 | 🏠 Home | Home | **Aktif** |
+| 2 | 📋 History | History | Tidak aktif |
+| 3 | ➕ Plus (FAB) | *(tidak ada label)* | Tombol aksi utama |
+| 4 | 💳 Cards | Cards | Tidak aktif |
+| 5 | 👤 Profile | Profile | Tidak aktif |
+
+### 5.2 Spesifikasi Visual
+
+**Tab Aktif (Home):**
+- Ikon: warna **biru gelap/navy**
+- Label: warna biru gelap, bold
+- Indikator: tidak ada underline — pembeda hanya warna
+
+**Tab Tidak Aktif:**
+- Ikon: warna **abu-abu terang** (`#BBBBBB` atau serupa)
+- Label: abu-abu, regular weight
+
+**Tombol FAB (Floating Action Button) Tengah:**
+- Berbentuk **lingkaran penuh**, diameter ±52–56px
+- Warna: **biru gelap/navy** (konsisten dengan tema utama)
+- Ikon: **"+"** putih, besar (±24px)
+- **Elevasi**: Tombol ini **menonjol ke atas** melampaui batas bottom bar (translateY negatif ±-16px), menciptakan efek FAB klasik
+- Shadow: `box-shadow` signifikan untuk memberi kesan mengambang
+
+### 5.3 Background & Border Nav Bar
+- Background: **putih** atau abu-abu sangat terang
+- Border-top: 1px solid abu-abu terang, ATAU tidak ada border dengan efek shadow tipis di atas
+
+---
+
+## 6. Tipografi
+
+| Elemen | Ukuran | Weight | Warna |
+|--------|--------|--------|-------|
+| Saldo utama | 32–36px | Bold (700) | Putih |
+| Label saldo | 12–13px | Regular (400) | Putih 70% |
+| Judul seksi | 17–18px | SemiBold (600) | Navy |
+| Nama transaksi | 14–15px | SemiBold (600) | Hitam/Navy |
+| Sub-label transaksi | 12px | Regular (400) | Abu-abu |
+| Jumlah transaksi | 14–15px | Bold (700) | Merah / Hijau |
+| Tanggal transaksi | 12px | Regular (400) | Abu-abu |
+| Label group waktu | 11px | Medium (500) | Abu-abu terang |
+| Label tab navigasi | 11–12px | Regular/Medium | Biru / Abu-abu |
+| Label quick action | 11–12px | Regular | Putih |
+
+**Font yang direkomendasikan**: `Inter`, `Poppins`, atau `SF Pro` (system font iOS) — keduanya cocok dengan estetika bersih dan modern ini.
+
+---
+
+## 7. Palet Warna
+
+| Nama | Hex (estimasi) | Penggunaan |
+|------|---------------|------------|
+| Navy Primary | `#1A2C5B` | Header BG, FAB, teks aktif |
+| Royal Blue | `#2D4DB5` | Gradasi header |
+| Income Green | `#2ECC71` | Jumlah pemasukan, dot Income |
+| Expense Red | `#E74C3C` | Jumlah pengeluaran |
+| Expense Orange | `#FF6B6B` | Dot Expense tab |
+| White | `#FFFFFF` | Background konten, teks header |
+| Light Gray BG | `#F5F6FA` | Background ikon transaksi |
+| Gray Text | `#9AA5B4` | Sub-label, tanggal, nav tidak aktif |
+| Dark Text | `#1E2D40` | Nama transaksi, judul seksi |
+
+---
+
+## 8. Analisis UX (User Experience)
+
+### 8.1 Hierarki Visual
+- Informasi yang **paling penting** (saldo tersedia) ditempatkan di posisi paling atas dan paling besar secara visual → memenuhi prinsip **F-pattern reading** dan **visual hierarchy**.
+- Aksi cepat (Send, Request, Loan, Topup) ditempatkan **langsung di bawah saldo** → meminimalkan langkah pengguna untuk fungsi inti.
+- Transaksi terbaru ditampilkan tanpa perlu navigasi → mendukung prinsip **zero-click information**.
+
+### 8.2 Navigasi
+- **Bottom navigation** adalah standar de facto mobile finance app — familiar dan mudah dijangkau jempol.
+- **FAB "+"** di tengah nav bar adalah titik aksi primer yang sangat menonjol, mendorong pengguna untuk menambah transaksi dengan satu kali tap.
+- `See all` link di sebelah "Recent Transactions" memberikan jalan masuk cepat ke histori lengkap tanpa mengorbankan ruang layar.
+
+### 8.3 Keterbacaan & Aksesibilitas
+- **Kontras warna** antara teks putih dan latar biru gelap di header sudah sangat baik (rasio kontras > 4.5:1).
+- Penggunaan **warna merah untuk expense** dan **hijau untuk income** adalah pola universal yang intuitif dan dikenal pengguna.
+- Ukuran tap target tombol navigasi dan quick action sudah memenuhi standar minimum **44×44px** (Apple HIG).
+
+### 8.4 Konsistensi Desain
+- Ikon transaksi menggunakan **gaya ilustrasi yang konsisten** (warna biru muda, background lingkaran abu-abu).
+- Spacing antar elemen konsisten dan rapi — tidak ada elemen yang terasa "berhimpit".
+- Penggunaan **rounded corner** secara konsisten di seluruh elemen (kartu, tombol, tab, ikon) menciptakan bahasa desain yang kohesif.
+
+### 8.5 Feedback Visual
+- Tab filter aktif memiliki background berbeda — pengguna langsung tahu filter mana yang aktif.
+- Warna jumlah transaksi (merah/hijau) memberikan **feedback instan** tanpa perlu membaca simbol +/-.
+- Avatar profil di header memberikan **personalisasi** dan konfirmasi identitas pengguna.
+
+---
+
+## 9. Rekomendasi Implementasi untuk Keluarga Berkah Finance
+
+1. **Gunakan komponen Card** dengan border-radius ≥ 20px untuk hero section saldo.
+2. **Implementasikan gradient biru** pada header: `linear-gradient(135deg, #1A2C5B 0%, #2D4DB5 100%)`.
+3. **Filter tab** menggunakan `display: flex` dengan `gap` merata, state aktif menggunakan class toggle.
+4. **Daftar transaksi** gunakan `<ul>/<li>` semantik dengan grouping per tanggal menggunakan `<section>` atau label sticky.
+5. **FAB** gunakan `position: fixed` dengan `z-index` tinggi dan `transform: translateY(-50%)` relatif terhadap navbar.
+6. **Warna income/expense** harus diterapkan secara programatik berdasarkan tanda nilai (positif/negatif).
+7. **Tipografi**: Impor `Inter` atau `Poppins` dari Google Fonts untuk mendekati estetika desain referensi.
+
+---
+
+*Dokumen ini dibuat berdasarkan analisis visual mockup UI aplikasi keuangan mobile yang dijadikan referensi desain untuk proyek Keluarga Berkah Finance v1.2.*

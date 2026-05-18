@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { flushSync } from 'react-dom';
+import { flushSync, createPortal } from 'react-dom';
 
 import Auth from './components/Auth';
 import Layout from './components/Layout';
@@ -16,7 +16,7 @@ import { User, Transaction, Budget, Goal, Note, AppData } from './types';
 import { api } from './lib/api';
 import { storage } from './lib/storage';
 import { cn } from './lib/utils';
-import { LogOut, Settings, Shield, Bell, Database, ExternalLink, Info, X, Copy, Check, Lock, AlertCircle, CheckCircle2, AlertTriangle, AlertOctagon, ArrowRight, RefreshCw, User as UserIcon, Mail, ShieldCheck, MessageSquare, Send, Coffee, ChevronRight, Image, Palette, Phone, Instagram, Github, MessageCircle, Globe, ArrowLeft, Camera } from 'lucide-react';
+import { LogOut, Settings, Shield, Bell, Database, ExternalLink, Info, X, Copy, Check, Lock, AlertCircle, CheckCircle2, AlertTriangle, AlertOctagon, ArrowRight, RefreshCw, User as UserIcon, Mail, ShieldCheck, MessageSquare, Send, Coffee, ChevronRight, Image, Palette, Phone, Instagram, Github, MessageCircle, Globe, ArrowLeft, Camera, Target, PieChart, Flag, StickyNote, LayoutGrid, List } from 'lucide-react';
 
 interface Toast {
   id: string;
@@ -77,6 +77,8 @@ export default function App() {
   // Notification states
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [activeDialog, setActiveDialog] = useState<DialogConfig | null>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationCount = (toasts?.length || 0) + (activeDialog ? 1 : 0);
 
   // Modals
   const [showGenSettings, setShowGenSettings] = useState(false);
@@ -1242,7 +1244,13 @@ function handleDeleteNote(data) {
             onViewAll={() => handleTabChange('transactions')}
             onNavigateToBudget={() => handleTabChange('budgets')}
             onNavigateToGoals={() => handleTabChange('goals')}
+            onNavigateToProfile={() => handleTabChange('profile')}
+            isDark={isDark}
+            toggleTheme={toggleTheme}
             userName={user.name}
+            userPhotoUrl={user.photoUrl}
+            notificationCount={notificationCount}
+            onBellClick={() => setShowNotifications(true)}
           />
         );
       case 'transactions':
@@ -1265,6 +1273,130 @@ function handleDeleteNote(data) {
         return <Goals goals={data.goals} onAdd={handleAddGoal} onUpdate={handleUpdateGoal} onDelete={handleDeleteGoal} onAddSavings={handleAddGoalSavings} userId={user.id} />;
       case 'notes':
         return <Notes notes={data.notes} onAdd={handleAddNote} onUpdate={handleUpdateNote} onDelete={handleDeleteNote} userId={user.id} />;
+      case 'menu':
+        return (
+          <div className="space-y-6 pb-10">
+            {/* ── Header Title (Desktop only) ── */}
+            <div className="hidden lg:flex flex-col gap-1 mb-2">
+              <h2 className="text-2xl font-black text-text-primary tracking-tight leading-none">Eksplorasi Fitur</h2>
+              <p className="text-[10px] font-bold text-accent uppercase tracking-[0.2em] mt-1">Navigasi Seluruh Modul Keuangan</p>
+              <div className="h-1 w-12 bg-gradient-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
+            </div>
+
+            {/* ── Premium Feature Showcase Card (No Card-Bg box, Flat Glassmorphic Borderless Banner) ── */}
+            <div className="relative overflow-hidden p-5 rounded-2xl bg-gradient-to-br from-[#1A2C5B] via-[#2d4992] to-[#15254e] shadow-md border border-accent/10">
+              <div className="absolute inset-0 bg-[url('/doodle_wallpaper.png')] bg-repeat bg-[length:150px_150px] opacity-10 mix-blend-soft-light" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl" />
+              
+              <div className="relative">
+                <span className="text-[9px] font-black text-amber-500 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full uppercase tracking-widest">✦ Vinance Ecosystem</span>
+                <h3 className="text-base font-black text-white mt-2.5 leading-tight tracking-tight">Keluarga Berkah Finance</h3>
+                <p className="text-[10px] text-white/80 mt-1 font-semibold leading-relaxed">
+                  Kelola seluruh rencana anggaran, analisis grafik, tabungan, dan memo Anda secara premium dalam satu ekosistem finansial.
+                </p>
+              </div>
+            </div>
+
+            {/* ── Menu List Section (Apple / Revolut Style - Boxless & Premium) ── */}
+            <div className="space-y-4 pt-2">
+              <p className="text-[10px] font-black text-text-secondary/80 uppercase tracking-[0.25em] mb-1 px-1">Daftar Modul Utama</p>
+              <div className="divide-y divide-border-ui/30">
+                
+                {/* 1. TRANSACTIONS */}
+                <button
+                  onClick={() => handleTabChange('transactions')}
+                  className="w-full flex items-center gap-4 py-4 px-2 hover:bg-indigo-500/[0.03] active:bg-indigo-500/[0.06] transition-all group text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 group-hover:scale-105 transition-transform">
+                    <List className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-bold text-text-primary tracking-tight">Catatan Transaksi</p>
+                      <span className="text-[8px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded-md uppercase tracking-wider">Transaksi</span>
+                    </div>
+                    <p className="text-[10px] text-text-secondary font-medium mt-0.5">Catat pemasukan, pengeluaran, dan audit saldo kas Anda</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-text-secondary/60 group-hover:text-text-primary group-hover:translate-x-0.5 transition-all" />
+                </button>
+
+                {/* 2. BUDGETING */}
+                <button
+                  onClick={() => handleTabChange('budgets')}
+                  className="w-full flex items-center gap-4 py-4 px-2 hover:bg-emerald-500/[0.03] active:bg-emerald-500/[0.06] transition-all group text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-105 transition-transform">
+                    <Target className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-bold text-text-primary tracking-tight">Manajemen Anggaran</p>
+                      <span className="text-[8px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md uppercase tracking-wider">Budgeting</span>
+                    </div>
+                    <p className="text-[10px] text-text-secondary font-medium mt-0.5">Kelola pos pengeluaran dan limit belanja bulanan</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-text-secondary/60 group-hover:text-text-primary group-hover:translate-x-0.5 transition-all" />
+                </button>
+
+                {/* 2. LAPORAN */}
+                <button
+                  onClick={() => handleTabChange('reports')}
+                  className="w-full flex items-center gap-4 py-4 px-2 hover:bg-blue-500/[0.03] active:bg-blue-500/[0.06] transition-all group text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-105 transition-transform">
+                    <PieChart className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-bold text-text-primary tracking-tight">Analisis Laporan</p>
+                      <span className="text-[8px] font-black text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded-md uppercase tracking-wider">Grafik</span>
+                    </div>
+                    <p className="text-[10px] text-text-secondary font-medium mt-0.5">Visualisasi arus kas masuk dan analisis alokasi dana</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-text-secondary/60 group-hover:text-text-primary group-hover:translate-x-0.5 transition-all" />
+                </button>
+
+                {/* 3. GOALS */}
+                <button
+                  onClick={() => handleTabChange('goals')}
+                  className="w-full flex items-center gap-4 py-4 px-2 hover:bg-amber-500/[0.03] active:bg-amber-500/[0.06] transition-all group text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 group-hover:scale-105 transition-transform">
+                    <Flag className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-bold text-text-primary tracking-tight">Target Tabungan</p>
+                      <span className="text-[8px] font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-md uppercase tracking-wider">Goals</span>
+                    </div>
+                    <p className="text-[10px] text-text-secondary font-medium mt-0.5">Pantau progress pencapaian target impian Anda</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-text-secondary/60 group-hover:text-text-primary group-hover:translate-x-0.5 transition-all" />
+                </button>
+
+                {/* 4. NOTES */}
+                <button
+                  onClick={() => handleTabChange('notes')}
+                  className="w-full flex items-center gap-4 py-4 px-2 hover:bg-fuchsia-500/[0.03] active:bg-fuchsia-500/[0.06] transition-all group text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-fuchsia-500/10 flex items-center justify-center text-fuchsia-500 group-hover:scale-105 transition-transform">
+                    <StickyNote className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-bold text-text-primary tracking-tight">Catatan Memo</p>
+                      <span className="text-[8px] font-black text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-500/10 px-1.5 py-0.5 rounded-md uppercase tracking-wider">Notes</span>
+                    </div>
+                    <p className="text-[10px] text-text-secondary font-medium mt-0.5">Simpan rencana, tips keuangan, dan memo harian</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-text-secondary/60 group-hover:text-text-primary group-hover:translate-x-0.5 transition-all" />
+                </button>
+
+              </div>
+            </div>
+
+          </div>
+        );
       case 'profile':
         if (profileView === 'edit') {
           const isSensitiveChange = (editNewEmail && editNewEmail !== user.email) || editNewPassword !== '';
@@ -1557,7 +1689,7 @@ function handleDeleteNote(data) {
         }
 
         return (
-          <div className="space-y-6 pb-4">
+          <div className="space-y-8 pb-10">
 
             {/* ── Page Title (Desktop only) ── */}
             <div className="hidden lg:flex flex-col gap-1 mb-2">
@@ -1566,303 +1698,304 @@ function handleDeleteNote(data) {
               <div className="h-1 w-12 bg-gradient-to-r from-accent to-secondary rounded-full mt-3 opacity-60" />
             </div>
 
-            {/* ── Hero Profile Card ── */}
-            <div className="bg-card-bg rounded-lg border border-border-ui shadow-sm overflow-hidden relative">
-              {/* Global Card Doodle Pattern */}
-              <div className="absolute inset-0 bg-[url('/doodle_wallpaper.png')] bg-repeat bg-[length:250px_250px] opacity-[0.05] pointer-events-none" />
-
-              {/* Gradient Banner with Doodle Art */}
-              <div className="h-20 bg-gradient-to-br from-accent via-emerald-500 to-secondary relative overflow-hidden">
-                {/* Doodle Pattern Overlay */}
-                <div className="absolute inset-0 bg-[url('/doodle_wallpaper.png')] bg-repeat bg-[length:200px_200px] opacity-20 mix-blend-soft-light" />
+            {/* ── Hero Profile Section (Flat & Premium - No Box) ── */}
+            <div className="relative text-center pb-6 border-b border-border-ui/30">
+              {/* Cover Image backdrop banner (Flat background bleed) */}
+              <div className="h-28 w-full bg-gradient-to-br from-[#1A2C5B] via-[#2d4992] to-[#15254e] rounded-2xl relative overflow-hidden shadow-inner">
+                {/* Decorative gradients */}
+                <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl" />
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl" />
                 
-                {/* User Cover Image */}
-                {user.coverUrl && (
-                  <img src={user.coverUrl} className="absolute inset-0 w-full h-full object-cover" alt="Cover" />
+                {user.coverUrl ? (
+                  <img src={user.coverUrl} className="w-full h-full object-cover" alt="Cover" />
+                ) : (
+                  <div className="absolute inset-0 bg-[url('/doodle_wallpaper.png')] bg-repeat bg-[length:150px_150px] opacity-10 mix-blend-soft-light" />
                 )}
-
-                {/* Edit Sampul Button */}
-                <label className="absolute top-2 right-2 px-2.5 py-1.5 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-lg border border-white/20 text-[9px] font-black text-white uppercase tracking-[0.1em] cursor-pointer transition-all flex items-center gap-1.5 active:scale-95 z-10 group">
+                
+                {/* Edit Cover button */}
+                <label className="absolute top-3 right-3 px-3 py-1.5 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-xl border border-white/10 text-[9px] font-black text-white/90 uppercase tracking-widest cursor-pointer transition-all flex items-center gap-1.5 active:scale-95 z-10 group">
                   <Palette className="w-3 h-3 group-hover:rotate-12 transition-transform" />
-                  Edit Sampul
+                  Ganti Sampul
                   <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
                 </label>
               </div>
 
-              {/* Profile Picture (Outside banner overflow) */}
-              <div className="absolute top-10 left-1/2 -translate-x-1/2 z-10">
-                <div className="w-20 h-20 rounded-full ring-4 ring-card-bg shadow-xl overflow-hidden bg-gradient-to-br from-accent to-secondary flex items-center justify-center relative">
+              {/* Avatar circle overlaps cover with thick premium border */}
+              <div className="relative -mt-12 mb-4 inline-block">
+                <div className="w-24 h-24 rounded-full ring-4 ring-bg-main bg-gradient-to-br from-accent to-secondary flex items-center justify-center overflow-hidden shadow-xl relative">
                   {user.photoUrl ? (
                     <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-3xl font-black text-white">{user.name[0].toUpperCase()}</span>
                   )}
+                  {savingProfile && (
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center">
+                      <RefreshCw className="w-5 h-5 text-white animate-spin" />
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={openEditProfile}
-                  className="absolute bottom-0 right-0 w-6 h-6 bg-accent rounded-full flex items-center justify-center border-2 border-card-bg shadow-lg hover:scale-110 transition-transform"
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-accent rounded-full flex items-center justify-center border-3 border-bg-main shadow-lg hover:scale-110 active:scale-90 transition-all text-white"
                 >
-                  <Camera className="w-3 h-3 text-white" />
+                  <Camera className="w-3.5 h-3.5" />
                 </button>
               </div>
 
               {/* User Info */}
-              <div className="pt-12 pb-5 px-6 text-center">
-                <h3 className="text-lg font-black text-text-primary tracking-tight">{user.name}</h3>
-                <p className="text-xs text-text-secondary mt-0.5 font-medium">{user.email}</p>
-                {/* Member badge */}
-                <div className="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full shadow-md shadow-amber-500/25">
-                  <span className="text-[10px] font-black text-white uppercase tracking-widest">✦ Member Aktif</span>
+              <div>
+                <h3 className="text-xl font-black text-text-primary tracking-tight leading-none">{user.name}</h3>
+                <p className="text-xs text-text-secondary mt-1.5 font-semibold tracking-wide">{user.email}</p>
+                <div className="mt-3 flex items-center justify-center gap-1.5 text-amber-500 font-black text-[10px] uppercase tracking-widest">
+                  <span>✦ Member Premium</span>
                 </div>
               </div>
             </div>
 
-            {/* ── Settings List ── */}
-            <div>
-              <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-2 px-1">Pengaturan</p>
-              <div className="bg-card-bg rounded-lg border border-border-ui shadow-sm divide-y divide-border-ui/50 overflow-hidden">
-
-                {/* Edit Profil */}
-                <button
-                  onClick={openEditProfile}
-                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group text-left"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                    <UserIcon className="w-4.5 h-4.5 text-accent" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-text-primary">Edit Profil</p>
-                    <p className="text-[10px] text-text-secondary">Nama, email & kata sandi</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-text-primary transition-colors" />
-                </button>
-
-                {/* URL Script */}
-                <div className="px-5 py-4">
-                  <div className="flex items-center gap-4 mb-3">
-                    <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-                      <ExternalLink className="w-4.5 h-4.5 text-violet-500" />
+            {/* ── Settings Sections (Flat list style, no cards) ── */}
+            <div className="space-y-6">
+              
+              {/* SECTION: AKUN & KEAMANAN */}
+              <div>
+                <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.25em] mb-2 px-1">Akun & Keamanan</p>
+                <div className="space-y-1">
+                  
+                  {/* Edit Profil */}
+                  <button
+                    onClick={openEditProfile}
+                    className="w-full flex items-center gap-4 py-3.5 px-2 hover:bg-accent/5 active:bg-accent/10 rounded-xl transition-all group text-left"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
+                      <UserIcon className="w-4.5 h-4.5" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-text-primary">URL Apps Script</p>
-                      <p className="text-[10px] text-text-secondary">Endpoint Google Sheets</p>
+                      <p className="text-sm font-bold text-text-primary tracking-tight">Edit Profil</p>
+                      <p className="text-[10px] text-text-secondary font-medium">Ubah nama, email, dan kata sandi Anda</p>
                     </div>
-                    <button
-                      onClick={() => setShowScriptInfo(v => !v)}
-                      className={cn(
-                        "w-7 h-7 rounded-full flex items-center justify-center border transition-all flex-shrink-0",
-                        showScriptInfo
-                          ? "bg-accent/15 border-accent/40 text-accent"
-                          : "bg-bg-main border-border-ui text-text-secondary hover:border-accent/40 hover:text-accent"
-                      )}
-                      title="Informasi"
-                    >
-                      <Info className="w-3.5 h-3.5" />
-                    </button>
+                    <ChevronRight className="w-4 h-4 text-text-secondary/60 group-hover:text-text-primary transition-colors" />
+                  </button>
+
+                  {/* Kunci PIN */}
+                  <button
+                    onClick={handleTogglePin}
+                    className="w-full flex items-center gap-4 py-3.5 px-2 hover:bg-rose-500/5 active:bg-rose-500/10 rounded-xl transition-all group text-left"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
+                      <Lock className="w-4.5 h-4.5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-text-primary tracking-tight">Kunci PIN</p>
+                      <p className="text-[10px] text-text-secondary font-medium">Amankan akses aplikasi dengan kode PIN</p>
+                    </div>
+                    <span className={cn(
+                      "text-[9px] font-black px-2.5 py-1 rounded-full border tracking-wider",
+                      appPin ? "bg-accent/10 text-accent border-accent/20" : "bg-bg-main text-text-secondary border-border-ui"
+                    )}>
+                      {appPin ? 'AKTIF' : 'NONAKTIF'}
+                    </span>
+                  </button>
+
+                  {/* Google Apps Script Integration */}
+                  <div className="py-3.5 px-2 rounded-xl transition-all">
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-500">
+                        <ExternalLink className="w-4.5 h-4.5" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-text-primary tracking-tight">URL Apps Script</p>
+                        <p className="text-[10px] text-text-secondary font-medium">Integrasikan data keuangan Anda dengan Google Sheets</p>
+                      </div>
+                      <button
+                        onClick={() => setShowScriptInfo(v => !v)}
+                        className={cn(
+                          "w-7 h-7 rounded-full flex items-center justify-center border transition-all",
+                          showScriptInfo
+                            ? "bg-accent/15 border-accent/40 text-accent"
+                            : "bg-bg-main border-border-ui text-text-secondary hover:border-accent/40 hover:text-accent"
+                        )}
+                      >
+                        <Info className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {showScriptInfo && (
+                      <div className="pl-13 mb-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div className="bg-bg-main border border-border-ui rounded-xl p-4 space-y-2.5">
+                          <p className="text-[11px] text-text-secondary leading-relaxed font-medium">
+                            Hubungkan Google Sheets pribadi Anda untuk menyinkronkan seluruh data transaksi, anggaran, target, dan catatan.
+                          </p>
+                          <div className="flex gap-2 p-2.5 bg-warning/5 border border-warning/20 rounded-lg">
+                            <span className="text-warning mt-0.5 flex-shrink-0">⚠</span>
+                            <p className="text-[11px] text-text-secondary leading-relaxed font-medium">
+                              <span className="text-warning font-bold">Penting:</span> Data kredensial login dan profil tetap diamankan di sistem pusat kami.
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setShowSetupGuide(true)}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline"
+                          >
+                            <Info className="w-3 h-3" /> Cara setup database spreadsheet
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2 pl-13">
+                      <input
+                        type="text"
+                        defaultValue={user.scriptUrl || ''}
+                        placeholder="https://script.google.com/macros/s/.../exec"
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-border-ui bg-bg-main/60 text-[11px] text-text-primary outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all placeholder:text-text-secondary/40"
+                        onBlur={(e) => handleUpdateScriptUrl(e.target.value)}
+                      />
+                      <button
+                        onClick={handleTestConnection}
+                        disabled={!user.scriptUrl || testingConnection}
+                        className="px-4 py-2.5 bg-gradient-to-r from-accent to-secondary text-white rounded-xl text-[11px] font-bold hover:shadow-lg hover:shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex-shrink-0"
+                      >
+                        {testingConnection ? 'Testing...' : 'Tes'}
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Collapsible Info Panel */}
-                  {showScriptInfo && (
-                    <div className="pl-[52px] mb-3">
-                      <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 space-y-2.5">
-                        <p className="text-[11px] text-text-secondary leading-relaxed">
-                          Hubungkan Google Sheets pribadi Anda untuk menyimpan{' '}
-                          <span className="text-text-primary font-bold">data keuangan</span>{' '}
-                          (transaksi, anggaran, tujuan, dan catatan).
-                        </p>
-                        <div className="flex gap-2 p-2.5 bg-warning/5 border border-warning/20 rounded-lg">
-                          <span className="text-warning mt-0.5 flex-shrink-0">⚠</span>
-                          <p className="text-[11px] text-text-secondary leading-relaxed">
-                            <span className="text-warning font-bold">Penting:</span> Database mandiri ini khusus untuk pengelolaan data keuangan.{' '}
-                            <span className="text-text-primary font-bold">Data akun & sistem (Login, Password, Profil)</span>{' '}
-                            akan tetap dikelola dan disimpan secara aman di database sistem pusat Vinance.
-                          </p>
-                        </div>
-                        <p className="text-[11px] text-text-secondary leading-relaxed">
-                          Kosongkan jika ingin menggunakan database sistem secara penuh. Setup ini hanya bagi Anda yang ingin fleksibilitas mengelola data keuangan via spreadsheet sendiri.
-                        </p>
-                        <button
-                          onClick={() => setShowSetupGuide(true)}
-                          className="inline-flex items-center gap-1 text-[11px] font-bold text-accent hover:underline"
-                        >
-                          <Info className="w-3 h-3" /> Cara setup database sendiri
-                        </button>
+                </div>
+              </div>
+
+              {/* SECTION: TAMPILAN & KUSTOMISASI */}
+              <div>
+                <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.25em] mb-2 px-1">Tampilan & Kustomisasi</p>
+                <div className="space-y-1">
+                  
+                  {/* Wallpaper */}
+                  <button
+                    onClick={() => setProfileView('wallpaper')}
+                    className="w-full flex items-center gap-4 py-3.5 px-2 hover:bg-emerald-500/5 active:bg-emerald-500/10 rounded-xl transition-all group text-left"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                      <Image className="w-4.5 h-4.5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-text-primary tracking-tight">Kustomisasi Latar Belakang</p>
+                      <p className="text-[10px] text-text-secondary font-medium">Ubah wallpaper dan visual dashboard Anda</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-text-secondary/60 group-hover:text-text-primary transition-colors" />
+                  </button>
+
+                  {/* Theme Mode */}
+                  <button
+                    onClick={toggleTheme}
+                    className="w-full flex items-center gap-4 py-3.5 px-2 hover:bg-blue-500/5 active:bg-blue-500/10 rounded-xl transition-all group text-left"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                      <Palette className="w-4.5 h-4.5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-text-primary tracking-tight">Tema Warna</p>
+                      <p className="text-[10px] text-text-secondary font-medium">Beralih antara Mode Terang dan Gelap</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-bg-main border border-border-ui/60 px-3 py-1 rounded-full text-[10px] font-bold text-text-secondary">
+                      <span>{isDark ? 'GELAP' : 'TERANG'}</span>
+                    </div>
+                  </button>
+
+                </div>
+              </div>
+
+              {/* SECTION: BANTUAN & MASUKAN */}
+              <div>
+                <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.25em] mb-2 px-1">Bantuan & Dukungan</p>
+                <div className="space-y-1">
+                  
+                  {/* Hubungi Kami */}
+                  <button
+                    onClick={() => setProfileView('contact')}
+                    className="w-full flex items-center gap-4 py-3.5 px-2 hover:bg-teal-500/5 active:bg-teal-500/10 rounded-xl transition-all group text-left"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-500 group-hover:scale-110 transition-transform">
+                      <Phone className="w-4.5 h-4.5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-text-primary tracking-tight">Hubungi Kami</p>
+                      <p className="text-[10px] text-text-secondary font-medium">Hubungi bantuan teknis jika menemui kendala</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-text-secondary/60 group-hover:text-text-primary transition-colors" />
+                  </button>
+
+                  {/* Saran & Masukan */}
+                  <div className="py-3.5 px-2 rounded-xl transition-all">
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="w-9 h-9 rounded-xl bg-fuchsia-500/10 flex items-center justify-center text-fuchsia-500">
+                        <MessageSquare className="w-4.5 h-4.5" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-text-primary tracking-tight">Saran & Masukan</p>
+                        <p className="text-[10px] text-text-secondary font-medium">Bantu kami mengembangkan aplikasi lebih baik lagi</p>
                       </div>
                     </div>
-                  )}
-
-                  <div className="flex gap-2 pl-[52px]">
-                    <input
-                      type="text"
-                      defaultValue={user.scriptUrl || ''}
-                      placeholder="https://script.google.com/macros/s/.../exec"
-                      className="flex-1 px-3 py-2 rounded-lg border border-border-ui bg-bg-main/60 text-[11px] text-text-primary outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all placeholder:text-text-secondary/40"
-                      onBlur={(e) => handleUpdateScriptUrl(e.target.value)}
-                    />
-                    <button
-                      onClick={handleTestConnection}
-                      disabled={!user.scriptUrl || testingConnection}
-                      className="px-3 py-2 bg-gradient-to-r from-accent to-secondary text-white rounded-lg text-[11px] font-bold hover:shadow-lg hover:shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex-shrink-0"
-                    >
-                      {testingConnection ? '...' : 'Tes'}
-                    </button>
+                    <div className="pl-13 space-y-2.5">
+                      <textarea
+                        value={feedback}
+                        onChange={(e) => setFeedback(e.target.value)}
+                        placeholder="Tulis saran atau kendala yang Anda alami..."
+                        className="w-full px-4 py-3 bg-bg-main/60 rounded-xl border border-border-ui focus:border-accent outline-none text-xs font-semibold text-text-primary transition-all resize-none min-h-[80px] placeholder:text-text-secondary/40"
+                      />
+                      <button
+                        onClick={handleSendFeedback}
+                        disabled={!feedback.trim() || sendingFeedback}
+                        className="w-full py-2.5 bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-fuchsia-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                      >
+                        {sendingFeedback ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        {sendingFeedback ? 'Mengirim...' : 'Kirim Masukan'}
+                      </button>
+                    </div>
                   </div>
+
                 </div>
-
-                {/* Kunci PIN */}
-                <button
-                  onClick={handleTogglePin}
-                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-rose-500/10 flex items-center justify-center flex-shrink-0">
-                    <Lock className="w-4.5 h-4.5 text-rose-500" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className="text-sm font-semibold text-text-primary">Kunci PIN</p>
-                    <p className="text-[10px] text-text-secondary">Keamanan aplikasi</p>
-                  </div>
-                  <span className={cn(
-                    "text-[9px] font-black px-2.5 py-1 rounded-full border",
-                    appPin ? "bg-accent/10 text-accent border-accent/20" : "bg-bg-main text-text-secondary border-border-ui"
-                  )}>
-                    {appPin ? 'AKTIF' : 'NONAKTIF'}
-                  </span>
-                </button>
-
-
-                {/* Wallpaper */}
-                <button
-                  onClick={() => setProfileView('wallpaper')}
-                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                    <Image className="w-4.5 h-4.5 text-emerald-500" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className="text-sm font-semibold text-text-primary">Wallpaper</p>
-                    <p className="text-[10px] text-text-secondary">Kustomisasi latar belakang</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-text-primary transition-colors" />
-                </button>
-
-                {/* Theme */}
-                <button
-                  onClick={toggleTheme}
-                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                    <Palette className="w-4.5 h-4.5 text-blue-500" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className="text-sm font-semibold text-text-primary">Tema</p>
-                    <p className="text-[10px] text-text-secondary">Gelap & Terang</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-text-secondary uppercase">
-                      {isDark ? 'Gelap' : 'Terang'}
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-text-primary transition-colors" />
-                  </div>
-                </button>
-
-                {/* Logout Akun */}
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-danger/5 transition-colors group text-left"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-danger/10 flex items-center justify-center flex-shrink-0 group-hover:bg-danger/20 transition-colors">
-                    <LogOut className="w-4.5 h-4.5 text-danger" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-danger">Keluar Akun</p>
-                    <p className="text-[10px] text-text-secondary">Selesai sesi ini</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-danger transition-colors" />
-                </button>
-
               </div>
-            </div>
 
-            {/* ── Feedback & Support ── */}
-            <div>
-              <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] mb-2 px-1">Bantuan</p>
-              <div className="bg-card-bg rounded-lg border border-border-ui shadow-sm overflow-hidden">
-
-                {/* Kontak */}
-                <button
-                  onClick={() => setProfileView('contact')}
-                  className="w-full flex items-center gap-4 px-5 py-4 hover:bg-bg-main transition-colors group text-left border-b border-border-ui/50"
+              {/* ── Support & Donation Banner (Borderless premium cardless view) ── */}
+              <div className="pt-2">
+                <a
+                  href="https://saweria.co/frd027"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full relative overflow-hidden p-5 rounded-2xl flex items-center justify-between group transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] block border border-accent/20"
                 >
-                  <div className="w-9 h-9 rounded-lg bg-teal-500/10 flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-4.5 h-4.5 text-teal-500" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-text-primary">Hubungi Kami</p>
-                    <p className="text-[10px] text-text-secondary">Bantuan & dukungan teknis</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-text-primary transition-colors" />
-                </button>
-
-                {/* Feedback */}
-                <div className="px-5 py-4 space-y-3">
-                  <div className="flex items-center gap-4">
-                    <div className="w-9 h-9 rounded-lg bg-fuchsia-500/10 flex items-center justify-center flex-shrink-0">
-                      <MessageSquare className="w-4.5 h-4.5 text-fuchsia-500" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-emerald-500/5 to-secondary/5" />
+                  <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shine pointer-events-none" />
+                  <div className="relative flex items-center gap-3">
+                    <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform">
+                      <img src="/cat-sticker.png" alt="Cat" className="w-full h-full object-cover" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-text-primary">Saran & Masukan</p>
-                      <p className="text-[10px] text-text-secondary">Bantu kami berkembang</p>
+                      <h4 className="text-sm font-black text-text-primary leading-none">Traktir Eskrim 🍦</h4>
+                      <p className="text-[9px] text-text-secondary font-black uppercase tracking-widest mt-1">Dukung Developer Lokal</p>
                     </div>
                   </div>
-                  <div className="pl-[52px] space-y-2">
-                    <textarea
-                      value={feedback}
-                      onChange={(e) => setFeedback(e.target.value)}
-                      placeholder="Tulis saran atau kendala yang Anda alami..."
-                      className="w-full px-3 py-2.5 bg-bg-main/60 rounded-lg border border-border-ui focus:border-accent outline-none text-xs font-medium text-text-primary transition-all resize-none min-h-[80px] placeholder:text-text-secondary/40"
-                    />
-                    <button
-                      onClick={handleSendFeedback}
-                      disabled={!feedback.trim() || sendingFeedback}
-                      className="w-full py-2.5 bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white rounded-lg text-xs font-bold hover:shadow-lg hover:shadow-fuchsia-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                    >
-                      {sendingFeedback ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                      {sendingFeedback ? 'Mengirim...' : 'Kirim Masukan'}
-                    </button>
+                  <div className="relative flex items-center gap-1.5 px-3 py-1.5 bg-accent text-white rounded-xl text-[10px] font-black uppercase tracking-wider shadow-md shadow-accent/25">
+                    <span>saweria</span>
+                    <ExternalLink className="w-3 h-3" />
                   </div>
-                </div>
+                </a>
+              </div>
 
-                {/* Divider */}
-                <div className="border-t border-border-ui/50" />
-
-                {/* Support Banner */}
-                <div className="p-4">
-                  <a
-                    href="https://saweria.co/frd027"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full relative overflow-hidden p-4 rounded-lg flex items-center justify-between group transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] block"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-accent via-emerald-500 to-secondary" />
-                    <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shine pointer-events-none" />
-                    <div className="relative flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/30 overflow-hidden group-hover:scale-110 transition-transform">
-                        <img src="/cat-sticker.png" alt="Cat" className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-black text-white leading-none">Traktir Eskrim 🍦</h4>
-                        <p className="text-[9px] text-white/80 font-bold uppercase tracking-wider mt-0.5">Dukung Developer Lokal</p>
-                      </div>
-                    </div>
-                    <div className="relative flex items-center gap-1.5 px-3 py-1.5 bg-white/20 rounded-lg border border-white/30">
-                      <span className="text-[10px] font-black text-white">saweria</span>
-                      <ExternalLink className="w-3 h-3 text-white/70" />
-                    </div>
-                  </a>
-                </div>
+              {/* SECTION: KELUAR */}
+              <div className="pt-4">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-4 py-3.5 px-2 hover:bg-danger/5 active:bg-danger/10 rounded-xl transition-all group text-left"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-danger/10 flex items-center justify-center text-danger group-hover:scale-110 transition-transform">
+                    <LogOut className="w-4.5 h-4.5" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-danger tracking-tight">Keluar Akun</p>
+                    <p className="text-[10px] text-text-secondary font-medium">Akhiri sesi aktif Anda sekarang</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-text-secondary/60 group-hover:text-danger transition-colors" />
+                </button>
               </div>
             </div>
-
           </div>
         );
       default:
@@ -1873,6 +2006,9 @@ function handleDeleteNote(data) {
             onAddClick={() => { setActiveTab('transactions'); setShowAddModal(true); }}
             onViewAll={() => setActiveTab('transactions')}
             onNavigateToBudget={() => setActiveTab('budgets')}
+            onNavigateToProfile={() => setActiveTab('profile')}
+            isDark={isDark}
+            toggleTheme={toggleTheme}
             userName={user.name}
           />
         );
@@ -1904,11 +2040,13 @@ function handleDeleteNote(data) {
       onLogout={handleLogout}
       toasts={toasts}
       activeDialog={activeDialog}
+      showNotifications={showNotifications}
+      setShowNotifications={setShowNotifications}
     >
 
 
-      {showSetupGuide && (
-        <div className="fixed inset-0 z-50 flex sm:p-4 items-center justify-center">
+      {showSetupGuide && createPortal(
+        <div className="fixed inset-0 z-[10000] flex sm:p-4 items-center justify-center">
           <div
             onClick={() => setShowSetupGuide(false)}
             className={cn(
@@ -1916,9 +2054,9 @@ function handleDeleteNote(data) {
               !isMobile ? "backdrop-blur-sm" : "hidden"
             )}
           />
-            <div
-              className="relative w-full h-full sm:h-auto sm:max-w-2xl bg-card-bg sm:rounded-lg shadow-2xl border border-border-ui flex flex-col max-h-full sm:max-h-[85vh] overflow-hidden z-10"
-            >
+          <div
+            className="relative w-full h-[100dvh] sm:h-auto sm:max-w-2xl bg-card-bg sm:rounded-lg shadow-2xl border border-border-ui flex flex-col max-h-full sm:max-h-[85vh] overflow-hidden z-10"
+          >
             {/* Modal Header - Fixed */}
             <div className="flex justify-between items-center px-8 py-6 border-b border-border-ui/50 shrink-0">
               <div>
@@ -1931,7 +2069,7 @@ function handleDeleteNote(data) {
             </div>
 
             {/* Modal Content - Scrollable */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-8 text-sm text-text-secondary leading-relaxed custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-8 space-y-8 text-sm text-text-secondary leading-relaxed custom-scrollbar pb-12">
               <section>
                 <h4 className="font-bold text-text-primary mb-2">1. Buat Google Sheet Baru</h4>
                 <p>Buka Google Sheets dan buat spreadsheet baru. Beri nama misalnya "Database Keuangan".</p>
@@ -1983,7 +2121,8 @@ function handleDeleteNote(data) {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {renderContent()}
