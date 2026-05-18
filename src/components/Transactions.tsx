@@ -664,6 +664,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
   const [date, setDate] = useState(new Date().toISOString());
   const [isListening, setIsListening] = useState(false);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
+  const [notify, setNotify] = useState<{ type: 'info' | 'error'; message: string } | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const recognitionRef = React.useRef<any>(null);
   const voiceBtnRef = React.useRef<HTMLButtonElement>(null);
@@ -700,7 +701,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
           const duration = performance.now() - pressStartTimeRef.current;
           if (duration < 500) {
             console.log("Hold duration too short, alerting user");
-            alert("Ketuk dan tahan untuk berbicara.");
+            setNotify({ type: 'info', message: 'Ketuk dan tahan untuk berbicara.' });
             return;
           }
 
@@ -709,7 +710,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
             console.log("Uploading audio and transcribing via Groq Whisper...");
             const text = await aiService.transcribeAudio(audioBlob);
             if (!text) {
-              alert("Gagal mentranskripsi suara. Pastikan mikrofon berfungsi dan coba lagi.");
+              setNotify({ type: 'error', message: 'Gagal mentranskripsi suara. Pastikan mikrofon berfungsi dan coba lagi.' });
               return;
             }
             console.log("Whisper transcription result:", text);
@@ -733,11 +734,11 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
               setAmount(formatInputNumber(result.amount.toString()));
               setNote(result.note);
             } else {
-              alert("AI gagal mengekstrak rincian transaksi dari teks.");
+              setNotify({ type: 'error', message: 'AI gagal mengekstrak rincian transaksi dari teks.' });
             }
           } catch (err) {
             console.error("Voice process error:", err);
-            alert("Terjadi kesalahan saat memproses suara via AI.");
+            setNotify({ type: 'error', message: 'Terjadi kesalahan saat memproses suara via AI.' });
           } finally {
             setIsProcessingAI(false);
           }
@@ -747,7 +748,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
       })
       .catch(err => {
         console.error("Microphone Access Error:", err);
-        alert("Izin akses mikrofon ditolak atau tidak tersedia.");
+        setNotify({ type: 'error', message: 'Izin akses mikrofon ditolak atau tidak tersedia.' });
       });
   };
 
@@ -802,7 +803,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
     
     // Check file size (Groq limit is 20MB, but let's keep it smaller for speed)
     if (file.size > 10 * 1024 * 1024) {
-      alert("Ukuran gambar terlalu besar. Maksimal 10MB.");
+      setNotify({ type: 'error', message: 'Ukuran gambar terlalu besar. Maksimal 10MB.' });
       return;
     }
 
@@ -829,11 +830,11 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
           setAmount(formatInputNumber(result.amount.toString()));
           setNote(result.note);
         } else {
-          alert("AI gagal menganalisis struk. Pastikan gambar jelas.");
+          setNotify({ type: 'error', message: 'AI gagal menganalisis struk. Pastikan gambar jelas.' });
         }
       } catch (err) {
         console.error(err);
-        alert("Terjadi kesalahan saat memproses gambar.");
+        setNotify({ type: 'error', message: 'Terjadi kesalahan saat memproses gambar.' });
       } finally {
         setIsProcessingAI(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -943,6 +944,32 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
       {/* Curved content sheet overlay */}
       <div className="flex-1 bg-bg-main rounded-t-[36px] mt-[-28px] relative z-10 px-5 pt-8 pb-48 md:pb-12 shadow-[0_-8px_30px_rgba(0,0,0,0.03)] overflow-y-auto no-scrollbar">
         <div className="w-full max-w-xl mx-auto min-h-full flex flex-col justify-between">
+
+          {/* Premium In-Modal Notification Banner */}
+          {notify && (
+            <div className={cn(
+              "flex items-start justify-between gap-3 px-4 py-3 mb-4 rounded-xl border",
+              notify.type === 'error'
+                ? "bg-red-500/8 border-red-500/20 text-red-500"
+                : "bg-accent/8 border-accent/20 text-accent"
+            )}>
+              <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                <div className={cn(
+                  "w-1.5 h-1.5 rounded-full shrink-0 mt-0.5",
+                  notify.type === 'error' ? "bg-red-500" : "bg-accent"
+                )} />
+                <p className="text-xs font-semibold leading-snug">{notify.message}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNotify(null)}
+                className="shrink-0 opacity-50 hover:opacity-100 transition-opacity"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between mt-2">
             <div className="space-y-5 md:space-y-8 flex-1">
               <div className="flex bg-bg-main p-1.5 rounded-lg border border-border-ui/50 transition-colors">
