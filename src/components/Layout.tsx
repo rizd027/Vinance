@@ -354,37 +354,6 @@ export default function Layout({
                         </div>
                       ) : (
                         <>
-                          {/* Active Dialog (Priority) */}
-                          {activeDialog && (
-                            <div className="p-4 bg-accent/5 border border-accent/20 rounded-lg space-y-4">
-                              <div className="flex items-start gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
-                                  <AlertCircle className="w-4 h-4" />
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-sm font-bold text-text-primary leading-tight">{activeDialog.title}</p>
-                                  <p className="text-[11px] text-text-secondary mt-1 leading-relaxed">{activeDialog.message}</p>
-                                </div>
-                                </div>
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => activeDialog.onConfirm()}
-                                  className="flex-1 py-2.5 bg-accent text-white rounded-lg text-[10px] font-black shadow-lg shadow-accent/20"
-                                >
-                                  {activeDialog.confirmText?.toUpperCase()}
-                                </button>
-                                {activeDialog.type === 'confirm' && (
-                                  <button
-                                    onClick={() => activeDialog.onCancel()}
-                                    className="flex-1 py-2.5 bg-bg-main text-text-secondary rounded-lg text-[10px] font-bold border border-border-ui"
-                                  >
-                                    {activeDialog.cancelText?.toUpperCase()}
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
                           {/* Toasts */}
                           {toasts.map((toast) => (
                             <div
@@ -553,6 +522,68 @@ export default function Layout({
             </div>
           </div>
         </div>
+      {/* Global Toast Container */}
+      {createPortal(
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex flex-col items-center gap-2 pointer-events-none w-full max-w-sm px-4">
+          {toasts?.map((toast) => (
+            <div
+              key={toast.id}
+              className={cn(
+                "p-3 rounded-xl flex items-center gap-3 border shadow-xl backdrop-blur-xl pointer-events-auto animate-in slide-in-from-top-4 fade-in duration-300 w-full",
+                toast.type === 'success' && "bg-success/90 border-success/50 text-white",
+                toast.type === 'error' && "bg-danger/90 border-danger/50 text-white",
+                toast.type === 'warning' && "bg-warning/90 border-warning/50 text-white",
+                toast.type === 'info' && "bg-accent/90 border-accent/50 text-white"
+              )}
+            >
+              <div className="shrink-0 bg-white/20 p-1.5 rounded-lg">
+                {toast.type === 'success' && <CheckCircle2 className="w-4 h-4" />}
+                {toast.type === 'error' && <AlertOctagon className="w-4 h-4" />}
+                {toast.type === 'warning' && <AlertTriangle className="w-4 h-4" />}
+                {toast.type === 'info' && <Info className="w-4 h-4" />}
+              </div>
+              <p className="text-xs font-bold leading-tight flex-1">{toast.message}</p>
+            </div>
+          ))}
+        </div>,
+        document.body
+      )}
+
+      {/* Global Active Dialog (Alert/Confirm) */}
+      {activeDialog && createPortal(
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+          <div className="relative w-full max-w-sm bg-card-bg rounded-2xl shadow-2xl border border-border-ui p-6 animate-in zoom-in-95 fade-in duration-200">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="w-16 h-16 rounded-2xl bg-accent/10 text-accent flex items-center justify-center border border-accent/20">
+                {activeDialog.type === 'confirm' ? <AlertCircle className="w-8 h-8" /> : <Info className="w-8 h-8" />}
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-text-primary tracking-tight">{activeDialog.title}</h3>
+                <p className="text-sm text-text-secondary mt-2 leading-relaxed">{activeDialog.message}</p>
+              </div>
+              <div className="flex gap-3 w-full pt-4">
+                {activeDialog.type === 'confirm' && (
+                  <button
+                    onClick={() => activeDialog.onCancel()}
+                    className="flex-1 py-3.5 bg-bg-main text-text-secondary rounded-xl text-xs font-bold border border-border-ui hover:bg-border-ui transition-colors"
+                  >
+                    {activeDialog.cancelText?.toUpperCase() || 'BATAL'}
+                  </button>
+                )}
+                <button
+                  onClick={() => activeDialog.onConfirm()}
+                  className="flex-1 py-3.5 bg-accent text-white rounded-xl text-xs font-black shadow-lg shadow-accent/25 hover:shadow-accent/40 active:scale-95 transition-all"
+                >
+                  {activeDialog.confirmText?.toUpperCase() || 'OKE'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {/* Mobile Fullscreen Notifications Page */}
       {isMobile && showNotifications && createPortal(
         <div className="fixed inset-0 z-[10000] bg-bg-main flex flex-col animate-fade-in overflow-hidden">
@@ -610,43 +641,6 @@ export default function Layout({
                 </div>
               ) : (
                 <>
-                  {/* Active Dialog (Priority) */}
-                  {activeDialog && (
-                    <div className="p-4 bg-accent/5 border border-accent/20 rounded-2xl space-y-4 shadow-sm">
-                      <div className="flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0 border border-accent/15">
-                          <AlertCircle className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-bold text-text-primary leading-tight">{activeDialog.title}</p>
-                          <p className="text-xs text-text-secondary mt-1.5 leading-relaxed">{activeDialog.message}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2.5">
-                        <button
-                          onClick={() => {
-                            activeDialog.onConfirm();
-                            setShowNotifications(false);
-                          }}
-                          className="flex-1 py-3.5 bg-accent text-white rounded-xl text-xs font-black shadow-lg shadow-accent/25 active:scale-95 transition-transform"
-                        >
-                          {activeDialog.confirmText?.toUpperCase()}
-                        </button>
-                        {activeDialog.type === 'confirm' && (
-                          <button
-                            onClick={() => {
-                              activeDialog.onCancel();
-                              setShowNotifications(false);
-                            }}
-                            className="flex-1 py-3.5 bg-bg-main text-text-secondary rounded-xl text-xs font-bold border border-border-ui active:scale-95 transition-transform"
-                          >
-                            {activeDialog.cancelText?.toUpperCase()}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
                   {/* Toasts */}
                   {toasts?.map((toast) => (
                     <div

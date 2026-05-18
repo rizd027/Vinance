@@ -673,14 +673,21 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const audioChunksRef = React.useRef<Blob[]>([]);
   const pressStartTimeRef = React.useRef<number>(0);
+  const isPressingRef = React.useRef<boolean>(false);
 
   const startVoiceInput = () => {
     if (isListening || isProcessingAI) return;
     console.log("Voice Input Started (Hold & Local Recording)");
     pressStartTimeRef.current = performance.now();
+    isPressingRef.current = true;
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
+        if (!isPressingRef.current) {
+          stream.getTracks().forEach(track => track.stop());
+          setNotify({ type: 'info', message: 'Tahan tombol untuk merekam suara.' });
+          return;
+        }
         setIsListening(true);
         const mediaRecorder = new MediaRecorder(stream);
         mediaRecorderRef.current = mediaRecorder;
@@ -754,6 +761,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
 
   const stopVoiceInput = () => {
     console.log("Voice Input Stopped");
+    isPressingRef.current = false;
     setIsListening(false);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       try {
