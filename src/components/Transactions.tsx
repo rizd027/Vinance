@@ -1057,7 +1057,9 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
                       disabled={isProcessingAI}
                       className={cn(
                         "h-[56px] flex-1 sm:flex-none px-6 rounded-lg transition-all border flex items-center justify-center gap-2 group select-none touch-none",
-                        isListening ? "bg-accent/20 border-accent text-accent animate-pulse" : "bg-bg-main border-border-ui text-text-secondary hover:text-accent hover:border-accent/40"
+                        isListening 
+                          ? "bg-accent/20 border-accent text-accent animate-pulse shadow-md shadow-accent/10" 
+                          : "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/50 hover:shadow-md hover:shadow-accent/10"
                       )}
                       title="Tahan untuk Voice Input"
                     >
@@ -1070,7 +1072,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
                       type="button" 
                       onClick={() => fileInputRef.current?.click()} 
                       disabled={isProcessingAI}
-                      className="h-[56px] flex-1 sm:flex-none px-6 rounded-lg bg-bg-main border border-border-ui text-text-secondary hover:text-accent hover:border-accent/40 transition-all flex items-center justify-center gap-2 group"
+                      className="h-[56px] flex-1 sm:flex-none px-6 rounded-lg bg-accent/10 border border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/50 hover:shadow-md hover:shadow-accent/10 transition-all flex items-center justify-center gap-2 group"
                       title="Scan Struk"
                     >
                       {isProcessingAI ? <Loader2 className="w-5 h-5 animate-spin" /> : <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />}
