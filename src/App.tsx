@@ -314,17 +314,10 @@ export default function App() {
     };
   }, [user]);
 
-  // Sync data and base URL on mount
+  // Sync data and base URL on mount and when user changes
   useEffect(() => {
     if (user) {
       if (user.scriptUrl) api.setBaseUrl(user.scriptUrl);
-      fetchData();
-    }
-  }, []);
-
-  // Fetch data when user changes
-  useEffect(() => {
-    if (user) {
       fetchData();
     }
   }, [user]);
@@ -354,6 +347,9 @@ export default function App() {
     setUser(newUser);
     if (newUser.scriptUrl) {
       api.setBaseUrl(newUser.scriptUrl);
+    }
+    if (newUser.wallpaper) {
+      setWallpaper(newUser.wallpaper);
     }
     localStorage.setItem('kb_user', JSON.stringify(newUser));
   };
@@ -422,7 +418,7 @@ function handleSendFeedback(data) {
                 '<p><strong>Dari:</strong> ' + data.userName + ' (' + data.userId + ')</p>' +
                 '<p><strong>Pesan:</strong></p>' +
                 '<div style="background:#f9fafb;padding:15px;border-radius:8px;border-left:4px solid #059669;">' +
-                data.feedback.replace(/\\\\n/g, "<br>") +
+                data.feedback.replace(/\\n/g, "<br>") +
                 '</div>' +
                 '</div>'
     });
@@ -682,8 +678,8 @@ function handleDeleteNote(data) {
   }
   return createResponse({ error: 'Not found' });
 }
+}
 \`;
-}`;
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(appsScriptCode);
@@ -1027,7 +1023,7 @@ function handleDeleteNote(data) {
 
   const handleClearData = async () => {
     if (await confirm('Hapus semua data transaksi & anggaran? Tindakan ini tidak dapat dibatalkan.', 'Hapus Data')) {
-      const emptyData = { transactions: [], budgets: [] };
+      const emptyData = { transactions: [], budgets: [], goals: [], notes: [] };
       setData(emptyData);
       localStorage.setItem('kb_data', JSON.stringify(emptyData));
       showToast('Seluruh data telah dihapus', 'success');
@@ -1073,6 +1069,7 @@ function handleDeleteNote(data) {
 
   const handleDeleteBudget = async (category: string) => {
     if (!user) return;
+    if (!await confirm(`Hapus anggaran "${category}"?`, 'Hapus Anggaran')) return;
     const previousBudgets = [...(data.budgets || [])];
     setData(prev => ({
       ...prev,
@@ -1116,7 +1113,12 @@ function handleDeleteNote(data) {
         await api.addTransaction({ ...t, userId: user.id });
       }
       const syncRes = await api.getData(user.id);
-      setData(syncRes);
+      setData(prev => ({
+        ...prev,
+        ...syncRes,
+        goals: syncRes.goals?.length ? syncRes.goals : prev.goals || [],
+        notes: syncRes.notes?.length ? syncRes.notes : prev.notes || [],
+      }));
     } catch (err) {
       console.error('Import sync failed:', err);
     } finally {
@@ -1143,30 +1145,34 @@ function handleDeleteNote(data) {
   };
 
   const handleAddGoal = async (g: Omit<Goal, 'id'>) => {
+    if (!user) return;
     const newGoal = { ...g, id: 'goal-' + Date.now() };
     setData(prev => ({ ...prev, goals: [...(prev.goals || []), newGoal] }));
     showToast('Tujuan tabungan ditambahkan', 'success');
-    await api.updateGoal(user!.id, newGoal);
+    await api.updateGoal(user.id, newGoal);
   };
 
   const handleUpdateGoal = async (g: Goal) => {
+    if (!user) return;
     setData(prev => ({
       ...prev,
       goals: (prev.goals || []).map(goal => goal.id === g.id ? g : goal)
     }));
-    await api.updateGoal(user!.id, g);
+    await api.updateGoal(user.id, g);
   };
 
   const handleDeleteGoal = async (id: string) => {
+    if (!user) return;
     setData(prev => ({
       ...prev,
       goals: (prev.goals || []).filter(g => g.id !== id)
     }));
     showToast('Tujuan dihapus', 'info');
-    await api.deleteGoal(user!.id, id);
+    await api.deleteGoal(user.id, id);
   };
 
   const handleAddGoalSavings = async (goalId: string, amount: number) => {
+    if (!user) return;
     const goal = data.goals.find(g => g.id === goalId);
     if (!goal) return;
     const updatedGoal = { ...goal, savedAmount: goal.savedAmount + amount };
@@ -1175,31 +1181,34 @@ function handleDeleteNote(data) {
       goals: (prev.goals || []).map(g => g.id === goalId ? updatedGoal : g)
     }));
     showToast('Tabungan ditambahkan!', 'success');
-    await api.updateGoal(user!.id, updatedGoal);
+    await api.updateGoal(user.id, updatedGoal);
   };
 
   const handleAddNote = async (n: Omit<Note, 'id'>) => {
+    if (!user) return;
     const newNote = { ...n, id: 'note-' + Date.now() };
     setData(prev => ({ ...prev, notes: [newNote, ...(prev.notes || [])] }));
     showToast('Catatan disimpan', 'success');
-    await api.updateNote(user!.id, newNote);
+    await api.updateNote(user.id, newNote);
   };
 
   const handleUpdateNote = async (n: Note) => {
+    if (!user) return;
     setData(prev => ({
       ...prev,
       notes: (prev.notes || []).map(note => note.id === n.id ? n : note)
     }));
-    await api.updateNote(user!.id, n);
+    await api.updateNote(user.id, n);
   };
 
   const handleDeleteNote = async (id: string) => {
+    if (!user) return;
     setData(prev => ({
       ...prev,
       notes: (prev.notes || []).filter(n => n.id !== id)
     }));
     showToast('Catatan dihapus', 'info');
-    await api.deleteNote(user!.id, id);
+    await api.deleteNote(user.id, id);
   };
 
   if (!user) {
@@ -1550,7 +1559,7 @@ function handleDeleteNote(data) {
                         type="text"
                         maxLength={6}
                         value={editCode}
-                        onChange={(e) => setEditCode(e.target.value.replace(/\\\\D/g, ''))}
+                        onChange={(e) => setEditCode(e.target.value.replace(/\D/g, ''))}
                         className="w-full py-5 bg-bg-main rounded-lg border-2 border-border-ui focus:border-accent outline-none text-2xl font-black tracking-[0.6em] text-center text-text-primary transition-all"
                         placeholder="••••••"
                         autoFocus
@@ -2003,26 +2012,22 @@ function handleDeleteNote(data) {
           <Dashboard
             transactions={data.transactions}
             budgets={data.budgets}
+            goals={data.goals}
             onAddClick={() => { setActiveTab('transactions'); setShowAddModal(true); }}
             onViewAll={() => setActiveTab('transactions')}
             onNavigateToBudget={() => setActiveTab('budgets')}
+            onNavigateToGoals={() => setActiveTab('goals')}
             onNavigateToProfile={() => setActiveTab('profile')}
             isDark={isDark}
             toggleTheme={toggleTheme}
             userName={user.name}
+            userPhotoUrl={user.photoUrl}
+            notificationCount={notificationCount}
+            onBellClick={() => setShowNotifications(true)}
           />
         );
     }
   };
-
-  // Conditional Rendering Logic
-  if (!user) {
-    return <Auth onLogin={handleLogin} />;
-  }
-
-  if (!isUnlocked) {
-    return <PinLock correctPin={appPin!} onUnlock={() => setIsUnlocked(true)} mode="unlock" />;
-  }
 
   return (
     <Layout

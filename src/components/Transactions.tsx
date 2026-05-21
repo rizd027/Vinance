@@ -65,11 +65,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const [type, setType] = useState<'Income' | 'Expense'>('Expense');
-  const [category, setCategory] = useState('');
-  const [customCategory, setCustomCategory] = useState('');
-  const [amount, setAmount] = useState('');
-  const [note, setNote] = useState('');
+
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'All' | 'Income' | 'Expense'>('All');
@@ -92,55 +88,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
     };
   }, [showAddModal, showExportModal]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const finalCategory = category === 'Lainnya' && customCategory.trim() !== '' ? customCategory.trim() : category;
-
-    if (editId && onUpdate) {
-      onUpdate({
-        id: editId,
-        userId: '', // Will be filled by parent
-        type,
-        category: finalCategory,
-        amount: Number(amount),
-        date: new Date().toISOString(),
-        note
-      });
-      setEditId(null);
-    } else {
-      onAdd({
-        userId: '',
-        type,
-        category: finalCategory,
-        amount: Number(amount),
-        date: new Date().toISOString(),
-        note
-      });
-    }
-    setCategory('');
-    setCustomCategory('');
-    setAmount('');
-    setNote('');
-    setShowAddModal(false);
-  };
-
   const handleEditClick = (t: Transaction) => {
-    setType(t.type);
-
-    const standardCategories = t.type === 'Income'
-      ? ['Gaji', 'Bonus', 'Investasi', 'Lainnya']
-      : ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Lainnya'];
-
-    if (standardCategories.includes(t.category)) {
-      setCategory(t.category);
-      setCustomCategory('');
-    } else {
-      setCategory('Lainnya');
-      setCustomCategory(t.category);
-    }
-
-    setAmount(t.amount.toString());
-    setNote(t.note || '');
     setEditId(t.id);
     setShowAddModal(true);
   };
@@ -149,10 +97,6 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
     setShowAddModal(false);
     setTimeout(() => {
       setEditId(null);
-      setCategory('');
-      setCustomCategory('');
-      setAmount('');
-      setNote('');
     }, 200);
   };
 
@@ -182,10 +126,6 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
     setFilterCategory('');
     setSortOrder('date-desc');
   };
-
-  const categories = type === 'Income'
-    ? ['Gaji', 'Bonus', 'Investasi', 'Lainnya']
-    : ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Lainnya'];
 
   return (
     <div className="space-y-4">
@@ -238,7 +178,7 @@ export default function Transactions({ transactions, onAdd, onUpdate, onDelete, 
           <div className="fixed inset-0 z-[60] flex sm:p-4 overflow-y-auto">
             <div
               onClick={() => setShowFilters(false)}
-              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden sm:block"
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
             <div
               className="relative w-full min-h-full sm:min-h-0 sm:max-w-2xl bg-card-bg sm:rounded-lg p-6 md:p-8 shadow-2xl border-border-ui sm:m-auto z-10"
@@ -667,13 +607,18 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
   const [notify, setNotify] = useState<{ type: 'info' | 'error'; message: string } | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const recognitionRef = React.useRef<any>(null);
-  const voiceBtnRef = React.useRef<HTMLButtonElement>(null);
+  const voiceBtnRef = React.useRef<HTMLButtonElement | null>(null);
   const startVoiceInputRef = React.useRef<any>(null);
   const stopVoiceInputRef = React.useRef<any>(null);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const audioChunksRef = React.useRef<Blob[]>([]);
   const pressStartTimeRef = React.useRef<number>(0);
   const isPressingRef = React.useRef<boolean>(false);
+  const activeStreamRef = React.useRef<MediaStream | null>(null);
+
+  const categories = type === 'Income'
+    ? ['Gaji', 'Bonus', 'Investasi', 'Lainnya']
+    : ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Lainnya'];
 
   const startVoiceInput = () => {
     if (isListening || isProcessingAI) return;
@@ -683,78 +628,95 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
+        activeStreamRef.current = stream;
         if (!isPressingRef.current) {
           stream.getTracks().forEach(track => track.stop());
+          activeStreamRef.current = null;
           setNotify({ type: 'info', message: 'Tahan tombol untuk merekam suara.' });
           return;
         }
-        setIsListening(true);
-        const mediaRecorder = new MediaRecorder(stream);
-        mediaRecorderRef.current = mediaRecorder;
-        audioChunksRef.current = [];
-        
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-          }
-        };
 
-        mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        try {
+          const mediaRecorder = new MediaRecorder(stream);
+          mediaRecorderRef.current = mediaRecorder;
+          audioChunksRef.current = [];
           
-          // Stop all tracks on the stream to release the mic
-          stream.getTracks().forEach(track => track.stop());
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              audioChunksRef.current.push(event.data);
+            }
+          };
 
-          const duration = performance.now() - pressStartTimeRef.current;
-          if (duration < 500) {
-            console.log("Hold duration too short, alerting user");
-            setNotify({ type: 'info', message: 'Ketuk dan tahan untuk berbicara.' });
-            return;
-          }
+          mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            
+            // Stop all tracks on the stream to release the mic
+            stream.getTracks().forEach(track => track.stop());
+            if (activeStreamRef.current === stream) {
+              activeStreamRef.current = null;
+            }
 
-          setIsProcessingAI(true);
-          try {
-            console.log("Uploading audio and transcribing via Groq Whisper...");
-            const text = await aiService.transcribeAudio(audioBlob);
-            if (!text) {
-              setNotify({ type: 'error', message: 'Gagal mentranskripsi suara. Pastikan mikrofon berfungsi dan coba lagi.' });
+            const duration = performance.now() - pressStartTimeRef.current;
+            if (duration < 500) {
+              console.log("Hold duration too short, alerting user");
+              setNotify({ type: 'info', message: 'Ketuk dan tahan untuk berbicara.' });
               return;
             }
-            console.log("Whisper transcription result:", text);
 
-            const result = await aiService.parseVoiceCommand(text);
-            if (result) {
-              setType(result.type);
-              
-              // Flexible category matching
-              const matchedCategory = categories.find(c => 
-                c.toLowerCase() === result.category.toLowerCase()
-              );
-              
-              if (matchedCategory) {
-                setCategory(matchedCategory);
-                setCustomCategory('');
-              } else {
-                setCategory('Lainnya');
-                setCustomCategory(result.category);
+            setIsProcessingAI(true);
+            try {
+              console.log("Uploading audio and transcribing via Groq Whisper...");
+              const text = await aiService.transcribeAudio(audioBlob);
+              if (!text) {
+                setNotify({ type: 'error', message: 'Gagal mentranskripsi suara. Pastikan mikrofon berfungsi dan coba lagi.' });
+                return;
               }
-              setAmount(formatInputNumber(result.amount.toString()));
-              setNote(result.note);
-            } else {
-              setNotify({ type: 'error', message: 'AI gagal mengekstrak rincian transaksi dari teks.' });
-            }
-          } catch (err) {
-            console.error("Voice process error:", err);
-            setNotify({ type: 'error', message: 'Terjadi kesalahan saat memproses suara via AI.' });
-          } finally {
-            setIsProcessingAI(false);
-          }
-        };
+              console.log("Whisper transcription result:", text);
 
-        mediaRecorder.start();
+              const result = await aiService.parseVoiceCommand(text);
+              if (result) {
+                setType(result.type);
+                
+                // Flexible category matching
+                const matchedCategory = categories.find(c => 
+                  c.toLowerCase() === result.category.toLowerCase()
+                );
+                
+                if (matchedCategory) {
+                  setCategory(matchedCategory);
+                  setCustomCategory('');
+                } else {
+                  setCategory('Lainnya');
+                  setCustomCategory(result.category);
+                }
+                setAmount(formatInputNumber(result.amount.toString()));
+                setNote(result.note);
+              } else {
+                setNotify({ type: 'error', message: 'AI gagal mengekstrak rincian transaksi dari teks.' });
+              }
+            } catch (err) {
+              console.error("Voice process error:", err);
+              setNotify({ type: 'error', message: 'Terjadi kesalahan saat memproses suara via AI.' });
+            } finally {
+              setIsProcessingAI(false);
+            }
+          };
+
+          mediaRecorder.start();
+          setIsListening(true);
+        } catch (e) {
+          console.error("Failed to start MediaRecorder:", e);
+          stream.getTracks().forEach(track => track.stop());
+          activeStreamRef.current = null;
+          setIsListening(false);
+          isPressingRef.current = false;
+          setNotify({ type: 'error', message: 'Gagal memulai perekaman suara.' });
+        }
       })
       .catch(err => {
         console.error("Microphone Access Error:", err);
+        setIsListening(false);
+        isPressingRef.current = false;
         setNotify({ type: 'error', message: 'Izin akses mikrofon ditolak atau tidak tersedia.' });
       });
   };
@@ -777,32 +739,62 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
     stopVoiceInputRef.current = stopVoiceInput;
   });
 
+  // Cleanup on unmount to prevent memory leaks and stuck microphone sessions
   useEffect(() => {
-    const voiceBtn = voiceBtnRef.current;
-    if (!voiceBtn) return;
-
-    const handleTouchStart = (e: TouchEvent) => {
-      e.preventDefault();
-      if (startVoiceInputRef.current) {
-        startVoiceInputRef.current();
-      }
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      e.preventDefault();
-      if (stopVoiceInputRef.current) {
-        stopVoiceInputRef.current();
-      }
-    };
-
-    voiceBtn.addEventListener('touchstart', handleTouchStart, { passive: false });
-    voiceBtn.addEventListener('touchend', handleTouchEnd, { passive: false });
-
     return () => {
-      voiceBtn.removeEventListener('touchstart', handleTouchStart);
-      voiceBtn.removeEventListener('touchend', handleTouchEnd);
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try {
+          mediaRecorderRef.current.stop();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      if (activeStreamRef.current) {
+        try {
+          activeStreamRef.current.getTracks().forEach(track => track.stop());
+        } catch (e) {
+          console.error(e);
+        }
+      }
     };
   }, []);
+
+  const handleTouchStart = React.useCallback((e: TouchEvent) => {
+    e.preventDefault();
+    if (startVoiceInputRef.current) {
+      startVoiceInputRef.current();
+    }
+  }, []);
+
+  const handleTouchEnd = React.useCallback((e: TouchEvent) => {
+    e.preventDefault();
+    if (stopVoiceInputRef.current) {
+      stopVoiceInputRef.current();
+    }
+  }, []);
+
+  const handleTouchCancel = React.useCallback((e: TouchEvent) => {
+    e.preventDefault();
+    if (stopVoiceInputRef.current) {
+      stopVoiceInputRef.current();
+    }
+  }, []);
+
+  const setVoiceBtnRef = React.useCallback((node: HTMLButtonElement | null) => {
+    if (voiceBtnRef.current) {
+      voiceBtnRef.current.removeEventListener('touchstart', handleTouchStart);
+      voiceBtnRef.current.removeEventListener('touchend', handleTouchEnd);
+      voiceBtnRef.current.removeEventListener('touchcancel', handleTouchCancel);
+    }
+
+    voiceBtnRef.current = node;
+
+    if (node) {
+      node.addEventListener('touchstart', handleTouchStart, { passive: false });
+      node.addEventListener('touchend', handleTouchEnd, { passive: false });
+      node.addEventListener('touchcancel', handleTouchCancel, { passive: false });
+    }
+  }, [handleTouchStart, handleTouchEnd, handleTouchCancel]);
 
   const handleReceiptScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log("Receipt Scan Triggered");
@@ -907,9 +899,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
     onClose();
   };
 
-  const categories = type === 'Income'
-    ? ['Gaji', 'Bonus', 'Investasi', 'Lainnya']
-    : ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Lainnya'];
+
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] bg-bg-main flex flex-col animate-fade-in overflow-hidden">
@@ -1084,7 +1074,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
                 {!editId && (
                   <div className="flex items-center gap-3 w-full sm:w-auto">
                     <button 
-                      ref={voiceBtnRef}
+                      ref={setVoiceBtnRef}
                       type="button" 
                       onMouseDown={startVoiceInput}
                       onMouseUp={stopVoiceInput}

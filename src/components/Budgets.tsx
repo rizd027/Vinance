@@ -349,11 +349,7 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
                       <Edit2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm(`Hapus kategori anggaran "${cat}"?`)) {
-                          onDelete(cat);
-                        }
-                      }}
+                      onClick={() => onDelete(cat)}
                       className="p-2 sm:p-1.5 bg-bg-main hover:bg-danger/10 rounded-lg text-text-secondary hover:text-danger transition-colors"
                       title="Hapus Kategori"
                     >
@@ -501,23 +497,7 @@ export default function Budgets({ budgets, transactions, onUpdate, onDelete }: B
         </button>
       </div>
 
-      {/* 50/30/20 Info Modal */}
-      {showInfoModal && (
-          <div className="fixed inset-0 z-50 flex sm:p-4 items-center justify-center">
-            <div 
-              onClick={() => setShowInfoModal(false)} 
-              className={cn(
-                "fixed inset-0",
-                isMobile ? "bg-black/80" : "bg-slate-900/60 backdrop-blur-sm"
-              )} 
-            />
-            <div 
-              className="relative bg-card-bg sm:rounded-lg border border-border-ui shadow-2xl w-full h-full sm:h-auto sm:max-w-4xl mx-auto z-10 overflow-hidden flex flex-col max-h-full sm:max-h-[90vh]"
-            >
-              <InfoModalContent onClose={() => setShowInfoModal(false)} />
-            </div>
-          </div>
-        )}
+
     </div>
   );
 }
