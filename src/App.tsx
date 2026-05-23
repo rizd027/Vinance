@@ -679,7 +679,7 @@ function handleDeleteNote(data) {
   return createResponse({ error: 'Not found' });
 }
 }
-\`;
+`;
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(appsScriptCode);

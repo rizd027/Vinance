@@ -607,9 +607,6 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
   const [notify, setNotify] = useState<{ type: 'info' | 'error'; message: string } | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const recognitionRef = React.useRef<any>(null);
-  const voiceBtnRef = React.useRef<HTMLButtonElement | null>(null);
-  const startVoiceInputRef = React.useRef<any>(null);
-  const stopVoiceInputRef = React.useRef<any>(null);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const audioChunksRef = React.useRef<Blob[]>([]);
   const pressStartTimeRef = React.useRef<number>(0);
@@ -622,9 +619,10 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
 
   const startVoiceInput = () => {
     if (isListening || isProcessingAI) return;
-    console.log("Voice Input Started (Hold & Local Recording)");
+    console.log("Voice Input Started (Toggle)");
     pressStartTimeRef.current = performance.now();
     isPressingRef.current = true;
+    setIsListening(true);
 
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
@@ -632,7 +630,6 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
         if (!isPressingRef.current) {
           stream.getTracks().forEach(track => track.stop());
           activeStreamRef.current = null;
-          setNotify({ type: 'info', message: 'Tahan tombol untuk merekam suara.' });
           return;
         }
 
@@ -658,8 +655,8 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
 
             const duration = performance.now() - pressStartTimeRef.current;
             if (duration < 500) {
-              console.log("Hold duration too short, alerting user");
-              setNotify({ type: 'info', message: 'Ketuk dan tahan untuk berbicara.' });
+              console.log("Duration too short, alerting user");
+              setNotify({ type: 'info', message: 'Durasi rekaman terlalu singkat.' });
               return;
             }
 
@@ -703,7 +700,6 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
           };
 
           mediaRecorder.start();
-          setIsListening(true);
         } catch (e) {
           console.error("Failed to start MediaRecorder:", e);
           stream.getTracks().forEach(track => track.stop());
@@ -734,11 +730,6 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
     }
   };
 
-  useEffect(() => {
-    startVoiceInputRef.current = startVoiceInput;
-    stopVoiceInputRef.current = stopVoiceInput;
-  });
-
   // Cleanup on unmount to prevent memory leaks and stuck microphone sessions
   useEffect(() => {
     return () => {
@@ -758,43 +749,6 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
       }
     };
   }, []);
-
-  const handleTouchStart = React.useCallback((e: TouchEvent) => {
-    e.preventDefault();
-    if (startVoiceInputRef.current) {
-      startVoiceInputRef.current();
-    }
-  }, []);
-
-  const handleTouchEnd = React.useCallback((e: TouchEvent) => {
-    e.preventDefault();
-    if (stopVoiceInputRef.current) {
-      stopVoiceInputRef.current();
-    }
-  }, []);
-
-  const handleTouchCancel = React.useCallback((e: TouchEvent) => {
-    e.preventDefault();
-    if (stopVoiceInputRef.current) {
-      stopVoiceInputRef.current();
-    }
-  }, []);
-
-  const setVoiceBtnRef = React.useCallback((node: HTMLButtonElement | null) => {
-    if (voiceBtnRef.current) {
-      voiceBtnRef.current.removeEventListener('touchstart', handleTouchStart);
-      voiceBtnRef.current.removeEventListener('touchend', handleTouchEnd);
-      voiceBtnRef.current.removeEventListener('touchcancel', handleTouchCancel);
-    }
-
-    voiceBtnRef.current = node;
-
-    if (node) {
-      node.addEventListener('touchstart', handleTouchStart, { passive: false });
-      node.addEventListener('touchend', handleTouchEnd, { passive: false });
-      node.addEventListener('touchcancel', handleTouchCancel, { passive: false });
-    }
-  }, [handleTouchStart, handleTouchEnd, handleTouchCancel]);
 
   const handleReceiptScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log("Receipt Scan Triggered");
@@ -1074,11 +1028,8 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
                 {!editId && (
                   <div className="flex items-center gap-3 w-full sm:w-auto">
                     <button 
-                      ref={setVoiceBtnRef}
                       type="button" 
-                      onMouseDown={startVoiceInput}
-                      onMouseUp={stopVoiceInput}
-                      onMouseLeave={stopVoiceInput}
+                      onClick={isListening ? stopVoiceInput : startVoiceInput}
                       disabled={isProcessingAI}
                       className={cn(
                         "h-[56px] flex-1 sm:flex-none px-6 rounded-lg transition-all border flex items-center justify-center gap-2 group select-none touch-none",
@@ -1086,11 +1037,11 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
                           ? "bg-accent/20 border-accent text-accent animate-pulse shadow-md shadow-accent/10" 
                           : "bg-accent/10 border-accent/30 text-accent hover:bg-accent/20 hover:border-accent/50 hover:shadow-md hover:shadow-accent/10"
                       )}
-                      title="Tahan untuk Voice Input"
+                      title={isListening ? "Tekan lagi untuk stop" : "Tekan untuk merekam"}
                     >
                       <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />
                       <span className="text-[10px] font-black sm:hidden uppercase">
-                        {isListening ? 'Tahan...' : 'Voice'}
+                        {isListening ? 'Stop' : 'Rekam'}
                       </span>
                     </button>
                     <button 
