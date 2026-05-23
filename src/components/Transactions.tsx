@@ -613,12 +613,23 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
   const isPressingRef = React.useRef<boolean>(false);
   const activeStreamRef = React.useRef<MediaStream | null>(null);
 
+  // Auto-dismiss notification after 5 seconds
+  useEffect(() => {
+    if (notify) {
+      const timer = setTimeout(() => {
+        setNotify(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notify]);
+
   const categories = type === 'Income'
     ? ['Gaji', 'Bonus', 'Investasi', 'Lainnya']
     : ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Lainnya'];
 
   const startVoiceInput = () => {
     if (isListening || isProcessingAI) return;
+    setNotify(null);
     console.log("Voice Input Started (Toggle)");
     pressStartTimeRef.current = performance.now();
     isPressingRef.current = true;
@@ -688,6 +699,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
                 }
                 setAmount(formatInputNumber(result.amount.toString()));
                 setNote(result.note);
+                setNotify(null);
               } else {
                 setNotify({ type: 'error', message: 'AI gagal mengekstrak rincian transaksi dari teks.' });
               }
@@ -755,6 +767,8 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
     const file = e.target.files?.[0];
     if (!file) return;
     
+    setNotify(null);
+    
     // Check file size (Groq limit is 20MB, but let's keep it smaller for speed)
     if (file.size > 10 * 1024 * 1024) {
       setNotify({ type: 'error', message: 'Ukuran gambar terlalu besar. Maksimal 10MB.' });
@@ -783,6 +797,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
           }
           setAmount(formatInputNumber(result.amount.toString()));
           setNote(result.note);
+          setNotify(null);
         } else {
           setNotify({ type: 'error', message: 'AI gagal menganalisis struk. Pastikan gambar jelas.' });
         }
@@ -822,6 +837,7 @@ const AddEditModal = React.memo(({ isOpen, onClose, onAdd, onUpdate, editId, ini
       setNote('');
       setDate(new Date().toISOString());
     }
+    setNotify(null);
   }, [initialData, isOpen]);
 
   if (!isOpen) return null;
