@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import { AppData, User } from '../types';
+import type { AppData, User } from '../types';
 
 // Initialize localForage with dedicated stores
 const mainStore = localforage.createInstance({

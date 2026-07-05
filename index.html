@@ -1,38 +1,43 @@
 <!doctype html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Vinance - Manajemen Keuangan Premium</title>
-  <meta name="description"
-    content="Vinance - Aplikasi manajemen keuangan yang aman, ringan, dan dapat berjalan offline. Kelola anggaran dan transaksi Anda dengan mudah." />
-  <meta name="theme-color" content="#6366f1" />
-  <link rel="apple-touch-icon" href="/Logo-Vinance.png" />
-  <link rel="icon" type="image/png" href="/Logo-Vinance.png" />
-
-  <script>
-    // Guard against libraries trying to polyfill fetch in a protected environment
-    (function () {
-      const originalFetch = window.fetch;
-      try {
-        Object.defineProperty(window, 'fetch', {
-          get: function () { return originalFetch; },
-          set: function (v) {
-            console.warn('Prevented attempt to overwrite window.fetch');
-          },
-          configurable: true
-        });
-      } catch (e) {
-        // If we can't redefine it, it's already protected or we're in a very strict environment
-      }
-    })();
-  </script>
-</head>
-
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>1.2</title>
+    <script>
+      window.addEventListener('error', function(event) {
+        var div = document.createElement('div');
+        div.style.color = 'red';
+        div.style.padding = '20px';
+        div.style.background = '#fee2e2';
+        div.style.border = '2px solid #ef4444';
+        div.style.margin = '20px';
+        div.style.fontFamily = 'monospace';
+        div.style.whiteSpace = 'pre-wrap';
+        div.style.zIndex = '999999';
+        div.style.position = 'relative';
+        div.innerHTML = '<h3>Unhandled Error:</h3>' + event.message + '\nat ' + event.filename + ':' + event.lineno + ':' + event.colno + '\n\n' + (event.error ? event.error.stack : '');
+        document.body.insertBefore(div, document.body.firstChild);
+      });
+      window.addEventListener('unhandledrejection', function(event) {
+        var div = document.createElement('div');
+        div.style.color = 'red';
+        div.style.padding = '20px';
+        div.style.background = '#fee2e2';
+        div.style.border = '2px solid #ef4444';
+        div.style.margin = '20px';
+        div.style.fontFamily = 'monospace';
+        div.style.whiteSpace = 'pre-wrap';
+        div.style.zIndex = '999999';
+        div.style.position = 'relative';
+        div.innerHTML = '<h3>Unhandled Promise Rejection:</h3>' + event.reason + '\n\n' + (event.reason ? event.reason.stack : '');
+        document.body.insertBefore(div, document.body.firstChild);
+      });
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

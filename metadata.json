@@ -1,6 +1,0 @@
-{
-  "name": "Berkah Finance",
-  "description": "Aplikasi kelola keuangan modern dengan sinkronisasi Google Sheets.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["PWA", "Google Sheets Sync", "Expense Tracking", "Budgeting"]
-}

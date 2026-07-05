@@ -1,4 +1,4 @@
-import { AppData, Transaction, User } from '../types';
+import type { AppData, Transaction, User } from '../types';
 import { storage } from './storage';
 
 let currentScriptUrl = 'https://script.google.com/macros/s/AKfycbxb9xd4Jh5pBWCrdfjc21hDmOFBs5F905s5C0QhQOz2nH9LSW0jBt36EyZN9buoqJJw/exec';

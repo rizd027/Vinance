@@ -4,7 +4,6 @@ export interface User {
   email: string;
   photoUrl?: string;
   coverUrl?: string;
-  wallpaper?: string;
   scriptUrl?: string;
 }
 

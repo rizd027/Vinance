@@ -1,9 +1,9 @@
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel, TextRun, BorderStyle, ImageRun } from 'docx';
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel, TextRun, ImageRun } from 'docx';
 import { saveAs } from 'file-saver';
-import { Transaction } from '../types';
+import type { Transaction } from '../types';
 import { formatCurrency } from './utils';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';

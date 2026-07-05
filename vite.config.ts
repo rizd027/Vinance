@@ -1,17 +1,16 @@
 import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
+import vue from '@vitejs/plugin-vue';
 import path from 'path';
-import {defineConfig, loadEnv} from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig(({mode}) => {
+export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
     plugins: [
-      react(), 
+      vue(),
       tailwindcss(),
       VitePWA({
-        // ── Use injectManifest so our custom sw.ts handles Background Sync ──
         strategies: 'injectManifest',
         srcDir: 'src',
         filename: 'sw.ts',
@@ -21,7 +20,6 @@ export default defineConfig(({mode}) => {
         devOptions: {
           enabled: true,
           type: 'module',
-          // In dev mode, point to src/sw.ts so HMR works
           navigateFallback: 'index.html',
         },
 
@@ -51,10 +49,10 @@ export default defineConfig(({mode}) => {
           ]
         },
 
-        // injectManifest mode: workbox config controls injection of __WB_MANIFEST
         injectManifest: {
           maximumFileSizeToCacheInBytes: 4000000,
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,json}'],
+          rollupFormat: 'iife',
         },
       })
     ],
@@ -63,12 +61,12 @@ export default defineConfig(({mode}) => {
     },
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(__dirname, './src'),
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modify—file watching is disabled to prevent flickering during agent edits.
+      port: 3000,
+      host: '0.0.0.0',
       hmr: process.env.DISABLE_HMR !== 'true',
       proxy: {
         '/api-groq': {
@@ -80,3 +78,4 @@ export default defineConfig(({mode}) => {
     },
   };
 });
+

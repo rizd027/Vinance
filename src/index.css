@@ -10,8 +10,8 @@
   --color-bg-main: #f8fafc; /* Crisp clean paper background */
   --color-sidebar-bg: #ffffff; /* Pure white sidebar */
   --color-sidebar-text-primary: #0f172a; /* Deep Charcoal */
-  --color-sidebar-text-secondary: #475569; /* Slate gray */
-  --color-sidebar-border: #cbd5e1; /* Clear Slate-300 border for sidebar */
+  --color-sidebar-text-secondary: #334155; /* Slate-700 gray */
+  --color-sidebar-border: #94a3b8; /* Slate-400 border for sidebar */
   --color-card-bg: #ffffff;
   --color-accent: #2D4DB5; /* New Royal Blue Accent */
   --color-secondary: #0ea5e9; /* Sky Blue */
@@ -19,8 +19,8 @@
   --color-danger: #f43f5e; /* Apple Crimson */
   --color-warning: #f59e0b; /* Metal Gold */
   --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-border-ui: #cbd5e1; /* Clear Slate-300 border for UI components */
+  --color-text-secondary: #334155;
+  --color-border-ui: #94a3b8; /* Slate-400 border for UI components */
 
   /* Dark Theme (High-Density Obsidian/Onyx) */
   --color-dark-bg-main: #090d16; /* Deep Obsidian Blue-Black */
@@ -141,19 +141,19 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Clean Fintech Premium Elevation Card */
+/* Clean Fintech Premium Elevation Card - Cardless & Borderless */
 .card-ui {
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border-ui);
-  border-radius: 12px; /* Perfect modern 12px rounded corner */
-  box-shadow: var(--shadow-sm), 0 4px 12px 0 rgba(15, 23, 42, 0.02);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-ui:hover {
-  border-color: rgba(45, 77, 181, 0.35); /* Subtle Royal Blue highlight */
-  box-shadow: var(--shadow-md), 0 8px 16px 0 rgba(45, 77, 181, 0.06);
-  transform: translateY(-2px);
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
 }
 
 .btn-accent {
@@ -303,13 +303,13 @@ input[type="url"],
 select,
 textarea:not(.bg-transparent):not([class*="bg-transparent"]) {
   background-color: var(--color-bg-main) !important;
-  border: 1px solid var(--color-border-ui) !important;
+  border: none !important;
   border-radius: 12px !important; /* Premium rounded-xl */
   font-size: 13.5px !important;
   font-weight: 600 !important; /* Bold premium values */
   color: var(--color-text-primary) !important;
   outline: none !important;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02) !important; /* Subtle inner shadow */
+  box-shadow: none !important;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
@@ -328,8 +328,8 @@ input[type="email"]:hover,
 input[type="password"]:hover,
 input[type="number"]:hover,
 textarea:not(.bg-transparent):not([class*="bg-transparent"]):hover {
-  border-color: rgba(45, 77, 181, 0.45) !important;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.015), 0 2px 8px rgba(45, 77, 181, 0.02) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 input[type="text"]:focus,
@@ -337,14 +337,57 @@ input[type="email"]:focus,
 input[type="password"]:focus,
 input[type="number"]:focus,
 textarea:not(.bg-transparent):not([class*="bg-transparent"]):focus {
-  border-color: var(--color-accent) !important;
-  background-color: var(--color-card-bg) !important; /* Premium elevation background shift on focus */
-  box-shadow: 0 0 0 4px rgba(45, 77, 181, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.01) !important;
+  border-color: transparent !important;
+  background-color: var(--color-bg-main) !important; /* Premium elevation background shift on focus */
+  box-shadow: none !important;
 }
 
 /* Also style custom select wrappers and date pickers for visual parity */
 .focus-within\:border-accent:focus-within {
-  border-color: var(--color-accent) !important;
-  box-shadow: 0 0 0 4px rgba(45, 77, 181, 0.15) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
 
+/* ══ Mobile Native App Utilities ══ */
+
+/* Remove tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area bottom padding for iPhone notch / home bar */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 8px);
+}
+
+/* Smooth native scroll */
+html, body {
+  scroll-behavior: smooth;
+  overscroll-behavior: none;
+}
+
+/* Native-feel momentum scroll on scroll containers */
+.overflow-y-auto,
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Active press scale feedback (mobile) */
+.active\:scale-90:active {
+  transform: scale(0.90);
+}
+.active\:scale-95:active {
+  transform: scale(0.95);
+}
+
+/* Bottom nav active indicator animation */
+@keyframes indicator-in {
+  from { width: 0; opacity: 0; }
+  to   { width: 2rem; opacity: 1; }
+}
+
+/* Currency number font override for amounts */
+.currency-font {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
