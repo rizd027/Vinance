@@ -518,7 +518,7 @@
                   <button
                     v-if="editId"
                     type="button"
-                    @click="() => { $emit('delete', editId); handleCloseModal(); }"
+                    @click="() => { emit('delete', editId!); handleCloseModal(); }"
                     class="w-full sm:w-auto h-[56px] px-5 rounded-lg bg-danger/10 border-0 text-danger font-black text-sm hover:bg-danger/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0"
                   >
                     <Trash2 class="w-4 h-4" />

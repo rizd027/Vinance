@@ -670,14 +670,14 @@ const filteredRecent = computed(() => {
 });
 
 const groupedRecent = computed(() => {
-  return filteredRecent.value.reduce((groups, t) => {
-    const d = new Date(t.date);
+  return filteredRecent.value.reduce((groups, tx) => {
+    const d = new Date(tx.date);
     let label: string;
     if (isToday(d)) label = t('today').toUpperCase();
     else if (isYesterday(d)) label = t('yesterday').toUpperCase();
     else label = format(d, 'd MMM yyyy', { locale: localeId }).toUpperCase();
     if (!groups[label]) groups[label] = [];
-    groups[label].push(t);
+    groups[label].push(tx);
     return groups;
   }, {} as Record<string, Transaction[]>);
 });
