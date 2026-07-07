@@ -1,6 +1,6 @@
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || "";
-const GROQ_URL = "/api-groq/chat/completions";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 export interface AITransactionResult {
   type: 'Income' | 'Expense';
@@ -133,7 +133,7 @@ export const aiService = {
     formData.append('language', 'id');
 
     try {
-      const response = await fetch('/api-groq/audio/transcriptions', {
+      const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${GROQ_API_KEY}`
