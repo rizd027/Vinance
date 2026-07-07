@@ -1,7 +1,7 @@
 import type { AppData, Transaction, User } from '../types';
 import { storage } from './storage';
 
-let currentScriptUrl = 'https://script.google.com/macros/s/AKfycbxb9xd4Jh5pBWCrdfjc21hDmOFBs5F905s5C0QhQOz2nH9LSW0jBt36EyZN9buoqJJw/exec';
+let currentScriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxb9xd4Jh5pBWCrdfjc21hDmOFBs5F905s5C0QhQOz2nH9LSW0jBt36EyZN9buoqJJw/exec';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -41,7 +41,12 @@ export const api = {
   async request(data: any) {
     if (!currentScriptUrl) throw new Error('API URL not configured');
 
-    const isMutation = !['login', 'getData'].includes(data.action);
+    const isMutation = [
+      'addTransaction', 'updateTransaction', 'deleteTransaction',
+      'updateBudget', 'deleteBudget',
+      'updateGoal', 'deleteGoal',
+      'updateNote', 'deleteNote'
+    ].includes(data.action);
 
     // Offline → queue immediately without trying network
     if (!navigator.onLine && isMutation) {

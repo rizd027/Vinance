@@ -7,7 +7,7 @@
   --font-sans: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
   
   /* Light Theme (Clean Fintech Paper) */
-  --color-bg-main: #f8fafc; /* Crisp clean paper background */
+  --color-bg-main: #f1f5f9; /* Soft Slate paper background */
   --color-sidebar-bg: #ffffff; /* Pure white sidebar */
   --color-sidebar-text-primary: #0f172a; /* Deep Charcoal */
   --color-sidebar-text-secondary: #334155; /* Slate-700 gray */
@@ -294,12 +294,12 @@ body {
 /* 
  * Premium Global Inputs & Textareas Styling
  */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="tel"],
-input[type="url"],
+input[type="text"]:not(.bg-transparent):not([class*="bg-transparent"]),
+input[type="email"]:not(.bg-transparent):not([class*="bg-transparent"]),
+input[type="password"]:not(.bg-transparent):not([class*="bg-transparent"]),
+input[type="number"]:not(.bg-transparent):not([class*="bg-transparent"]),
+input[type="tel"]:not(.bg-transparent):not([class*="bg-transparent"]),
+input[type="url"]:not(.bg-transparent):not([class*="bg-transparent"]),
 select,
 textarea:not(.bg-transparent):not([class*="bg-transparent"]) {
   background-color: var(--color-bg-main) !important;
@@ -323,19 +323,19 @@ textarea::placeholder {
   font-weight: 500 !important;
 }
 
-input[type="text"]:hover,
-input[type="email"]:hover,
-input[type="password"]:hover,
-input[type="number"]:hover,
+input[type="text"]:not(.bg-transparent):not([class*="bg-transparent"]):hover,
+input[type="email"]:not(.bg-transparent):not([class*="bg-transparent"]):hover,
+input[type="password"]:not(.bg-transparent):not([class*="bg-transparent"]):hover,
+input[type="number"]:not(.bg-transparent):not([class*="bg-transparent"]):hover,
 textarea:not(.bg-transparent):not([class*="bg-transparent"]):hover {
   border-color: transparent !important;
   box-shadow: none !important;
 }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="number"]:focus,
+input[type="text"]:not(.bg-transparent):not([class*="bg-transparent"]):focus,
+input[type="email"]:not(.bg-transparent):not([class*="bg-transparent"]):focus,
+input[type="password"]:not(.bg-transparent):not([class*="bg-transparent"]):focus,
+input[type="number"]:not(.bg-transparent):not([class*="bg-transparent"]):focus,
 textarea:not(.bg-transparent):not([class*="bg-transparent"]):focus {
   border-color: transparent !important;
   background-color: var(--color-bg-main) !important; /* Premium elevation background shift on focus */
@@ -390,4 +390,32 @@ html, body {
 .currency-font {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
+}
+
+/* Bulletproof Underline Inputs override for Auth Form */
+.auth-form-lines input {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  border-style: solid !important;
+  border-top-width: 0 !important;
+  border-left-width: 0 !important;
+  border-right-width: 0 !important;
+  border-bottom-width: 1px !important;
+  border-bottom-color: var(--color-border-ui) !important;
+  box-shadow: none !important;
+}
+
+.auth-form-lines input:focus {
+  border-bottom-color: var(--color-accent) !important;
+  background-color: transparent !important;
+}
+
+/* Chrome Autofill background color and text override */
+.auth-form-lines input:-webkit-autofill,
+.auth-form-lines input:-webkit-autofill:hover, 
+.auth-form-lines input:-webkit-autofill:focus,
+.auth-form-lines input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: var(--color-text-primary) !important;
 }

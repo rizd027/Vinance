@@ -1,10 +1,10 @@
 <template>
-  <div class="h-screen bg-gradient-to-br from-bg-main to-sidebar-bg flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
+  <div class="min-h-screen w-full bg-gradient-to-br from-bg-main to-sidebar-bg flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-y-auto">
     <!-- Theme toggle -->
     <button
       v-if="isDark !== undefined"
       @click="$emit('toggleTheme')"
-      class="absolute top-4 right-4 z-50 p-2.5 bg-card-bg/80 backdrop-blur-md border-0 rounded-full shadow-none text-text-secondary hover:text-text-primary hover:scale-110 active:scale-95 transition-all"
+      class="absolute top-4 right-4 z-50 p-2.5 bg-card-bg/85 backdrop-blur-md border border-border-ui/10 rounded-full shadow-md text-text-secondary hover:text-text-primary hover:scale-110 active:scale-95 transition-all cursor-pointer"
     >
       <Sun v-if="isDark" class="w-5 h-5 text-amber-500" />
       <Moon v-else class="w-5 h-5 text-slate-700" />
@@ -17,12 +17,18 @@
       <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-accent/5 rounded-full blur-[150px]" />
     </div>
 
-    <div class="w-full max-w-5xl grid lg:grid-cols-2 gap-8 items-center z-10">
+    <!-- Doodle Art Pattern Overlay -->
+    <div
+      class="absolute inset-0 z-0 opacity-[0.06] dark:opacity-[0.03] pointer-events-none"
+      style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%233b82f6' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 30 h35 a5 5 0 0 1 5 5 v20 a5 5 0 0 1 -5 5 h-35 a5 5 0 0 1 -5 -5 v-20 a5 5 0 0 1 5 -5 z'/%3E%3Cpath d='M15 42 h45'/%3E%3Cpath d='M48 40 h8 v8 h-8 z'/%3E%3Ccircle cx='150' cy='40' r='12'/%3E%3Cpath d='M150 33 v14 M147 37 c0-2 6-2 6 0 c0 3-6 3-6 6 c0 2 6 2 6 0'/%3E%3Cpath d='M30 140 l20 -20 l15 15 l30 -30'/%3E%3Cpath d='M85 105 h10 v10'/%3E%3Cpath d='M25 150 h80 M25 100 v50'/%3E%3Ccircle cx='160' cy='115' r='3'/%3E%3Ccircle cx='175' cy='130' r='3'/%3E%3Cpath d='M178 112 l-22 22'/%3E%3Crect x='110' y='150' width='40' height='26' rx='4'/%3E%3Cpath d='M110 157 h40'/%3E%3Crect x='116' y='165' width='8' height='6' rx='1'/%3E%3Cpath d='M95 30 l3 -3 l3 3 l-3 3 z'/%3E%3Cpath d='M40 85 l2 -2 l2 2 l-2 2 z'/%3E%3Cpath d='M120 85 l4 -4 l4 4 l-4 4 z'/%3E%3Cpath d='M80 170 q 15 -10, 30 0'/%3E%3C/g%3E%3C/svg%3E&quot;); background-repeat: repeat; background-size: 160px 160px;"
+    />
+
+    <div class="w-full max-w-5xl grid lg:grid-cols-2 gap-8 items-center z-10 py-6">
       <!-- Left panel (desktop only) -->
       <div class="hidden lg:flex flex-col space-y-6 pr-8">
         <div>
           <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 bg-white dark:bg-slate-50 rounded-xl flex items-center justify-center shadow-none border-0 p-1.5">
+            <div class="w-10 h-10 bg-white dark:bg-slate-50 rounded-xl flex items-center justify-center shadow-md border border-border-ui/10 p-1.5">
               <img src="/Logo-Vinance.png" alt="Vinance Logo" class="w-full h-full object-contain" />
             </div>
             <h1 class="text-2xl font-extrabold text-text-primary tracking-tight">Vinance</h1>
@@ -34,8 +40,8 @@
           <p class="text-sm text-text-secondary leading-relaxed max-w-sm">
             Sistem manajemen keuangan modern yang terhubung langsung dengan Google Sheets pribadi Anda. Aman, cepat, dan mudah digunakan.
           </p>
-          <div class="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-secondary/10 border-0 rounded-full">
-            <Sparkles class="w-3 h-3 text-secondary" />
+          <div class="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-secondary/10 border border-secondary/20 rounded-full">
+            <Sparkles class="w-3.5 h-3.5 text-secondary animate-pulse" />
             <span class="text-[10px] font-bold text-secondary uppercase tracking-wider">Dukung Database Sheets Pribadi</span>
           </div>
         </div>
@@ -44,9 +50,9 @@
           <div
             v-for="(feature, i) in features"
             :key="i"
-            class="flex items-start gap-3 p-3 rounded-xl border-0 hover:bg-bg-main/50 hover:scale-[1.02] transition-all duration-300 group cursor-default"
+            class="flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-border-ui/10 hover:bg-bg-main/50 hover:scale-[1.01] transition-all duration-300 group cursor-default"
           >
-            <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-none">
+            <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm border border-accent/10">
               <component :is="feature.icon" class="w-5 h-5 text-accent transition-colors duration-300" />
             </div>
             <div>
@@ -58,51 +64,53 @@
       </div>
 
       <!-- Right panel (auth card) -->
-      <div class="w-full flex flex-col items-center">
-        <div class="w-full max-w-[400px] bg-transparent rounded-2xl border-0 shadow-none overflow-hidden max-h-[90vh] flex flex-col">
+      <div class="w-full flex flex-col items-center justify-center">
+        <div class="w-full max-w-[390px] bg-transparent sm:bg-card-bg rounded-2xl border-0 sm:border border-border-ui/30 dark:border-border-ui/20 shadow-none sm:shadow-2xl overflow-hidden flex flex-col">
           <!-- Mobile logo header -->
-          <div class="lg:hidden p-8 pb-0 flex flex-col items-center text-center">
-            <div class="w-14 h-14 bg-white dark:bg-slate-50 rounded-xl flex items-center justify-center mb-4 shadow-none border-0 p-2">
+          <div class="lg:hidden p-5 pb-0 flex flex-col items-center text-center">
+            <div class="w-11 h-11 bg-white dark:bg-slate-50 rounded-2xl flex items-center justify-center mb-3 shadow-md border border-border-ui/10 p-2">
               <img src="/Logo-Vinance.png" alt="Vinance Logo" class="w-full h-full object-contain" />
             </div>
-            <h1 class="text-2xl font-bold text-text-primary">Vinance</h1>
-            <p class="text-sm text-text-secondary mt-1">Manajemen Keuangan</p>
-            <div class="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-secondary/10 border-0 rounded-full">
-              <Sparkles class="w-3 h-3 text-secondary" />
-              <span class="text-[10px] font-bold text-secondary uppercase tracking-wider">Dukung Database Sheets Pribadi</span>
+            <h1 class="text-lg font-black text-text-primary uppercase tracking-wider">Vinance</h1>
+            <p class="text-[10px] text-text-secondary/80 font-medium uppercase tracking-widest mt-0.5">Manajemen Keuangan</p>
+            <div class="mt-2.5 inline-flex items-center gap-1 px-3 py-1 bg-accent/10 border border-accent/20 rounded-full shadow-xs">
+              <Sparkles class="w-3 h-3 text-accent animate-pulse" />
+              <span class="text-[8.5px] font-bold text-accent uppercase tracking-wider">Sheets Pribadi</span>
             </div>
           </div>
 
-          <div class="p-6 sm:p-8 overflow-y-auto custom-scrollbar">
+          <div class="p-5 sm:p-6 flex flex-col">
             <!-- Tab switcher -->
-            <div class="flex p-1 bg-bg-main/80 dark:bg-bg-main/20 rounded-xl mb-6 border-0">
+            <div class="flex p-0.5 bg-bg-main/80 dark:bg-bg-main/20 rounded-xl mb-4 border border-border-ui/30">
               <button
+                type="button"
                 @click="isLogin = true"
-                :class="['flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300', isLogin ? 'bg-card-bg text-accent shadow-none' : 'text-text-secondary']"
+                :class="['flex-1 py-2 text-xs font-bold rounded-xl transition-all duration-300 cursor-pointer', isLogin ? 'bg-card-bg text-accent shadow-sm border border-border-ui/10 scale-[1.02] font-black' : 'text-text-secondary hover:text-text-primary']"
               >Masuk</button>
               <button
+                type="button"
                 @click="isLogin = false"
-                :class="['flex-1 py-3 text-sm font-bold rounded-xl transition-all duration-300', !isLogin ? 'bg-card-bg text-accent shadow-none' : 'text-text-secondary']"
+                :class="['flex-1 py-2 text-xs font-bold rounded-xl transition-all duration-300 cursor-pointer', !isLogin ? 'bg-card-bg text-accent shadow-sm border border-border-ui/10 scale-[1.02] font-black' : 'text-text-secondary hover:text-text-primary']"
               >Daftar</button>
             </div>
 
-            <form @submit.prevent="handleSubmit" class="space-y-4">
+            <form @submit.prevent="handleSubmit" class="space-y-5 auth-form-lines">
               <!-- Success alert -->
-              <div v-if="success" class="p-3.5 rounded-xl bg-emerald-500/10 border-0 flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                  <ShieldCheck class="w-4 h-4 text-emerald-500" />
+              <div v-if="success" class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3">
+                <div class="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                  <ShieldCheck class="w-3.5 h-3.5 text-emerald-500" />
                 </div>
-                <p class="text-xs text-emerald-500 font-medium leading-relaxed">{{ success }}</p>
+                <p class="text-[11px] text-emerald-500 font-semibold leading-normal">{{ success }}</p>
               </div>
  
               <!-- Name field (register step 1) -->
-              <div v-if="!isLogin && regStep === 1" class="space-y-2">
-                <label class="text-xs font-bold text-text-secondary uppercase tracking-wider ml-1">Nama Lengkap</label>
+              <div v-if="!isLogin && regStep === 1" class="space-y-1">
+                <label class="text-[10px] font-bold text-text-secondary/80 uppercase tracking-widest ml-1">Nama Lengkap</label>
                 <div class="relative group">
-                  <UserIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                  <UserIcon class="absolute left-1 bottom-1.5 w-4 h-4 text-text-secondary group-focus-within:text-accent transition-colors duration-300" />
                   <input
                     type="text" required v-model="name"
-                    class="w-full pl-11 pr-4 py-3.5 rounded-xl border-0 bg-bg-main/50 text-text-primary outline-none focus:border-accent text-sm transition-all"
+                    class="w-full pl-8 pr-4 pt-3 pb-1.5 bg-transparent border-0 border-b border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs transition-all duration-300 rounded-none shadow-none"
                     placeholder="Masukkan nama lengkap"
                   />
                 </div>
@@ -110,56 +118,65 @@
 
               <!-- Register Step 2: OTP verification -->
               <template v-if="!isLogin && regStep === 2">
-                <div class="space-y-4 py-2">
-                  <div class="text-center mb-4">
-                    <div class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <MailIcon class="w-6 h-6 text-accent" />
+                <div class="space-y-3.5 py-1">
+                  <div class="text-center mb-2">
+                    <div class="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <MailIcon class="w-5 h-5 text-accent" />
                     </div>
-                    <p class="text-sm text-text-primary font-medium">Verifikasi Email Anda</p>
+                    <p class="text-xs text-text-primary font-bold">Verifikasi Email Anda</p>
                     <p class="text-[11px] text-text-secondary mt-1">Kode dikirim ke <span class="text-accent font-bold">{{ email }}</span></p>
+                    <div class="text-[10px] text-amber-600 dark:text-amber-400 mt-2.5 bg-amber-500/10 py-2 px-3 rounded-xl border border-amber-500/20 leading-relaxed text-left">
+                      <strong>Penting:</strong> Jika kode tidak muncul di kotak masuk utama, silakan periksa folder <strong>Spam/Junk</strong> atau tab <strong>Promosi/Update</strong>. Anda juga bisa menyalin kode langsung di tab spreadsheet <strong>VerificationCodes</strong> Anda.
+                    </div>
                   </div>
                   <div class="space-y-2">
-                    <label class="text-xs font-bold text-text-secondary uppercase tracking-wider ml-1">Kode Verifikasi</label>
-                    <div class="relative group">
-                      <ShieldCheck class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                    <label class="text-[10px] font-bold text-text-secondary/80 uppercase tracking-widest text-center block w-full mb-1">Kode Verifikasi</label>
+                    <div class="flex justify-between gap-2 max-w-[270px] mx-auto">
                       <input
-                        type="text" required :maxlength="6" v-model="regCode"
-                        @input="regCode = regCode.replace(/\D/g, '')"
-                        class="w-full pl-11 pr-4 py-3.5 rounded-xl border-0 bg-bg-main/50 text-text-primary outline-none focus:border-accent text-sm tracking-[0.5em] font-bold transition-all"
-                        placeholder="XXXXXX"
+                        v-for="(_, idx) in 6"
+                        :key="idx"
+                        :id="'otp-' + idx"
+                        type="text"
+                        maxlength="1"
+                        v-model="otpDigits[idx]"
+                        @input="handleOtpInput($event, idx)"
+                        @keydown="handleOtpKeyDown($event, idx)"
+                        @paste="handleOtpPaste($event)"
+                        class="w-9 h-10 text-center font-bold text-sm border-0 border-b-2 border-border-ui/30 focus:border-accent bg-transparent text-text-primary outline-none transition-all duration-300 rounded-none shadow-none"
+                        placeholder="•"
                       />
                     </div>
                   </div>
-                  <button type="button" @click="regStep = 1" class="text-[10px] font-bold text-accent hover:underline w-full text-center">Ganti email atau kirim ulang</button>
+                  <button type="button" @click="regStep = 1" class="text-[10px] font-bold text-accent hover:underline w-full text-center mt-1 cursor-pointer">Ganti email atau kirim ulang</button>
                 </div>
               </template>
 
               <!-- Email & password fields -->
               <template v-else>
-                <div class="space-y-2">
-                  <label class="text-xs font-bold text-text-secondary uppercase tracking-wider ml-1">Email</label>
+                <div class="space-y-1">
+                  <label class="text-[10px] font-bold text-text-secondary/80 uppercase tracking-widest ml-1">Email</label>
                   <div class="relative group">
-                    <MailIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                    <MailIcon class="absolute left-1 bottom-1.5 w-4 h-4 text-text-secondary group-focus-within:text-accent transition-colors duration-300" />
                     <input
                       type="email" required v-model="email"
-                      class="w-full pl-11 pr-4 py-3.5 rounded-xl border-0 bg-bg-main/50 text-text-primary outline-none focus:border-accent text-sm transition-all"
+                      class="w-full pl-8 pr-4 pt-3 pb-1.5 bg-transparent border-0 border-b border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs transition-all duration-300 rounded-none shadow-none"
                       placeholder="email@contoh.com"
                     />
                   </div>
                 </div>
-                <div class="space-y-2">
+                <div class="space-y-1">
                   <div class="flex justify-between items-center ml-1">
-                    <label class="text-xs font-bold text-text-secondary uppercase tracking-wider">Kata Sandi</label>
-                    <button v-if="isLogin" type="button" @click="showForgotModal = true" class="text-[10px] font-bold text-accent hover:underline">Lupa Sandi?</button>
+                    <label class="text-[10px] font-bold text-text-secondary/80 uppercase tracking-widest">Kata Sandi</label>
+                    <button v-if="isLogin" type="button" @click="showForgotModal = true" class="text-[10px] font-bold text-accent hover:underline cursor-pointer">Lupa Sandi?</button>
                   </div>
                   <div class="relative group">
-                    <LockIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                    <LockIcon class="absolute left-1 bottom-1.5 w-4 h-4 text-text-secondary group-focus-within:text-accent transition-colors duration-300" />
                     <input
                       :type="showPassword ? 'text' : 'password'" required v-model="password"
-                      class="w-full pl-11 pr-12 py-3.5 rounded-xl border-0 bg-bg-main/50 text-text-primary outline-none focus:border-accent text-sm transition-all"
+                      class="w-full pl-8 pr-8 pt-3 pb-1.5 bg-transparent border-0 border-b border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs transition-all duration-300 rounded-none shadow-none"
                       placeholder="••••••••"
                     />
-                    <button type="button" @click="showPassword = !showPassword" class="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-text-secondary hover:text-accent">
+                    <button type="button" @click="showPassword = !showPassword" class="absolute right-1 bottom-1 p-1 text-text-secondary hover:text-accent cursor-pointer">
                       <EyeOff v-if="showPassword" class="w-4 h-4" />
                       <Eye v-else class="w-4 h-4" />
                     </button>
@@ -168,42 +185,35 @@
               </template>
 
               <!-- Error message -->
-              <div v-if="error" class="p-3.5 rounded-xl bg-rose-500/10 border-0 flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center shrink-0">
-                  <AlertCircle class="w-4 h-4 text-rose-500" />
+              <div v-if="error" class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-3">
+                <div class="w-7 h-7 rounded-full bg-rose-500/20 flex items-center justify-center shrink-0">
+                  <AlertCircle class="w-3.5 h-3.5 text-rose-500" />
                 </div>
-                <p class="text-xs text-rose-500 font-medium leading-relaxed">{{ error }}</p>
+                <p class="text-[11px] text-rose-500 font-semibold leading-normal">{{ error }}</p>
               </div>
 
               <button
                 type="submit" :disabled="loading"
-                class="w-full py-4 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl shadow-lg active:scale-[0.98] transition-all disabled:opacity-50"
+                class="w-full py-3 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl shadow-md hover:shadow-lg hover:shadow-accent/20 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 text-xs mt-2 cursor-pointer"
               >
                 {{ loading ? 'Memproses...' : (isLogin ? 'Masuk' : (regStep === 1 ? 'Lanjutkan' : 'Verifikasi & Daftar')) }}
               </button>
 
-              <p v-if="!isLogin && regStep === 1" class="text-[10px] text-text-secondary text-center leading-relaxed">
-                Dengan mendaftar, Anda menyetujui <button type="button" @click="showTermsModal = true" class="text-accent font-bold hover:underline">Syarat &amp; Ketentuan</button> layanan kami.
+              <p v-if="!isLogin && regStep === 1" class="text-[9px] text-text-secondary/70 text-center leading-relaxed mt-2">
+                Dengan mendaftar, Anda menyetujui <button type="button" @click="showTermsModal = true" class="text-accent font-bold hover:underline cursor-pointer">Syarat &amp; Ketentuan</button> layanan kami.
               </p>
             </form>
-
-            <div class="mt-6 text-center">
-              <p class="text-[11px] text-text-secondary leading-relaxed">
-                Dengan melanjutkan, Anda menyetujui <br />
-                <button type="button" @click="showTermsModal = true" class="text-accent font-bold hover:underline">Syarat &amp; Ketentuan</button> Vinance
-              </p>
-            </div>
           </div>
         </div>
 
-        <div class="mt-6 flex flex-col items-center space-y-3">
-          <p class="text-[10px] text-text-secondary uppercase tracking-[0.2em] font-bold text-center">Securely Synced with Google Sheets</p>
-          <div class="flex gap-4">
-            <div class="w-8 h-8 rounded-lg bg-bg-main border-0 flex items-center justify-center shadow-none">
-              <img src="https://www.gstatic.com/images/branding/product/1x/sheets_2020q4_48dp.png" alt="Sheets" class="w-4 h-4" />
+        <div class="mt-4 hidden md:flex flex-col items-center space-y-2">
+          <p class="text-[9px] text-text-secondary uppercase tracking-[0.15em] font-bold text-center">Securely Synced with Google Sheets</p>
+          <div class="flex gap-3">
+            <div class="w-7 h-7 rounded-lg bg-bg-main border border-border-ui/20 flex items-center justify-center shadow-xs">
+              <img src="https://www.gstatic.com/images/branding/product/1x/sheets_2020q4_48dp.png" alt="Sheets" class="w-3.5 h-3.5" />
             </div>
-            <div class="w-8 h-8 rounded-lg bg-bg-main border-0 flex items-center justify-center shadow-none">
-              <img src="https://www.gstatic.com/images/branding/product/1x/apps_script_48dp.png" alt="Apps Script" class="w-4 h-4" />
+            <div class="w-7 h-7 rounded-lg bg-bg-main border border-border-ui/20 flex items-center justify-center shadow-xs">
+              <img src="https://www.gstatic.com/images/branding/product/1x/apps_script_48dp.png" alt="Apps Script" class="w-3.5 h-3.5" />
             </div>
           </div>
         </div>
@@ -291,7 +301,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import { api } from '../lib/api';
 import type { User } from '../types';
 import {
@@ -330,8 +340,77 @@ const newResetPassword = ref('');
 const forgotLoading = ref(false);
 const forgotError = ref('');
 const regStep = ref(1);
-const regCode = ref('');
+const otpDigits = ref(['', '', '', '', '', '']);
+
+const regCode = computed({
+  get: () => otpDigits.value.join(''),
+  set: (val) => {
+    const digits = val.split('').slice(0, 6);
+    for (let i = 0; i < 6; i++) {
+      otpDigits.value[i] = digits[i] || '';
+    }
+  }
+});
+
 const showPassword = ref(false);
+
+const handleOtpInput = (e: Event, idx: number) => {
+  const target = e.target as HTMLInputElement;
+  let val = target.value.replace(/\D/g, ''); // only allow digits
+  otpDigits.value[idx] = val ? val[val.length - 1] : '';
+
+  if (otpDigits.value[idx] && idx < 5) {
+    nextTick(() => {
+      const nextInput = document.getElementById(`otp-${idx + 1}`) as HTMLInputElement;
+      if (nextInput) {
+        nextInput.focus();
+        nextInput.select();
+      }
+    });
+  }
+};
+
+const handleOtpKeyDown = (e: KeyboardEvent, idx: number) => {
+  if (e.key === 'Backspace') {
+    if (!otpDigits.value[idx] && idx > 0) {
+      otpDigits.value[idx - 1] = '';
+      nextTick(() => {
+        const prevInput = document.getElementById(`otp-${idx - 1}`) as HTMLInputElement;
+        if (prevInput) {
+          prevInput.focus();
+        }
+      });
+    } else {
+      otpDigits.value[idx] = '';
+    }
+  } else if (e.key === 'ArrowLeft' && idx > 0) {
+    nextTick(() => {
+      const prevInput = document.getElementById(`otp-${idx - 1}`) as HTMLInputElement;
+      if (prevInput) prevInput.focus();
+    });
+  } else if (e.key === 'ArrowRight' && idx < 5) {
+    nextTick(() => {
+      const nextInput = document.getElementById(`otp-${idx + 1}`) as HTMLInputElement;
+      if (nextInput) nextInput.focus();
+    });
+  }
+};
+
+const handleOtpPaste = (e: ClipboardEvent) => {
+  e.preventDefault();
+  const pasteData = e.clipboardData?.getData('text') || '';
+  const digits = pasteData.replace(/\D/g, '').split('').slice(0, 6);
+  
+  for (let i = 0; i < 6; i++) {
+    otpDigits.value[i] = digits[i] || '';
+  }
+
+  const nextFocusIdx = Math.min(digits.length, 5);
+  nextTick(() => {
+    const focusEl = document.getElementById(`otp-${nextFocusIdx}`) as HTMLInputElement;
+    if (focusEl) focusEl.focus();
+  });
+};
 
 const handleSendResetCode = async () => {
   forgotLoading.value = true;
@@ -341,7 +420,11 @@ const handleSendResetCode = async () => {
     if (res.success) {
       forgotStep.value = 2;
     } else {
-      forgotError.value = res.error || 'Gagal mengirim kode.';
+      if (res.error === 'Invalid action') {
+        forgotError.value = 'Gagal: "Invalid action". Silakan perbarui kode Google Apps Script Anda di Spreadsheet Anda.';
+      } else {
+        forgotError.value = res.error || 'Gagal mengirim kode.';
+      }
     }
   } catch {
     forgotError.value = 'Terjadi kesalahan koneksi.';
@@ -388,7 +471,11 @@ const handleSubmit = async () => {
         if (res.success) {
           regStep.value = 2;
         } else {
-          error.value = res.error || 'Gagal mengirim kode verifikasi.';
+          if (res.error === 'Invalid action') {
+            error.value = 'Gagal: "Invalid action". Silakan perbarui kode Google Apps Script di Spreadsheet Anda dengan kode dari docs/kode GS appscript.md lalu deploy sebagai "New Deployment".';
+          } else {
+            error.value = res.error || 'Gagal mengirim kode verifikasi.';
+          }
         }
       } else {
         const res = await api.verifyRegisterAndCreate(name.value, email.value, password.value, regCode.value);
