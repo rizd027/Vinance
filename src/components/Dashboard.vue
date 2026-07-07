@@ -203,7 +203,13 @@
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="text-[13px] font-bold text-text-primary truncate">{{ t.category }}</p>
-                  <p class="text-[11px] text-text-secondary/70 truncate mt-0.5">{{ t.note || '—' }}</p>
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                    <span v-if="t.imageUrl" @click.stop="viewFullImage(t.imageUrl)" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/10 hover:bg-accent/20 text-accent font-black text-[8px] uppercase cursor-pointer transition-all shrink-0">
+                      <Paperclip class="w-2.5 h-2.5" />
+                      Struk
+                    </span>
+                    <p class="text-[11px] text-text-secondary/70 truncate leading-none mt-0.5">{{ t.note || '—' }}</p>
+                  </div>
                 </div>
                 <div class="text-right flex-shrink-0">
                   <p :class="['text-[13px] font-black currency-font', t.type === 'Income' ? 'text-emerald-500' : 'text-danger']">
@@ -511,7 +517,13 @@
                   </div>
                   <div class="flex-1 min-w-0">
                     <p class="text-[13px] font-semibold text-text-primary truncate">{{ t.category }}</p>
-                    <p class="text-[11px] text-text-secondary truncate">{{ t.note || '—' }}</p>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <span v-if="t.imageUrl" @click.stop="viewFullImage(t.imageUrl)" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/10 hover:bg-accent/20 text-accent font-black text-[8px] uppercase cursor-pointer transition-all shrink-0">
+                        <Paperclip class="w-2.5 h-2.5" />
+                        Struk
+                      </span>
+                      <p class="text-[11px] text-text-secondary truncate leading-none mt-0.5">{{ t.note || '—' }}</p>
+                    </div>
                   </div>
                   <div class="text-right flex-shrink-0">
                     <p :class="['text-[13px] font-black currency-font', t.type === 'Income' ? 'text-success' : 'text-danger']">
@@ -532,6 +544,26 @@
       </button>
     </div>
 
+    <!-- Lightbox Modal for Receipt Image -->
+    <Teleport to="body">
+      <div v-if="showLightbox" class="fixed inset-0 z-[20000] flex items-center justify-center p-4">
+        <div @click="showLightbox = false" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md" />
+        <div class="relative max-w-full max-h-[90vh] z-10 flex flex-col items-center">
+          <button 
+            @click="showLightbox = false" 
+            class="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center border border-white/10 active:scale-95 transition-all shadow-lg"
+          >
+            <X class="w-6 h-6" />
+          </button>
+          <img 
+            :src="lightboxImageUrl" 
+            alt="Struk Fullscreen" 
+            class="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl border border-white/5" 
+          />
+          <p class="text-xs text-white/60 font-semibold mt-4 tracking-wider uppercase">Bukti Struk Transaksi</p>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -542,7 +574,7 @@ import {
   ArrowRight, Plus, Wallet, TrendingUp, ArrowUpRight, ArrowDownRight,
   Utensils, Car, ShoppingBag, Receipt, Gamepad2, HeartPulse,
   ShieldCheck, AlertCircle, Zap, Sparkles, Target, Plane, Smartphone, GraduationCap, Camera, Globe, Briefcase, Coffee, Home,
-  Send, CreditCard, PiggyBank, History, Bell, Sun, Moon
+  Send, CreditCard, PiggyBank, History, Bell, Sun, Moon, Paperclip, X
 } from '@lucide/vue';
 import type { Transaction, Budget, Goal } from '../types';
 import { formatCurrency } from '../lib/utils';
@@ -579,8 +611,16 @@ type TxFilter = 'all' | 'Income' | 'Expense';
 
 const period = ref<FilterPeriod>('month');
 const txFilter = ref<TxFilter>('all');
+const showLightbox = ref(false);
+const lightboxImageUrl = ref('');
+
+const viewFullImage = (url: string) => {
+  lightboxImageUrl.value = url;
+  showLightbox.value = true;
+};
 
 const periods: FilterPeriod[] = ['today', 'week', 'month', 'all'];
+
 
 const CATEGORY_ICONS: Record<string, any> = {
   'Makanan': Utensils,

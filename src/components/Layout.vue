@@ -64,7 +64,7 @@
     </aside>
 
     <!-- ── Main Content Area ── -->
-    <div class="flex-1 flex flex-col h-[100dvh] overflow-y-auto pb-20 lg:pb-0 min-w-0 no-scrollbar sm:custom-scrollbar relative transition-colors">
+    <div class="flex-1 flex flex-col h-[100dvh] overflow-y-auto pb-[62px] lg:pb-0 min-w-0 no-scrollbar sm:custom-scrollbar relative transition-colors">
 
 
 
@@ -205,7 +205,7 @@
             </div>
 
             <!-- ══ Content Sheet ══ -->
-            <div class="bg-bg-main rounded-t-[10px] mt-[-28px] relative z-10 px-4 pt-6 pb-28 min-h-[calc(100dvh-120px)]">
+            <div class="bg-bg-main rounded-t-[10px] mt-[-28px] relative z-10 px-4 pt-6 pb-20 min-h-[calc(100dvh-120px)]">
               <slot />
             </div>
           </div>
@@ -215,62 +215,53 @@
         </template>
       </main>
 
-      <!-- Mobile Bottom Nav — 5 Tab Native Style -->
-      <div class="lg:hidden fixed bottom-0 left-0 right-0 w-full h-[90px] z-30 pointer-events-none">
-        <!-- Glassmorphic background with center cutout -->
-        <div
-          class="absolute bottom-0 left-0 right-0 h-[62px] backdrop-blur-2xl bg-card-bg/96 border-0"
-          :style="{
-            WebkitMaskImage: 'radial-gradient(ellipse 60px 32px at 50% 0%, transparent 96%, black 100%)',
-            maskImage: 'radial-gradient(ellipse 60px 32px at 50% 0%, transparent 96%, black 100%)'
-          }"
-        />
+      <!-- Mobile Bottom Nav — Solid Full-Width Bar -->
+      <div class="lg:hidden fixed bottom-0 left-0 right-0 w-full z-30 pointer-events-none" style="padding-bottom: env(safe-area-inset-bottom)">
+        <!-- Solid bar background -->
+        <div class="relative h-[62px] backdrop-blur-2xl bg-card-bg/98 border-t border-border-ui/20 pointer-events-auto shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
 
-        <!-- Floating Center Add Button -->
-        <div class="absolute left-1/2 -translate-x-1/2 top-0 z-20 pointer-events-auto">
-          <button
-            @click="$emit('addClick')"
-            class="w-[56px] h-[56px] rounded-full flex items-center justify-center text-white active:scale-90 hover:scale-105 transition-all duration-200 shadow-[0_6px_24px_rgba(26,44,91,0.55)]"
-            style="background: linear-gradient(145deg, #2D4DB5 0%, #1A2C5B 100%)"
-          >
-            <Plus class="w-6 h-6 stroke-[2.5]" />
-          </button>
-        </div>
+          <!-- Nav Tab Items — 5 columns -->
+          <div class="absolute inset-0 flex items-stretch justify-around px-1">
 
-        <!-- Nav Tab Items -->
-        <div class="absolute bottom-0 left-0 right-0 flex items-stretch justify-around px-1 h-[62px] pointer-events-auto z-10">
+            <button @click="handleTabClick('home')" class="flex flex-col items-center justify-center flex-1 h-full relative group">
+              <div :class="['absolute top-0 left-1/2 -translate-x-1/2 h-[2.5px] rounded-b-full transition-all duration-300', activeTab === 'home' ? 'w-8 bg-accent' : 'w-0 bg-transparent']" />
+              <div :class="['w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200', activeTab === 'home' ? 'bg-accent/10' : 'group-active:bg-bg-main']">
+                <Home :class="['transition-all duration-300', activeTab === 'home' ? 'w-[22px] h-[22px] text-accent' : 'w-[20px] h-[20px] text-text-secondary/50']" />
+              </div>
+            </button>
 
-          <!-- Beranda -->
-          <button @click="handleTabClick('home')" class="flex flex-col items-center justify-center gap-[3px] flex-1 h-full pt-1.5 relative">
-            <div :class="['absolute top-0 left-1/2 -translate-x-1/2 h-[3px] rounded-b-full transition-all duration-300', activeTab === 'home' ? 'w-8 bg-accent' : 'w-0 bg-transparent']" />
-            <Home :class="['transition-all duration-300', activeTab === 'home' ? 'w-[22px] h-[22px] text-accent' : 'w-[20px] h-[20px] text-text-secondary/50']" />
-            <span :class="['text-[9.5px] font-black tracking-tight transition-colors leading-none', activeTab === 'home' ? 'text-accent' : 'text-text-secondary/50']">Beranda</span>
-          </button>
+            <!-- Transaksi -->
+            <button @click="handleTabClick('transactions')" class="flex flex-col items-center justify-center flex-1 h-full relative group">
+              <div :class="['absolute top-0 left-1/2 -translate-x-1/2 h-[2.5px] rounded-b-full transition-all duration-300', activeTab === 'transactions' ? 'w-8 bg-accent' : 'w-0 bg-transparent']" />
+              <div :class="['w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200', activeTab === 'transactions' ? 'bg-accent/10' : 'group-active:bg-bg-main']">
+                <List :class="['transition-all duration-300', activeTab === 'transactions' ? 'w-[22px] h-[22px] text-accent' : 'w-[20px] h-[20px] text-text-secondary/50']" />
+              </div>
+            </button>
 
-          <!-- Transaksi -->
-          <button @click="handleTabClick('transactions')" class="flex flex-col items-center justify-center gap-[3px] flex-1 h-full pt-1.5 relative">
-            <div :class="['absolute top-0 left-1/2 -translate-x-1/2 h-[3px] rounded-b-full transition-all duration-300', activeTab === 'transactions' ? 'w-8 bg-accent' : 'w-0 bg-transparent']" />
-            <List :class="['transition-all duration-300', activeTab === 'transactions' ? 'w-[22px] h-[22px] text-accent' : 'w-[20px] h-[20px] text-text-secondary/50']" />
-            <span :class="['text-[9.5px] font-black tracking-tight transition-colors leading-none', activeTab === 'transactions' ? 'text-accent' : 'text-text-secondary/50']">Transaksi</span>
-          </button>
+            <!-- Tambah -->
+            <button @click="$emit('addClick')" class="flex flex-col items-center justify-center flex-1 h-full relative group">
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white active:scale-90 hover:scale-105 transition-all duration-200 shadow-lg shadow-accent/30" style="background: linear-gradient(145deg, #2D4DB5 0%, #1A2C5B 100%)">
+                <Plus class="w-5 h-5 stroke-[2.5]" />
+              </div>
+            </button>
 
-          <!-- Spacer for floating button -->
-          <div class="flex-1 pointer-events-none" />
+            <!-- Laporan -->
+            <button @click="handleTabClick('reports')" class="flex flex-col items-center justify-center flex-1 h-full relative group">
+              <div :class="['absolute top-0 left-1/2 -translate-x-1/2 h-[2.5px] rounded-b-full transition-all duration-300', activeTab === 'reports' ? 'w-8 bg-accent' : 'w-0 bg-transparent']" />
+              <div :class="['w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200', activeTab === 'reports' ? 'bg-accent/10' : 'group-active:bg-bg-main']">
+                <PieChart :class="['transition-all duration-300', activeTab === 'reports' ? 'w-[22px] h-[22px] text-accent' : 'w-[20px] h-[20px] text-text-secondary/50']" />
+              </div>
+            </button>
 
-          <!-- Laporan -->
-          <button @click="handleTabClick('reports')" class="flex flex-col items-center justify-center gap-[3px] flex-1 h-full pt-1.5 relative">
-            <div :class="['absolute top-0 left-1/2 -translate-x-1/2 h-[3px] rounded-b-full transition-all duration-300', activeTab === 'reports' ? 'w-8 bg-accent' : 'w-0 bg-transparent']" />
-            <PieChart :class="['transition-all duration-300', activeTab === 'reports' ? 'w-[22px] h-[22px] text-accent' : 'w-[20px] h-[20px] text-text-secondary/50']" />
-            <span :class="['text-[9.5px] font-black tracking-tight transition-colors leading-none', activeTab === 'reports' ? 'text-accent' : 'text-text-secondary/50']">Laporan</span>
-          </button>
+            <!-- Lainnya -->
+            <button @click="handleTabClick('menu')" class="flex flex-col items-center justify-center flex-1 h-full relative group">
+              <div :class="['absolute top-0 left-1/2 -translate-x-1/2 h-[2.5px] rounded-b-full transition-all duration-300', ['menu','profile','budgets','goals','notes'].includes(activeTab) ? 'w-8 bg-accent' : 'w-0 bg-transparent']" />
+              <div :class="['w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200', ['menu','profile','budgets','goals','notes'].includes(activeTab) ? 'bg-accent/10' : 'group-active:bg-bg-main']">
+                <LayoutGrid :class="['transition-all duration-300', ['menu','profile','budgets','goals','notes'].includes(activeTab) ? 'w-[22px] h-[22px] text-accent' : 'w-[20px] h-[20px] text-text-secondary/50']" />
+              </div>
+            </button>
 
-          <!-- Lainnya (Menu + all others) -->
-          <button @click="handleTabClick('menu')" class="flex flex-col items-center justify-center gap-[3px] flex-1 h-full pt-1.5 relative">
-            <div :class="['absolute top-0 left-1/2 -translate-x-1/2 h-[3px] rounded-b-full transition-all duration-300', ['menu','profile','budgets','goals','notes'].includes(activeTab) ? 'w-8 bg-accent' : 'w-0 bg-transparent']" />
-            <LayoutGrid :class="['transition-all duration-300', ['menu','profile','budgets','goals','notes'].includes(activeTab) ? 'w-[22px] h-[22px] text-accent' : 'w-[20px] h-[20px] text-text-secondary/50']" />
-            <span :class="['text-[9.5px] font-black tracking-tight transition-colors leading-none', ['menu','profile','budgets','goals','notes'].includes(activeTab) ? 'text-accent' : 'text-text-secondary/50']">Lainnya</span>
-          </button>
-
+          </div>
         </div>
       </div>
     </div>

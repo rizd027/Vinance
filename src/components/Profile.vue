@@ -595,6 +595,7 @@ import {
 } from '@lucide/vue';
 import type { User } from '../types';
 import { api } from '../lib/api';
+import { uploadToCloudinary } from '../lib/cloudinary';
 
 interface Props {
   user: User;
@@ -642,6 +643,7 @@ const editPhoto = ref('');
 const savingProfile = ref(false);
 const editStep = ref(1);
 const editCode = ref('');
+const selectedPhotoFile = ref<File | null>(null);
 
 const feedback = ref('');
 const sendingFeedback = ref(false);
@@ -671,6 +673,7 @@ const openEditProfile = () => {
 const closeEditProfile = () => {
   profileView.value = 'main';
   editStep.value = 1;
+  selectedPhotoFile.value = null;
 };
 
 const handlePhotoUpload = (e: Event) => {
@@ -681,6 +684,7 @@ const handlePhotoUpload = (e: Event) => {
       emit('showToast', 'Ukuran file maksimal 2MB', 'error');
       return;
     }
+    selectedPhotoFile.value = file;
     const reader = new FileReader();
     reader.onload = (event) => {
       editPhoto.value = event.target?.result as string;
@@ -689,7 +693,7 @@ const handlePhotoUpload = (e: Event) => {
   }
 };
 
-const handleCoverUpload = (e: Event) => {
+const handleCoverUpload = async (e: Event) => {
   const target = e.target as HTMLInputElement;
   const file = target.files?.[0];
   if (file) {
@@ -698,21 +702,18 @@ const handleCoverUpload = (e: Event) => {
       return;
     }
     savingProfile.value = true;
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const dataUrl = event.target?.result as string;
-      try {
-        await api.updateUser(props.user.id, { coverUrl: dataUrl });
-        const updated = { ...props.user, coverUrl: dataUrl };
-        emit('updateUser', updated);
-        emit('showToast', 'Sampul profil diperbarui & tersimpan', 'success');
-      } catch {
-        emit('showToast', 'Sampul tersimpan lokal (gagal sinkron)', 'info');
-      } finally {
-        savingProfile.value = false;
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      emit('showToast', 'Mengunggah sampul ke Cloudinary...', 'info');
+      const cloudinaryUrl = await uploadToCloudinary(file);
+      await api.updateUser(props.user.id, { coverUrl: cloudinaryUrl });
+      const updated = { ...props.user, coverUrl: cloudinaryUrl };
+      emit('updateUser', updated);
+      emit('showToast', 'Sampul profil diperbarui & tersimpan', 'success');
+    } catch (err: any) {
+      emit('showToast', err.message || 'Gagal mengunggah sampul ke Cloudinary', 'error');
+    } finally {
+      savingProfile.value = false;
+    }
   }
 };
 
@@ -742,9 +743,16 @@ const handleUpdateProfile = async () => {
 
   savingProfile.value = true;
   try {
+    let photoUrlToSave = editPhoto.value;
+    if (selectedPhotoFile.value) {
+      emit('showToast', 'Mengunggah foto profil ke Cloudinary...', 'info');
+      photoUrlToSave = await uploadToCloudinary(selectedPhotoFile.value);
+      selectedPhotoFile.value = null;
+    }
+
     const updates: any = {
       name: editName.value,
-      photoUrl: editPhoto.value,
+      photoUrl: photoUrlToSave,
     };
     if (editNewEmail.value) updates.email = editNewEmail.value;
     if (editNewPassword.value) updates.password = editNewPassword.value;
@@ -754,7 +762,7 @@ const handleUpdateProfile = async () => {
       const updatedUser: User = {
         ...props.user,
         name: editName.value,
-        photoUrl: editPhoto.value,
+        photoUrl: photoUrlToSave,
       };
       if (editNewEmail.value) updatedUser.email = editNewEmail.value;
       emit('updateUser', updatedUser);
@@ -763,8 +771,8 @@ const handleUpdateProfile = async () => {
     } else {
       emit('showToast', result.error || 'Gagal memperbarui profil', 'error');
     }
-  } catch {
-    emit('showToast', 'Terjadi kesalahan jaringan', 'error');
+  } catch (err: any) {
+    emit('showToast', err.message || 'Terjadi kesalahan jaringan', 'error');
   } finally {
     savingProfile.value = false;
   }

@@ -254,7 +254,15 @@
                   <span class="text-[10px] font-bold text-text-primary uppercase tracking-tight">{{ t.category }}</span>
                 </div>
               </td>
-              <td class="px-4 py-2 text-[10px] text-text-secondary italic max-w-[120px] truncate">{{ t.note || '-' }}</td>
+              <td class="px-4 py-2 text-[10px] text-text-secondary italic max-w-[120px] truncate">
+                <div class="flex items-center gap-1.5">
+                  <span v-if="t.imageUrl" @click.stop="viewFullImage(t.imageUrl)" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/10 hover:bg-accent/20 text-accent font-black text-[9px] uppercase cursor-pointer transition-all shadow-none">
+                    <Paperclip class="w-2.5 h-2.5" />
+                    Struk
+                  </span>
+                  <span>{{ t.note || '-' }}</span>
+                </div>
+              </td>
               <td :class="[
                 'px-4 py-2 text-right text-xs font-bold tracking-tight currency-font',
                 t.type === 'Income' ? 'text-success' : 'text-danger'
@@ -510,6 +518,69 @@
                     />
                   </div>
                 </div>
+
+                <div class="h-px bg-border-ui/30 my-6" />
+
+                <!-- Upload/Scan Struk -->
+                <div class="space-y-2.5">
+                  <span class="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] px-1">Bukti Transaksi (Opsional)</span>
+                  
+                  <!-- Preview/Status if exists -->
+                  <div v-if="receiptPreviewUrl || imageUrl" class="relative group rounded-xl overflow-hidden border border-border-ui/40 bg-bg-main p-3 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                      <!-- Thumbnail with centered eye overlay -->
+                      <div
+                        class="w-14 h-14 rounded-lg overflow-hidden border border-border-ui/30 bg-black/5 flex-shrink-0 relative cursor-pointer"
+                        @click="viewFullImage(receiptPreviewUrl || imageUrl)"
+                        title="Lihat Detail"
+                      >
+                        <img :src="receiptPreviewUrl || imageUrl" alt="Struk Preview" class="w-full h-full object-cover" />
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Eye class="w-5 h-5 text-white drop-shadow" />
+                        </div>
+                      </div>
+                      <div class="min-w-0">
+                        <p class="text-xs font-bold text-text-primary truncate">Bukti Struk Transaksi</p>
+                        <p class="text-[10px] text-text-secondary truncate mt-0.5">
+                          {{ selectedReceiptFile ? 'Baru terpilih (unggah saat simpan)' : 'Sudah tersimpan di awan' }}
+                        </p>
+                      </div>
+                    </div>
+                    <button 
+                      type="button" 
+                      @click="removeReceiptImage"
+                      class="p-2 bg-danger/10 hover:bg-danger/20 text-danger rounded-lg transition-colors flex items-center justify-center shrink-0"
+                      title="Hapus Bukti"
+                    >
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
+
+
+                  <!-- Upload button if not exists -->
+                  <div v-else>
+                    <button
+                      type="button"
+                      @click="triggerReceiptUpload"
+                      class="w-full py-4 px-4 bg-bg-main/60 hover:bg-bg-main rounded-xl border border-dashed border-border-ui/50 hover:border-accent/40 transition-all flex flex-col items-center justify-center gap-2 group cursor-pointer text-text-secondary hover:text-accent"
+                    >
+                      <div class="w-10 h-10 rounded-full bg-accent/5 flex items-center justify-center group-hover:scale-105 transition-transform">
+                        <Camera class="w-5 h-5 text-text-secondary group-hover:text-accent" />
+                      </div>
+                      <div class="text-center">
+                        <span class="text-xs font-bold">Ambil Foto atau Unggah Bukti Struk</span>
+                        <p class="text-[9px] text-text-secondary/60 mt-0.5">PNG, JPG, JPEG (maks. 5MB)</p>
+                      </div>
+                    </button>
+                    <input 
+                      type="file" 
+                      ref="receiptUploadInputRef" 
+                      @change="handleReceiptUpload" 
+                      accept="image/*" 
+                      class="hidden" 
+                    />
+                  </div>
+                </div>
               </div>
 
               <div :class="['bg-bg-main shrink-0 z-20 transition-all', isMobile ? 'fixed bottom-0 left-0 right-0 p-4 border-0 shadow-none backdrop-blur-md bg-bg-main/95' : 'pt-6 mt-auto']">
@@ -575,6 +646,27 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Lightbox Modal for Receipt Image -->
+    <Teleport to="body">
+      <div v-if="showLightbox" class="fixed inset-0 z-[20000] flex items-center justify-center p-4">
+        <div @click="showLightbox = false" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md" />
+        <div class="relative max-w-full max-h-[90vh] z-10 flex flex-col items-center">
+          <button 
+            @click="showLightbox = false" 
+            class="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center border border-white/10 active:scale-95 transition-all shadow-lg"
+          >
+            <X class="w-6 h-6" />
+          </button>
+          <img 
+            :src="lightboxImageUrl" 
+            alt="Struk Fullscreen" 
+            class="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl border border-white/5" 
+          />
+          <p class="text-xs text-white/60 font-semibold mt-4 tracking-wider uppercase">Bukti Struk Transaksi</p>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -585,9 +677,10 @@ import {
   Calendar as CalendarIcon, List as ListIcon, ChevronLeft, ChevronRight,
   ArrowUpRight, ArrowDownRight, Utensils, Car, ShoppingBag, Receipt,
   Gamepad2, HeartPulse, Wallet, SlidersHorizontal, ArrowUpDown, FileDown, FileUp,
-  TrendingUp, Mic, Camera, Loader2, ArrowLeft
+  TrendingUp, Mic, Camera, Loader2, ArrowLeft, Paperclip, Eye
 } from '@lucide/vue';
 import { aiService } from '../lib/ai';
+import { uploadToCloudinary } from '../lib/cloudinary';
 import type { Transaction, Budget } from '../types';
 import { formatCurrency, formatInputNumber, parseInputNumber } from '../lib/utils';
 import CustomSelect from './UI/CustomSelect.vue';
@@ -637,6 +730,13 @@ const customCategory = ref('');
 const amount = ref('');
 const note = ref('');
 const date = ref(new Date().toISOString());
+const imageUrl = ref('');
+const selectedReceiptFile = ref<File | null>(null);
+const receiptPreviewUrl = ref('');
+const receiptUploadInputRef = ref<HTMLInputElement | null>(null);
+const showLightbox = ref(false);
+const lightboxImageUrl = ref('');
+
 
 const isListening = ref(false);
 const isProcessingAI = ref(false);
@@ -741,6 +841,9 @@ const handleEditClick = (t: Transaction) => {
   amount.value = formatInputNumber(t.amount.toString());
   note.value = t.note || '';
   date.value = t.date;
+  imageUrl.value = t.imageUrl || '';
+  selectedReceiptFile.value = null;
+  receiptPreviewUrl.value = '';
   emit('addClick');
 };
 
@@ -748,6 +851,9 @@ const handleCloseModal = () => {
   emit('closeAddModal');
   setTimeout(() => {
     editId.value = null;
+    imageUrl.value = '';
+    selectedReceiptFile.value = null;
+    receiptPreviewUrl.value = '';
   }, 200);
 };
 
@@ -897,6 +1003,10 @@ const handleReceiptScan = async (e: Event) => {
         }
         amount.value = formatInputNumber(result.amount.toString());
         note.value = result.note;
+        
+        // Save scanned file and set local preview url
+        selectedReceiptFile.value = file;
+        receiptPreviewUrl.value = URL.createObjectURL(file);
       } else {
         notify.value = { type: 'error', message: 'AI gagal memindai struk.' };
       }
@@ -910,29 +1020,68 @@ const handleReceiptScan = async (e: Event) => {
   reader.readAsDataURL(file);
 };
 
-const handleSubmit = () => {
-  const finalCategory = category.value === 'Lainnya' && customCategory.value.trim() !== '' ? customCategory.value.trim() : category.value;
-  if (editId.value) {
-    emit('update', {
-      id: editId.value,
-      userId: props.userId,
-      type: type.value,
-      category: finalCategory,
-      amount: Number(parseInputNumber(amount.value)),
-      date: new Date(date.value).toISOString(),
-      note: note.value
-    });
-  } else {
-    emit('add', {
-      userId: props.userId,
-      type: type.value,
-      category: finalCategory,
-      amount: Number(parseInputNumber(amount.value)),
-      date: date.value,
-      note: note.value
-    });
+const triggerReceiptUpload = () => {
+  receiptUploadInputRef.value?.click();
+};
+
+const handleReceiptUpload = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+
+  if (file.size > 5 * 1024 * 1024) {
+    notify.value = { type: 'error', message: 'Ukuran gambar terlalu besar. Maksimal 5MB.' };
+    return;
   }
-  handleCloseModal();
+
+  selectedReceiptFile.value = file;
+  receiptPreviewUrl.value = URL.createObjectURL(file);
+};
+
+const removeReceiptImage = () => {
+  imageUrl.value = '';
+  selectedReceiptFile.value = null;
+  receiptPreviewUrl.value = '';
+  if (receiptUploadInputRef.value) receiptUploadInputRef.value.value = '';
+};
+
+const viewFullImage = (url: string) => {
+  lightboxImageUrl.value = url;
+  showLightbox.value = true;
+};
+
+const handleSubmit = async () => {
+  isProcessingAI.value = true;
+  try {
+    let finalImageUrl = imageUrl.value;
+    if (selectedReceiptFile.value) {
+      notify.value = { type: 'info', message: 'Mengunggah gambar struk ke Cloudinary...' };
+      finalImageUrl = await uploadToCloudinary(selectedReceiptFile.value);
+      selectedReceiptFile.value = null;
+    }
+
+    const finalCategory = category.value === 'Lainnya' && customCategory.value.trim() !== '' ? customCategory.value.trim() : category.value;
+    const txData: any = {
+      userId: props.userId,
+      type: type.value,
+      category: finalCategory,
+      amount: Number(parseInputNumber(amount.value)),
+      date: editId.value ? new Date(date.value).toISOString() : date.value,
+      note: note.value,
+      imageUrl: finalImageUrl || ''
+    };
+
+    if (editId.value) {
+      emit('update', { id: editId.value, ...txData });
+    } else {
+      emit('add', txData);
+    }
+    handleCloseModal();
+  } catch (err: any) {
+    notify.value = { type: 'error', message: err.message || 'Gagal menyimpan transaksi.' };
+  } finally {
+    isProcessingAI.value = false;
+  }
 };
 
 watch(() => props.showAddModal, (newVal) => {
@@ -945,6 +1094,9 @@ watch(() => props.showAddModal, (newVal) => {
       amount.value = '';
       note.value = '';
       date.value = new Date().toISOString();
+      imageUrl.value = '';
+      selectedReceiptFile.value = null;
+      receiptPreviewUrl.value = '';
     }
   } else {
     document.body.style.overflow = '';

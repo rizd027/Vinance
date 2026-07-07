@@ -81,7 +81,7 @@ function getSheet(name) {
     if (name === 'Users') {
       sheet.appendRow(['id', 'name', 'email', 'password', 'createdAt', 'photoUrl', 'coverUrl', 'wallpaper']);
     } else if (name === 'Transactions') {
-      sheet.appendRow(['id', 'userId', 'type', 'category', 'amount', 'date', 'note']);
+      sheet.appendRow(['id', 'userId', 'type', 'category', 'amount', 'date', 'note', 'imageUrl']);
     } else if (name === 'Budgets') {
       sheet.appendRow(['id', 'userId', 'category', 'limit', 'period']);
     } else if (name === 'Goals') {
@@ -406,7 +406,7 @@ function handleGetData(userId) {
 
   const transactions = getValues('Transactions')
     .filter(row => row[1] === userId)
-    .map(row => ({ id: row[0], userId: row[1], type: row[2], category: row[3], amount: row[4], date: row[5], note: row[6] }));
+    .map(row => ({ id: row[0], userId: row[1], type: row[2], category: row[3], amount: row[4], date: row[5], note: row[6], imageUrl: row[7] || '' }));
 
   const budgets = getValues('Budgets')
     .filter(row => row[1] === userId)
@@ -427,7 +427,7 @@ function handleGetData(userId) {
 function handleAddTransaction(data) {
   const sheet = getSheet('Transactions');
   const id = Utilities.getUuid();
-  sheet.appendRow([id, data.userId, data.type, data.category, data.amount, data.date || new Date(), data.note || '']);
+  sheet.appendRow([id, data.userId, data.type, data.category, data.amount, data.date || new Date(), data.note || '', data.imageUrl || '']);
   return createResponse({ success: true, id });
 }
 
@@ -436,7 +436,7 @@ function handleUpdateTransaction(data) {
   const rows = sheet.getDataRange().getValues();
   for (let i = 1; i < rows.length; i++) {
     if (rows[i][0] === data.id && rows[i][1] === data.userId) {
-      sheet.getRange(i + 1, 3, 1, 5).setValues([[data.type, data.category, data.amount, data.date, data.note]]);
+      sheet.getRange(i + 1, 3, 1, 6).setValues([[data.type, data.category, data.amount, data.date, data.note, data.imageUrl || '']]);
       return createResponse({ success: true });
     }
   }
@@ -567,7 +567,7 @@ function handleBatchAction(data) {
       
       if (action === 'addTransaction') {
         const id = op.id || Utilities.getUuid();
-        ss.getSheetByName('Transactions').appendRow([id, op.userId, op.type, op.category, op.amount, op.date || new Date(), op.note || '']);
+        ss.getSheetByName('Transactions').appendRow([id, op.userId, op.type, op.category, op.amount, op.date || new Date(), op.note || '', op.imageUrl || '']);
         res = { success: true, id };
       } 
       else if (action === 'updateTransaction') {
@@ -575,7 +575,7 @@ function handleBatchAction(data) {
         const rows = sheet.getDataRange().getValues();
         for (let i = 1; i < rows.length; i++) {
           if (rows[i][0] === op.id && rows[i][1] === op.userId) {
-            sheet.getRange(i + 1, 3, 1, 5).setValues([[op.type, op.category, op.amount, op.date, op.note]]);
+            sheet.getRange(i + 1, 3, 1, 6).setValues([[op.type, op.category, op.amount, op.date, op.note, op.imageUrl || '']]);
             res = { success: true }; break;
           }
         }

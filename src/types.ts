@@ -15,7 +15,9 @@ export interface Transaction {
   amount: number;
   date: string;
   note: string;
+  imageUrl?: string;
 }
+
 
 export interface Budget {
   id: string;
