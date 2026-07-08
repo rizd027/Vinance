@@ -476,7 +476,7 @@
                         type="text"
                         required
                         v-model="customCategory"
-                        class="w-full h-[52px] py-2 text-text-primary outline-none text-sm"
+                        class="w-full h-[52px] px-4 py-3 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-sm rounded-xl shadow-sm transition-all duration-300"
                         placeholder="Ketik kategori kustom..."
                         ref="customCategoryInput"
                       />
@@ -492,7 +492,7 @@
                         required
                         v-model="amount"
                         @input="amount = formatInputNumber(amount)"
-                        class="w-full h-[52px] pl-10 text-text-primary font-bold outline-none text-sm"
+                        class="w-full h-[52px] pl-10 pr-4 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary font-bold outline-none text-sm rounded-xl shadow-sm transition-all duration-300"
                         placeholder="0"
                         inputmode="decimal"
                       />
@@ -515,7 +515,7 @@
                     <input
                       type="text"
                       v-model="note"
-                      class="w-full h-[52px] py-2 text-text-primary outline-none text-sm"
+                      class="w-full h-[52px] px-4 py-3 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-sm rounded-xl shadow-sm transition-all duration-300"
                       placeholder="Contoh: Belanja bulanan ke pasar"
                     />
                   </div>

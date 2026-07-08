@@ -292,7 +292,7 @@ body {
 }
 
 /* 
- * Global Inputs & Textareas — Underline Style
+ * Global Inputs & Textareas — Modern Boxed Style
  */
 input[type="text"],
 input[type="email"],
@@ -303,18 +303,19 @@ input[type="url"],
 input[type="date"],
 select,
 textarea {
-  background-color: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  border-bottom: 1.5px solid var(--color-border-ui) !important;
+  background-color: var(--color-card-bg) !important;
+  border: 1.5px solid rgba(148, 163, 184, 0.3) !important;
+  border-radius: 12px !important;
   font-size: 13.5px !important;
   font-weight: 600 !important;
   color: var(--color-text-primary) !important;
   outline: none !important;
-  box-shadow: none !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  transition: border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+  padding-left: 14px;
+  padding-right: 14px;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 /* Exclude hidden file inputs & PIN inputs */
@@ -324,9 +325,11 @@ input[type="radio"],
 input[type="range"],
 input[type="submit"],
 input[type="button"] {
-  border-bottom: none !important;
+  border: none !important;
   background-color: unset !important;
   border-radius: unset !important;
+  box-shadow: none !important;
+  padding: unset !important;
 }
 
 input[type="text"]::placeholder,
@@ -341,7 +344,7 @@ textarea::placeholder {
   font-weight: 400 !important;
 }
 
-/* Hover: slightly more visible underline */
+/* Hover: slightly more visible border */
 input[type="text"]:hover,
 input[type="email"]:hover,
 input[type="password"]:hover,
@@ -351,11 +354,10 @@ input[type="url"]:hover,
 input[type="date"]:hover,
 select:hover,
 textarea:hover {
-  border-bottom-color: var(--color-text-secondary) !important;
-  box-shadow: none !important;
+  border-color: rgba(148, 163, 184, 0.6) !important;
 }
 
-/* Focus: accent underline */
+/* Focus: accent border and ring shadow */
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
@@ -365,15 +367,8 @@ input[type="url"]:focus,
 input[type="date"]:focus,
 select:focus,
 textarea:focus {
-  border-bottom-color: var(--color-accent) !important;
-  background-color: transparent !important;
-  box-shadow: 0 1px 0 0 var(--color-accent) !important;
-}
-
-/* Also style custom select wrappers and date pickers for visual parity */
-.focus-within\:border-accent:focus-within {
-  border-color: transparent !important;
-  box-shadow: none !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 1.5px var(--color-accent) !important;
 }
 
 /* Autofill override for underline style */

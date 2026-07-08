@@ -4,15 +4,15 @@
       type="button"
       @click="isOpen = !isOpen"
       :class="[
-        'w-full flex items-center justify-between gap-2 py-3 border-b border-border-ui text-sm transition-all text-left outline-none bg-transparent',
-        !value && 'text-text-secondary'
+        'w-full flex items-center justify-between gap-2 px-4 py-3 bg-card-bg border border-border-ui/30 rounded-xl text-sm transition-all text-left outline-none hover:border-text-secondary focus:border-accent focus:ring-1 focus:ring-accent h-[52px]',
+        !value ? 'text-text-secondary/50' : 'text-text-primary'
       ]"
     >
       <div class="flex items-center gap-2.5 truncate">
-        <component v-if="value" :is="getIcon(selectedOption?.label || '')" class="w-3.5 h-3.5" />
-        <span class="truncate">{{ selectedOption?.label || placeholder }}</span>
+        <component v-if="value" :is="getIcon(selectedOption?.label || '')" class="w-3.5 h-3.5 text-accent" />
+        <span class="truncate font-bold">{{ selectedOption?.label || placeholder }}</span>
       </div>
-      <ChevronDown :class="['w-4 h-4 text-text-secondary transition-transform', isOpen && 'rotate-180']" />
+      <ChevronDown :class="['w-4 h-4 text-text-secondary transition-transform shrink-0', isOpen && 'rotate-180']" />
     </button>
 
     <div

@@ -1,13 +1,13 @@
 <template>
-  <div :class="['relative', className]">
+  <div :class="['relative w-full', className]">
     <div 
       @click="toggleShow"
-      class="w-full py-3 bg-transparent border-b border-border-ui cursor-pointer flex items-center justify-between transition-all group"
+      class="w-full px-4 py-3 bg-card-bg border border-border-ui/30 rounded-xl cursor-pointer flex items-center justify-between transition-all group shadow-sm hover:border-text-secondary focus-within:border-accent focus-within:ring-1 focus-within:ring-accent h-[52px]"
     >
-      <span :class="['text-sm font-bold transition-colors', !value ? 'text-text-secondary' : 'text-text-primary group-hover:text-accent']">
+      <span :class="['text-sm font-bold transition-colors truncate', !value ? 'text-text-secondary/50' : 'text-text-primary group-hover:text-accent']">
         {{ value ? formatLocalDate(value) : placeholder }}
       </span>
-      <CalendarIcon class="w-4 h-4 text-text-secondary group-hover:text-accent transition-colors" />
+      <CalendarIcon class="w-4 h-4 text-text-secondary group-hover:text-accent transition-colors shrink-0" />
     </div>
 
     <template v-if="show">
