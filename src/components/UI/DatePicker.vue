@@ -2,7 +2,7 @@
   <div :class="['relative', className]">
     <div 
       @click="toggleShow"
-      class="w-full p-3 bg-bg-main rounded-xl border-0 cursor-pointer flex items-center justify-between transition-all group"
+      class="w-full py-3 bg-transparent border-b border-border-ui cursor-pointer flex items-center justify-between transition-all group"
     >
       <span :class="['text-sm font-bold transition-colors', !value ? 'text-text-secondary' : 'text-text-primary group-hover:text-accent']">
         {{ value ? formatLocalDate(value) : placeholder }}

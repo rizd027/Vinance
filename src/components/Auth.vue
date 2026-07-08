@@ -234,7 +234,7 @@
           <form v-if="forgotStep === 1" @submit.prevent="handleSendResetCode" class="space-y-4">
             <div class="relative group text-left">
               <MailIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
-              <input type="email" required v-model="forgotEmail" class="w-full pl-11 pr-4 py-3 rounded-xl border-0 bg-bg-main/50 text-text-primary outline-none focus:border-accent text-sm transition-all" placeholder="Masukkan email Anda" />
+              <input type="email" required v-model="forgotEmail" class="w-full pl-11 py-3 text-text-primary outline-none text-sm" placeholder="Masukkan email Anda" />
             </div>
             <p v-if="forgotError" class="text-[10px] text-rose-500 font-bold text-left px-1">{{ forgotError }}</p>
             <button type="submit" :disabled="forgotLoading" class="w-full py-3.5 bg-gradient-to-r from-accent to-secondary text-white font-bold rounded-xl shadow-lg disabled:opacity-50 flex items-center justify-center gap-2">
@@ -247,11 +247,11 @@
             <div class="space-y-3">
               <div class="relative group text-left">
                 <ShieldCheck class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
-                <input type="text" required :maxlength="6" v-model="forgotCode" @input="forgotCode = forgotCode.replace(/\D/g, '')" class="w-full pl-11 pr-4 py-3 rounded-xl border-0 bg-bg-main/50 text-text-primary outline-none focus:border-accent text-sm tracking-[0.5em] font-bold" placeholder="XXXXXX" />
+                <input type="text" required :maxlength="6" v-model="forgotCode" @input="forgotCode = forgotCode.replace(/\D/g, '')" class="w-full pl-11 py-3 text-text-primary outline-none text-sm tracking-[0.5em] font-bold" placeholder="XXXXXX" />
               </div>
               <div class="relative group text-left">
                 <LockIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
-                <input :type="showPassword ? 'text' : 'password'" required v-model="newResetPassword" class="w-full pl-11 pr-12 py-3 rounded-xl border-0 bg-bg-main/50 text-text-primary outline-none focus:border-accent text-sm" placeholder="Kata sandi baru" />
+                <input :type="showPassword ? 'text' : 'password'" required v-model="newResetPassword" class="w-full pl-11 py-3 text-text-primary outline-none text-sm" placeholder="Kata sandi baru" />
               </div>
             </div>
             <p v-if="forgotError" class="text-[10px] text-rose-500 font-bold text-left px-1">{{ forgotError }}</p>

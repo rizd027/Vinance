@@ -3,6 +3,7 @@ import type { User, Transaction, Goal, Note, AppData } from '../types';
 import { api } from '../lib/api';
 import { storage } from '../lib/storage';
 import i18n from '../i18n';
+import { useNotifications } from './useNotifications';
 
 export interface Toast {
   id: string;
@@ -48,6 +49,8 @@ const appSettings = ref({
 });
 
 export function useAppState() {
+  const { addNotif, purgeExpired } = useNotifications();
+
   // --- Initialization ---
   const init = () => {
     // Theme
@@ -87,6 +90,8 @@ export function useAppState() {
       }
       fetchData();
     }
+    // Purge any notifications older than 1 day
+    purgeExpired();
   };
 
   // --- Watchers & Helpers ---
@@ -126,6 +131,9 @@ export function useAppState() {
     setTimeout(() => {
       toasts.value = toasts.value.filter((t) => t.id !== id);
     }, 3000);
+
+    // Persist to activity notifications
+    addNotif(message, type, category);
   };
 
   // --- Dialog Helpers (Promise-based) ---
@@ -260,6 +268,8 @@ export function useAppState() {
         data.transactions = data.transactions.map((tr) =>
           tr.id === tempId ? { ...tr, id: res.id! } : tr
         );
+        const typeLabel = t.type === 'Income' ? 'Pemasukan' : 'Pengeluaran';
+        addNotif(`✅ Transaksi ${typeLabel} — ${t.category} berhasil ditambahkan`, 'success', 'transaction');
       } else if (res.offline) {
         showToast('Tersimpan secara lokal (Offline)', 'info');
       } else if (!isOffline.value) {
@@ -287,6 +297,9 @@ export function useAppState() {
       if (!res.success && !isOffline.value) {
         data.transactions = prevTx;
         showToast('Gagal mengedit transaksi: ' + res.error, 'error');
+      } else if (res.success) {
+        const typeLabel = t.type === 'Income' ? 'Pemasukan' : 'Pengeluaran';
+        addNotif(`✏️ Transaksi ${typeLabel} — ${t.category} diperbarui`, 'info', 'transaction');
       }
     } catch (err) {
       if (!isOffline.value) {
@@ -397,8 +410,10 @@ export function useAppState() {
         await api.addTransaction({ ...t, userId: user.value.id });
       }
       await fetchData();
+      addNotif(`📥 Import berhasil — ${newTransactions.length} transaksi ditambahkan`, 'success', 'transaction');
     } catch (err) {
       console.error('Import sync failed:', err);
+      addNotif('⚠️ Import transaksi gagal atau sebagian', 'warning', 'transaction');
     } finally {
       syncing.value = false;
     }

@@ -58,16 +58,41 @@
           </div>
 
           <!-- Bottom Row: Primary Action -->
-          <button 
-            @click="showExportModal = true" 
-            class="group relative flex items-center justify-center gap-3 px-6 py-3.5 text-white overflow-hidden rounded-lg transition-all duration-500 shadow-xl shadow-accent/20 hover:shadow-accent/40 active:scale-[0.98]" 
-          >
-            <div class="absolute inset-0 bg-gradient-to-r from-accent via-secondary to-accent bg-[length:200%_auto]" />
-            <div class="relative z-10 flex items-center gap-2 font-black text-xs uppercase tracking-[0.2em]">
-              <Download class="w-4 h-4" />
-              <span>Export Laporan Lengkap</span>
-            </div>
-          </button>
+          <div class="relative w-full xl:w-auto">
+            <button 
+              @click.stop="showExportDropdown = !showExportDropdown" 
+              class="w-full group relative flex items-center justify-center gap-3 px-6 py-3.5 text-white overflow-hidden rounded-lg transition-all duration-300 shadow-xl shadow-accent/20 hover:shadow-accent/40 active:scale-[0.98]" 
+            >
+              <div class="absolute inset-0 bg-gradient-to-r from-accent via-secondary to-accent bg-[length:200%_auto]" />
+              <div class="relative z-10 flex items-center gap-2 font-black text-xs uppercase tracking-[0.2em]">
+                <Download class="w-4 h-4" />
+                <span>Export Laporan Lengkap</span>
+              </div>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <transition name="dropdown">
+              <div 
+                v-if="showExportDropdown" 
+                class="absolute right-0 left-0 xl:left-auto xl:w-[220px] mt-2 bg-card-bg border border-border-ui/10 rounded-xl shadow-2xl overflow-hidden z-30 p-2 flex flex-col gap-1.5 transition-all"
+              >
+                <button
+                  v-for="fmt in [
+                    { id: 'xlsx', label: 'Excel (.xlsx)', icon: FileSpreadsheet, color: 'text-emerald-500 hover:bg-emerald-500/10' },
+                    { id: 'csv', label: 'CSV (.csv)', icon: FileText, color: 'text-slate-500 hover:bg-slate-500/10' },
+                    { id: 'pdf', label: 'PDF (.pdf)', icon: FileText, color: 'text-rose-500 hover:bg-rose-500/10' },
+                    { id: 'docx', label: 'Word (.docx)', icon: FileText, color: 'text-blue-500 hover:bg-blue-500/10' },
+                  ]"
+                  :key="fmt.id"
+                  @click="handleExportFormat(fmt.id as any)"
+                  :class="['flex items-center gap-3 px-4 py-3 rounded-lg text-left text-xs font-bold text-text-primary transition-all hover:translate-x-1 duration-200 cursor-pointer bg-transparent border-0', fmt.color]"
+                >
+                  <component :is="fmt.icon" class="w-4.5 h-4.5" />
+                  <span>{{ fmt.label }}</span>
+                </button>
+              </div>
+            </transition>
+          </div>
         </div>
       </div>
     </div>
@@ -262,41 +287,7 @@
       </div>
     </div>
 
-    <!-- Export Modal -->
-    <Teleport to="body">
-      <div v-if="showExportModal" class="fixed inset-0 z-50 flex sm:p-4 items-center justify-center">
-        <div @click="showExportModal = false" class="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-        <div class="relative w-full h-full sm:h-auto sm:max-w-sm bg-bg-main sm:rounded-2xl shadow-lg border-0 overflow-hidden z-10 my-auto">
-          <div class="flex items-center justify-between p-5 border-0">
-            <h3 class="text-sm font-bold text-text-primary flex items-center gap-2">
-              <Download class="w-4 h-4 text-accent" />
-              Export Laporan
-            </h3>
-            <button @click="showExportModal = false" class="p-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-main rounded-lg transition-colors">
-              <X class="w-4 h-4" />
-            </button>
-          </div>
-          <div class="p-5 grid grid-cols-2 gap-3">
-            <button
-              v-for="fmt in [
-                { id: 'xlsx', label: 'Excel', icon: FileSpreadsheet, color: 'text-emerald-500 hover:border-emerald-500 hover:bg-emerald-500/5' },
-                { id: 'csv', label: 'CSV', icon: FileText, color: 'text-slate-500 hover:border-slate-500 hover:bg-slate-500/5' },
-                { id: 'pdf', label: 'PDF', icon: FileText, color: 'text-rose-500 hover:border-rose-500 hover:bg-rose-500/5' },
-                { id: 'docx', label: 'Word', icon: FileText, color: 'text-blue-500 hover:border-blue-500 hover:bg-blue-500/5' },
-              ]"
-              :key="fmt.id"
-              @click="handleExportFormat(fmt.id as any)"
-              :class="['flex flex-col items-center gap-2 p-4 rounded-lg border-0 bg-bg-main/50 transition-all group', fmt.color]"
-            >
-              <div class="w-10 h-10 rounded-full bg-current/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <component :is="fmt.icon" class="w-5 h-5" />
-              </div>
-              <span class="text-xs font-bold text-text-primary">{{ fmt.label }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+
   </div>
 </template>
 
@@ -305,7 +296,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import {
   TrendingUp, Wallet, ArrowUpRight, ArrowDownRight, ShieldCheck, Award,
   BarChart2, Utensils, Car, ShoppingBag, Receipt, Gamepad2, HeartPulse,
-  Download, X, ChevronLeft, ChevronRight, Calendar, FileSpreadsheet, FileText, PieChart as PieIcon
+  Download, ChevronLeft, ChevronRight, Calendar, FileSpreadsheet, FileText, PieChart as PieIcon
 } from '@lucide/vue';
 import type { Transaction } from '../types';
 import { formatCurrency } from '../lib/utils';
@@ -327,7 +318,19 @@ type Period = 'week' | 'month' | 'year';
 const period = ref<Period>('month');
 const selectedDate = ref(new Date());
 const isMobile = ref(false);
-const showExportModal = ref(false);
+const showExportDropdown = ref(false);
+
+const closeDropdown = () => {
+  showExportDropdown.value = false;
+};
+
+onMounted(() => {
+  window.addEventListener('click', closeDropdown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('click', closeDropdown);
+});
 
 const COLORS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -467,7 +470,7 @@ const handleExportFormat = (fmt: 'pdf' | 'xlsx' | 'csv' | 'docx') => {
     case 'csv': exportReportCSV(filteredTransactions.value, periodStr, stats.value); break;
     case 'docx': exportReportDocx(filteredTransactions.value, periodStr, stats.value); break;
   }
-  showExportModal.value = false;
+  showExportDropdown.value = false;
 };
 
 // ApexCharts Options Configurations
@@ -578,3 +581,17 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
 });
 </script>
+
+<style scoped>
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.95);
+}
+</style>

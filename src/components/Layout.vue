@@ -123,28 +123,39 @@
                 </div>
               </button>
 
-              <!-- Notifications Dropdown -->
-              <div v-if="showNotifications" @click.stop class="absolute right-0 mt-3 w-80 bg-card-bg/95 backdrop-blur-2xl border border-border-ui rounded-lg shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden z-50 p-4">
-                <div class="flex items-center justify-between mb-4 px-2">
+              <!-- Notifications Dropdown (Desktop) -->
+              <div v-if="showNotifications" @click.stop class="absolute right-0 mt-3 w-80 bg-card-bg/95 backdrop-blur-2xl border border-border-ui rounded-lg shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden z-50">
+                <div class="flex items-center justify-between px-4 pt-4 pb-2">
                   <h4 class="text-xs font-black text-text-primary uppercase tracking-widest">Pemberitahuan</h4>
-                  <span v-if="notificationCount > 0" class="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full">{{ notificationCount }} Baru</span>
+                  <div class="flex items-center gap-2">
+                    <span v-if="notifCount > 0" class="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full">{{ notifCount }} Aktivitas</span>
+                    <button v-if="notifCount > 0" @click.stop="clearAllNotifs" class="text-[9px] font-bold text-text-secondary hover:text-danger transition-colors uppercase tracking-wide">Hapus Semua</button>
+                  </div>
                 </div>
-                <div class="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar py-1">
-                  <div v-if="notificationCount === 0" class="flex flex-col items-center justify-center py-10 text-text-secondary/40">
+                <div class="space-y-1.5 max-h-[420px] overflow-y-auto no-scrollbar px-3 pb-3">
+                  <div v-if="notifCount === 0" class="flex flex-col items-center justify-center py-10 text-text-secondary/40">
                     <Bell class="w-8 h-8 mb-2 stroke-[1.5]" />
                     <p class="text-[10px] font-bold uppercase tracking-widest">Tidak ada notifikasi</p>
                   </div>
-                  <template v-else>
-                    <div v-for="toast in toasts" :key="toast.id" :class="['p-3 rounded-lg flex items-center gap-3 border transition-colors', toastClass(toast.type)]">
-                      <div class="shrink-0">
-                        <CheckCircle2 v-if="toast.type === 'success'" class="w-4 h-4" />
-                        <AlertOctagon v-else-if="toast.type === 'error'" class="w-4 h-4" />
-                        <AlertTriangle v-else-if="toast.type === 'warning'" class="w-4 h-4" />
-                        <Info v-else class="w-4 h-4" />
-                      </div>
-                      <p class="text-[11px] font-bold leading-tight flex-1">{{ toast.message }}</p>
+                  <div
+                    v-for="notif in notifications"
+                    :key="notif.id"
+                    :class="['p-3 rounded-xl flex items-start gap-3 border transition-all group', notifClass(notif.type)]"
+                  >
+                    <div class="w-7 h-7 rounded-lg bg-current/10 flex items-center justify-center shrink-0 border-0 mt-0.5">
+                      <CheckCircle2 v-if="notif.type === 'success'" class="w-4 h-4" />
+                      <AlertOctagon v-else-if="notif.type === 'error'" class="w-4 h-4" />
+                      <AlertTriangle v-else-if="notif.type === 'warning'" class="w-4 h-4" />
+                      <Info v-else class="w-4 h-4" />
                     </div>
-                  </template>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[11px] font-bold leading-snug">{{ notif.message }}</p>
+                      <p class="text-[9px] text-text-secondary/60 mt-0.5 font-medium">{{ formatRelativeTime(notif.timestamp) }}</p>
+                    </div>
+                    <button @click.stop="removeNotif(notif.id)" class="opacity-0 group-hover:opacity-100 shrink-0 p-0.5 rounded hover:bg-current/10 transition-all">
+                      <X class="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -191,7 +202,7 @@
                     </button>
                     <button @click.stop="showNotifications = !showNotifications" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 active:scale-90 transition-all relative">
                       <Bell class="w-4 h-4 text-white/80" />
-                      <span v-if="notificationCount > 0" class="absolute top-2 right-2 w-2 h-2 bg-rose-400 rounded-full border-0 animate-pulse" />
+                      <span v-if="notifCount > 0" class="absolute top-2 right-2 w-2 h-2 bg-rose-400 rounded-full border-0 animate-pulse" />
                     </button>
                     <button v-if="activeTabDef?.id !== 'profile'" @click="handleTabClick('profile')" class="w-10 h-10 rounded-full active:scale-90 transition-all focus:outline-none ring-2 ring-white/20">
                       <img v-if="user?.photoUrl" :src="user.photoUrl" alt="profil" class="w-10 h-10 rounded-full object-cover" />
@@ -333,27 +344,42 @@
                   <p class="text-[9.5px] font-semibold text-white/45 uppercase tracking-[0.2em] mt-1">Informasi &amp; Aktivitas</p>
                 </div>
               </div>
-              <span v-if="notificationCount > 0" class="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-500/25">{{ notificationCount }} Baru</span>
+              <span v-if="notifCount > 0" class="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-500/25">{{ notifCount }} Aktivitas</span>
             </div>
           </div>
         </div>
         <div class="flex-1 bg-bg-main rounded-t-[10px] mt-[-28px] relative z-10 px-5 pt-8 pb-12 overflow-y-auto no-scrollbar">
-          <div class="space-y-4 max-w-lg mx-auto">
-            <div v-if="notificationCount === 0" class="flex flex-col items-center justify-center py-28 text-text-secondary/30">
+          <div class="space-y-3 max-w-lg mx-auto">
+            <div v-if="notifCount === 0" class="flex flex-col items-center justify-center py-28 text-text-secondary/30">
               <div class="w-16 h-16 rounded-full bg-accent/5 flex items-center justify-center border border-accent/10 mb-4 animate-pulse">
                 <Bell class="w-8 h-8 text-accent/60 stroke-[1.5]" />
               </div>
               <p class="text-xs font-bold uppercase tracking-widest text-center">{{ $t('noNotifications') }}</p>
             </div>
             <template v-else>
-              <div v-for="toast in toasts" :key="toast.id" :class="['p-4 rounded-2xl flex items-start gap-3.5 border-0 transition-colors', toastClass(toast.type)]">
-                <div class="w-8 h-8 rounded-xl bg-current/10 flex items-center justify-center shrink-0 border-0">
-                  <CheckCircle2 v-if="toast.type === 'success'" class="w-5 h-5" />
-                  <AlertOctagon v-else-if="toast.type === 'error'" class="w-5 h-5" />
-                  <AlertTriangle v-else-if="toast.type === 'warning'" class="w-5 h-5" />
+              <!-- Clear all button -->
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-[10px] text-text-secondary font-bold uppercase tracking-widest">{{ notifCount }} Aktivitas</p>
+                <button @click="clearAllNotifs" class="text-[10px] font-black text-danger/70 hover:text-danger uppercase tracking-wide transition-colors">Hapus Semua</button>
+              </div>
+              <div
+                v-for="notif in notifications"
+                :key="notif.id"
+                :class="['p-4 rounded-2xl flex items-start gap-3.5 border-0 transition-all group', toastClass(notif.type)]"
+              >
+                <div class="w-9 h-9 rounded-xl bg-current/10 flex items-center justify-center shrink-0 border-0">
+                  <CheckCircle2 v-if="notif.type === 'success'" class="w-5 h-5" />
+                  <AlertOctagon v-else-if="notif.type === 'error'" class="w-5 h-5" />
+                  <AlertTriangle v-else-if="notif.type === 'warning'" class="w-5 h-5" />
                   <Info v-else class="w-5 h-5" />
                 </div>
-                <p class="text-xs font-bold leading-normal flex-1 mt-1">{{ toast.message }}</p>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-bold leading-normal mt-0.5">{{ notif.message }}</p>
+                  <p class="text-[10px] text-text-secondary/60 mt-1 font-medium">{{ formatRelativeTime(notif.timestamp) }}</p>
+                </div>
+                <button @click="removeNotif(notif.id)" class="shrink-0 p-1.5 rounded-lg hover:bg-current/10 transition-all opacity-60 hover:opacity-100">
+                  <X class="w-4 h-4" />
+                </button>
               </div>
             </template>
           </div>
@@ -366,14 +392,16 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { isToday } from 'date-fns';
+import { isToday, isYesterday, format, formatDistanceToNow } from 'date-fns';
+import { id as dateFnsLocaleId } from 'date-fns/locale';
 import { useI18n } from 'vue-i18n';
 import {
   Home, List, PieChart, Target, User, LogOut, Moon, Sun, Plus, RefreshCw,
-  StickyNote, Flag, Cloud, CloudOff, LayoutGrid, Bell,
+  StickyNote, Flag, Cloud, CloudOff, LayoutGrid, Bell, X,
   AlertCircle, CheckCircle2, AlertOctagon, AlertTriangle, Info, ArrowLeft
 } from '@lucide/vue';
 import type { Transaction, Budget, User as UserType } from '../types';
+import { useNotifications } from '../composables/useNotifications';
 
 interface Props {
   activeTab: string;
@@ -399,7 +427,6 @@ const emit = defineEmits<{
 }>();
 
 const isOnline = ref(navigator.onLine);
-const showNotifications = ref(false);
 const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
 
 const { t } = useI18n();
@@ -421,7 +448,35 @@ const transactionBadge = computed(() => {
 
 const activeTabDef = computed(() => allTabs.value.find(t => t.id === props.activeTab));
 
-const notificationCount = computed(() => (props.toasts?.length || 0) + (props.activeDialog ? 1 : 0));
+const { notifications, removeNotif, clearAll: clearAllNotifs, isPanelOpen: showNotifications } = useNotifications();
+const notifCount = computed(() => notifications.value.length);
+const notificationCount = computed(() => notifCount.value);
+
+const notifClass = (type: string) => {
+  if (type === 'success') return 'text-success bg-success/5';
+  if (type === 'error') return 'text-danger bg-danger/5';
+  if (type === 'warning') return 'text-warning bg-warning/5';
+  return 'text-accent bg-accent/5';
+};
+
+const formatRelativeTime = (ts: number) => {
+  try {
+    const date = new Date(ts);
+    const timeStr = format(date, 'HH:mm');
+    let dateStr = '';
+    if (isToday(date)) {
+      dateStr = `Hari ini, ${timeStr}`;
+    } else if (isYesterday(date)) {
+      dateStr = `Kemarin, ${timeStr}`;
+    } else {
+      dateStr = format(date, 'dd MMM yyyy, HH:mm', { locale: dateFnsLocaleId });
+    }
+    const relativeStr = formatDistanceToNow(date, { addSuffix: true, locale: dateFnsLocaleId });
+    return `${dateStr} • ${relativeStr}`;
+  } catch {
+    return '';
+  }
+};
 
 const tabSubtitle = computed(() => {
   const id = props.activeTab;

@@ -4,7 +4,7 @@
       type="button"
       @click="isOpen = !isOpen"
       :class="[
-        'w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-bg-main text-sm transition-all text-left outline-none border-0',
+        'w-full flex items-center justify-between gap-2 py-3 border-b border-border-ui text-sm transition-all text-left outline-none bg-transparent',
         !value && 'text-text-secondary'
       ]"
     >

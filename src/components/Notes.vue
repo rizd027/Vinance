@@ -86,87 +86,115 @@
       </div>
     </div>
 
-    <!-- Add Note Modal -->
+    <!-- Add Note Modal (Full Screen) -->
     <Teleport to="body">
-      <div v-if="showAdd" class="fixed inset-0 z-50 flex sm:p-4 overflow-y-auto items-center justify-center">
-        <div @click="showAdd = false" class="fixed inset-0 bg-black/60 backdrop-blur-sm" />
-        <div class="relative bg-bg-main sm:rounded-2xl shadow-lg w-full sm:max-w-md p-6 z-10 my-auto border-0">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-black text-text-primary">Tulis Catatan</h3>
-            <button @click="showAdd = false" class="p-2 hover:bg-bg-main rounded-lg transition-colors">
-              <X class="w-4 h-4 text-text-secondary" />
-            </button>
-          </div>
-
-          <div class="space-y-4">
-            <!-- Color selector -->
-            <div class="flex items-center gap-2">
-              <button
-                v-for="c in NOTE_COLORS"
-                :key="c.value"
-                @click="newColor = c.value"
-                :class="['w-7 h-7 rounded-full transition-all hover:scale-110', newColor === c.value && 'scale-125 ring-2 ring-offset-2 ring-offset-card-bg']"
-                :style="{ backgroundColor: c.accent, boxShadow: newColor === c.value ? `0 0 0 2px ${c.accent}` : undefined }"
-              />
+      <div v-if="showAdd" class="fixed inset-0 z-[9999] bg-bg-main flex flex-col overflow-hidden">
+        <!-- Modal Header -->
+        <div
+          class="relative pt-6 pb-6 text-white overflow-hidden shrink-0"
+          style="background: linear-gradient(160deg, #0f1f4b 0%, #1A2C5B 45%, #1e3a8a 100%)"
+        >
+          <div class="absolute top-0 right-0 w-56 h-56 bg-blue-400/8 rounded-full blur-3xl pointer-events-none" />
+          <div class="absolute -bottom-12 -left-10 w-44 h-44 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div class="relative z-10 w-full max-w-xl mx-auto px-5">
+            <div class="flex items-center gap-3">
+              <button @click="showAdd = false" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/15 active:scale-90 transition-all">
+                <ChevronLeft class="w-5 h-5 stroke-[2.5] text-white" />
+              </button>
+              <div>
+                <h1 class="text-[20px] font-black text-white tracking-tight leading-none">Tulis Catatan</h1>
+                <p class="text-[9.5px] font-semibold text-white/45 uppercase tracking-[0.2em] mt-1">Ide, Pengingat &amp; Catatan Keuangan</p>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <textarea
-              autofocus
-              v-model="newContent"
-              placeholder="Tulis catatan keuangan Anda..."
-              rows="6"
-              class="w-full p-3 bg-bg-main rounded-lg border border-border-ui focus:border-accent outline-none text-sm text-text-primary font-medium transition-all resize-none"
-              @keydown.ctrl.enter="handleAdd"
-            />
+        <div class="flex-1 relative z-10 overflow-y-auto no-scrollbar bg-bg-main text-text-primary border-0">
+          <div class="w-full max-w-xl mx-auto min-h-full px-5 pt-6 pb-12 flex flex-col justify-between">
+            <div class="space-y-4">
+              <!-- Color selector -->
+              <div class="flex items-center gap-2">
+                <button
+                  v-for="c in NOTE_COLORS"
+                  :key="c.value"
+                  @click="newColor = c.value"
+                  :class="['w-7 h-7 rounded-full transition-all hover:scale-110', newColor === c.value && 'scale-125 ring-2 ring-offset-2 ring-offset-card-bg']"
+                  :style="{ backgroundColor: c.accent, boxShadow: newColor === c.value ? `0 0 0 2px ${c.accent}` : undefined }"
+                />
+              </div>
 
-            <p class="text-[10px] text-text-secondary">Tekan Ctrl+Enter untuk menyimpan</p>
+              <textarea
+                autofocus
+                v-model="newContent"
+                placeholder="Tulis catatan keuangan Anda..."
+                rows="6"
+                class="w-full py-3 outline-none text-sm text-text-primary font-medium resize-none"
+                @keydown.ctrl.enter="handleAdd"
+              />
 
-            <button @click="handleAdd" :disabled="!newContent.trim()" class="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-lg font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50">
-              Simpan Catatan
-            </button>
+              <p class="text-[10px] text-text-secondary">Tekan Ctrl+Enter untuk menyimpan</p>
+
+              <button @click="handleAdd" :disabled="!newContent.trim()" class="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-lg font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50 mt-2">
+                Simpan Catatan
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </Teleport>
 
-    <!-- Edit Note Modal -->
+    <!-- Edit Note Modal (Full Screen) -->
     <Teleport to="body">
-      <div v-if="editingNote" class="fixed inset-0 z-50 flex sm:p-4 overflow-y-auto items-center justify-center">
-        <div @click="editingNote = null" class="fixed inset-0 bg-black/60 backdrop-blur-sm" />
-        <div class="relative bg-bg-main sm:rounded-2xl shadow-lg w-full sm:max-w-md p-6 z-10 my-auto border-0">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-black text-text-primary">Edit Catatan</h3>
-            <button @click="editingNote = null" class="p-2 hover:bg-bg-main rounded-lg transition-colors">
-              <X class="w-4 h-4 text-text-secondary" />
-            </button>
-          </div>
-
-          <div class="space-y-4">
-            <!-- Color selector -->
-            <div class="flex items-center gap-2">
-              <button
-                v-for="c in NOTE_COLORS"
-                :key="c.value"
-                @click="editingNote.color = c.value"
-                :class="['w-7 h-7 rounded-full transition-all hover:scale-110', editingNote.color === c.value && 'scale-125 ring-2 ring-offset-2 ring-offset-card-bg']"
-                :style="{ backgroundColor: c.accent, boxShadow: editingNote.color === c.value ? `0 0 0 2px ${c.accent}` : undefined }"
-              />
+      <div v-if="editingNote" class="fixed inset-0 z-[9999] bg-bg-main flex flex-col overflow-hidden">
+        <!-- Modal Header -->
+        <div
+          class="relative pt-6 pb-6 text-white overflow-hidden shrink-0"
+          style="background: linear-gradient(160deg, #0f1f4b 0%, #1A2C5B 45%, #1e3a8a 100%)"
+        >
+          <div class="absolute top-0 right-0 w-56 h-56 bg-blue-400/8 rounded-full blur-3xl pointer-events-none" />
+          <div class="absolute -bottom-12 -left-10 w-44 h-44 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div class="relative z-10 w-full max-w-xl mx-auto px-5">
+            <div class="flex items-center gap-3">
+              <button @click="editingNote = null" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/15 active:scale-90 transition-all">
+                <ChevronLeft class="w-5 h-5 stroke-[2.5] text-white" />
+              </button>
+              <div>
+                <h1 class="text-[20px] font-black text-white tracking-tight leading-none">Edit Catatan</h1>
+                <p class="text-[9.5px] font-semibold text-white/45 uppercase tracking-[0.2em] mt-1">Perbarui Catatan Keuangan Anda</p>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <textarea
-              autofocus
-              v-model="editContent"
-              placeholder="Tulis catatan keuangan Anda..."
-              rows="6"
-              class="w-full p-3 bg-bg-main rounded-lg border border-border-ui focus:border-accent outline-none text-sm text-text-primary font-medium transition-all resize-none"
-              @keydown.ctrl.enter="handleUpdate"
-            />
+        <div class="flex-1 relative z-10 overflow-y-auto no-scrollbar bg-bg-main text-text-primary border-0">
+          <div class="w-full max-w-xl mx-auto min-h-full px-5 pt-6 pb-12 flex flex-col justify-between">
+            <div class="space-y-4">
+              <!-- Color selector -->
+              <div class="flex items-center gap-2">
+                <button
+                  v-for="c in NOTE_COLORS"
+                  :key="c.value"
+                  @click="editingNote.color = c.value"
+                  :class="['w-7 h-7 rounded-full transition-all hover:scale-110', editingNote.color === c.value && 'scale-125 ring-2 ring-offset-2 ring-offset-card-bg']"
+                  :style="{ backgroundColor: c.accent, boxShadow: editingNote.color === c.value ? `0 0 0 2px ${c.accent}` : undefined }"
+                />
+              </div>
 
-            <p class="text-[10px] text-text-secondary">Tekan Ctrl+Enter untuk menyimpan</p>
+              <textarea
+                autofocus
+                v-model="editContent"
+                placeholder="Tulis catatan keuangan Anda..."
+                rows="6"
+                class="w-full py-3 outline-none text-sm text-text-primary font-medium resize-none"
+                @keydown.ctrl.enter="handleUpdate"
+              />
 
-            <button @click="handleUpdate" :disabled="!editContent.trim()" class="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-lg font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50">
-              Simpan Perubahan
-            </button>
+              <p class="text-[10px] text-text-secondary">Tekan Ctrl+Enter untuk menyimpan</p>
+
+              <button @click="handleUpdate" :disabled="!editContent.trim()" class="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-lg font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50 mt-2">
+                Simpan Perubahan
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -176,7 +204,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Plus, Trash2, StickyNote, X, Pin, Edit2 } from '@lucide/vue';
+import { Plus, Trash2, StickyNote, Pin, Edit2, ChevronLeft } from '@lucide/vue';
 import type { Note } from '../types';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';

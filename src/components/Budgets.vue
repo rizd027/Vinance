@@ -254,7 +254,7 @@
             type="text"
             v-model="newLimit"
             @input="newLimit = formatInputNumber(newLimit)"
-            class="w-full px-3 py-2 rounded-lg border-0 bg-bg-main text-text-primary outline-none text-xs focus:ring-0"
+            class="w-full py-2 text-text-primary outline-none text-xs"
             placeholder="Limit Anggaran"
             autofocus
           />
@@ -284,7 +284,7 @@
               type="text"
               v-model="customCategory"
               placeholder="Nama Kategori (Contoh: Liburan)"
-              class="w-full px-4 py-3 rounded-lg border-0 bg-bg-main text-text-primary outline-none"
+              class="w-full py-3 text-text-primary outline-none"
               autofocus
             />
             <button

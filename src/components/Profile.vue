@@ -48,7 +48,7 @@
               <input
                 type="text"
                 v-model="editName"
-                class="w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-lg border-0 outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50"
+                class="w-full pl-11 py-3.5 outline-none text-sm font-bold text-text-primary placeholder:font-normal placeholder:text-text-secondary/50"
                 placeholder="Masukkan nama lengkap"
               />
             </div>
@@ -69,7 +69,7 @@
                   type="email"
                   :value="user.email"
                   readonly
-                  class="w-full pl-11 pr-20 py-3.5 bg-bg-main/30 rounded-lg border-0 outline-none text-sm font-bold text-text-secondary cursor-not-allowed"
+                  class="w-full pl-11 pr-20 py-3.5 outline-none text-sm font-bold text-text-secondary cursor-not-allowed opacity-50"
                 />
                 <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-text-secondary/50 uppercase tracking-widest bg-border-ui/70 px-2 py-0.5 rounded-full">Aktif</span>
               </div>
@@ -78,7 +78,7 @@
                 <input
                   type="email"
                   v-model="editNewEmail"
-                  class="w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-lg border-0 outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50"
+                  class="w-full pl-11 py-3.5 outline-none text-sm font-bold text-text-primary placeholder:font-normal placeholder:text-text-secondary/50"
                   placeholder="Masukkan email baru"
                 />
               </div>
@@ -100,8 +100,8 @@
                   type="password"
                   v-model="editPassword"
                   :class="[
-                    'w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-lg border-0 outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50',
-                    isSensitiveChange && !editPassword && 'border-rose-500/50 bg-rose-500/5'
+                    'w-full pl-11 py-3.5 outline-none text-sm font-bold text-text-primary placeholder:font-normal placeholder:text-text-secondary/50',
+                    isSensitiveChange && !editPassword && 'border-b-rose-500'
                   ]"
                   placeholder="Masukkan password lama"
                 />
@@ -111,7 +111,7 @@
                 <input
                   type="password"
                   v-model="editNewPassword"
-                  class="w-full pl-11 pr-4 py-3.5 bg-bg-main/60 rounded-lg border-0 outline-none text-sm font-bold text-text-primary transition-all placeholder:font-normal placeholder:text-text-secondary/50"
+                  class="w-full pl-11 py-3.5 outline-none text-sm font-bold text-text-primary placeholder:font-normal placeholder:text-text-secondary/50"
                   placeholder="Masukkan password baru"
                 />
               </div>
@@ -138,7 +138,7 @@
               maxlength="6"
               v-model="editCode"
               @input="editCode = editCode.replace(/\D/g, '')"
-              class="w-full py-5 bg-bg-main rounded-lg border-0 outline-none text-2xl font-black tracking-[0.6em] text-center text-text-primary transition-all"
+              class="w-full py-5 outline-none text-2xl font-black tracking-[0.6em] text-center text-text-primary"
               placeholder="••••••"
               autofocus
             />
@@ -411,7 +411,7 @@
               :value="user.scriptUrl || ''"
               @blur="updateScriptUrl($event)"
               placeholder="https://script.google.com/macros/s/.../exec"
-              class="flex-1 px-4 py-2.5 rounded-xl border-0 bg-bg-main/60 text-[11px] text-text-primary outline-none transition-all placeholder:text-text-secondary/40"
+              class="flex-1 py-2.5 text-[11px] text-text-primary outline-none placeholder:text-text-secondary/40"
             />
             <button
               @click="testConnection"
@@ -453,7 +453,7 @@
             <textarea
               v-model="feedback"
               :placeholder="$t('feedbackPlaceholder')"
-              class="w-full px-4 py-3 bg-bg-main/60 rounded-xl border-0 outline-none text-xs font-semibold text-text-primary transition-all resize-none min-h-[80px] placeholder:text-text-secondary/40"
+              class="w-full py-3 outline-none text-xs font-semibold text-text-primary resize-none min-h-[80px] placeholder:text-text-secondary/40"
             />
             <button
               @click="sendFeedback"

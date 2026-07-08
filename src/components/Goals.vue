@@ -101,82 +101,100 @@
       </div>
     </div>
 
-    <!-- Add/Edit Goal Modal -->
+    <!-- Add/Edit Goal Modal (Full Screen) -->
     <Teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex sm:p-4 overflow-y-auto items-center justify-center">
-        <div @click="showModal = false" class="fixed inset-0 bg-black/60 backdrop-blur-sm" />
-        <div class="relative bg-bg-main sm:rounded-2xl shadow-lg w-full sm:max-w-md p-6 z-10 my-auto border-0">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-black text-text-primary">{{ editGoal ? 'Edit Tujuan' : 'Tambah Tujuan' }}</h3>
-            <button @click="showModal = false" class="p-2 hover:bg-bg-main rounded-lg transition-colors">
-              <X class="w-4 h-4 text-text-secondary" />
-            </button>
-          </div>
-
-          <div class="space-y-4">
-            <!-- Icon Picker -->
-            <div>
-              <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-2 block">Ikon Tujuan</label>
-              <div class="grid grid-cols-6 gap-2">
-                <button 
-                  v-for="i in GOAL_ICONS" 
-                  :key="i.id" 
-                  @click="form.icon = i.id" 
-                  :class="[
-                    'w-10 h-10 rounded-lg flex items-center justify-center transition-all', 
-                    form.icon === i.id ? 'bg-accent/20 scale-110 ring-2 ring-accent text-accent' : 'bg-bg-main text-text-secondary hover:bg-border-ui hover:text-text-primary'
-                  ]"
-                >
-                  <component :is="i.icon" class="w-5 h-5" />
-                </button>
+      <div v-if="showModal" class="fixed inset-0 z-[9999] bg-bg-main flex flex-col overflow-hidden">
+        <!-- Modal Header -->
+        <div
+          class="relative pt-6 pb-6 text-white overflow-hidden shrink-0"
+          style="background: linear-gradient(160deg, #0f1f4b 0%, #1A2C5B 45%, #1e3a8a 100%)"
+        >
+          <div class="absolute top-0 right-0 w-56 h-56 bg-blue-400/8 rounded-full blur-3xl pointer-events-none" />
+          <div class="absolute -bottom-12 -left-10 w-44 h-44 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div class="relative z-10 w-full max-w-xl mx-auto px-5">
+            <div class="flex items-center gap-3">
+              <button @click="showModal = false" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/15 active:scale-90 transition-all">
+                <ChevronLeft class="w-5 h-5 stroke-[2.5] text-white" />
+              </button>
+              <div>
+                <h1 class="text-[20px] font-black text-white tracking-tight leading-none">
+                  {{ editGoal ? 'Edit Tujuan' : 'Tambah Tujuan' }}
+                </h1>
+                <p class="text-[9.5px] font-semibold text-white/45 uppercase tracking-[0.2em] mt-1">
+                  Atur Rencana Tabungan &amp; Impian
+                </p>
               </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Color Picker -->
-            <div>
-              <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-2 block">Pilih Warna</label>
-              <div class="flex items-center gap-3">
-                <div class="flex flex-wrap gap-2 flex-1">
+        <div class="flex-1 relative z-10 overflow-y-auto no-scrollbar bg-bg-main text-text-primary border-0">
+          <div class="w-full max-w-xl mx-auto min-h-full px-5 pt-6 pb-12 flex flex-col justify-between">
+            <div class="space-y-4">
+              <!-- Icon Picker -->
+              <div>
+                <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-2 block">Ikon Tujuan</label>
+                <div class="grid grid-cols-6 gap-2">
                   <button 
-                    v-for="c in ['#8b5cf6', '#f43f5e', '#f59e0b', '#10b981', '#0ea5e9', '#d946ef']" 
-                    :key="c" 
-                    @click="form.color = c" 
-                    :class="['w-8 h-8 rounded-full transition-all hover:scale-110', form.color === c && 'ring-2 ring-offset-2 ring-accent ring-offset-card-bg scale-110']"
-                    :style="{ backgroundColor: c }"
+                    v-for="i in GOAL_ICONS" 
+                    :key="i.id" 
+                    @click="form.icon = i.id" 
+                    :class="[
+                      'w-10 h-10 rounded-lg flex items-center justify-center transition-all', 
+                      form.icon === i.id ? 'bg-accent/20 scale-110 ring-2 ring-accent text-accent' : 'bg-bg-main text-text-secondary hover:bg-border-ui hover:text-text-primary'
+                    ]"
+                  >
+                    <component :is="i.icon" class="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Color Picker -->
+              <div>
+                <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-2 block">Pilih Warna</label>
+                <div class="flex items-center gap-3">
+                  <div class="flex flex-wrap gap-2 flex-1">
+                    <button 
+                      v-for="c in ['#8b5cf6', '#f43f5e', '#f59e0b', '#10b981', '#0ea5e9', '#d946ef']" 
+                      :key="c" 
+                      @click="form.color = c" 
+                      :class="['w-8 h-8 rounded-full transition-all hover:scale-110', form.color === c && 'ring-2 ring-offset-2 ring-accent ring-offset-card-bg scale-110']"
+                      :style="{ backgroundColor: c }"
+                    />
+                  </div>
+                  <input 
+                    type="color" 
+                    v-model="form.color"
+                    class="w-10 h-10 rounded-lg bg-bg-main border border-border-ui p-1 cursor-pointer"
                   />
                 </div>
-                <input 
-                  type="color" 
-                  v-model="form.color"
-                  class="w-10 h-10 rounded-lg bg-bg-main border border-border-ui p-1 cursor-pointer"
-                />
               </div>
-            </div>
 
-            <div>
-              <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Nama Tujuan</label>
-              <input type="text" v-model="form.name" placeholder="Contoh: Tabungan Rumah" class="w-full p-3 bg-bg-main rounded-lg border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Target (Rp)</label>
-                <input type="text" v-model="form.targetAmount" @input="form.targetAmount = formatInputNumber(form.targetAmount)" placeholder="500.000.000" class="w-full p-3 bg-bg-main rounded-lg border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
+                <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Nama Tujuan</label>
+                <input type="text" v-model="form.name" placeholder="Contoh: Tabungan Rumah" class="w-full py-3 outline-none text-sm font-bold text-text-primary" />
               </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Target (Rp)</label>
+                  <input type="text" v-model="form.targetAmount" @input="form.targetAmount = formatInputNumber(form.targetAmount)" placeholder="500.000.000" class="w-full py-3 outline-none text-sm font-bold text-text-primary" />
+                </div>
+                <div>
+                  <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Sudah Terkumpul</label>
+                  <input type="text" v-model="form.savedAmount" @input="form.savedAmount = formatInputNumber(form.savedAmount)" placeholder="0" class="w-full py-3 outline-none text-sm font-bold text-text-primary" />
+                </div>
+              </div>
+
               <div>
-                <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Sudah Terkumpul</label>
-                <input type="text" v-model="form.savedAmount" @input="form.savedAmount = formatInputNumber(form.savedAmount)" placeholder="0" class="w-full p-3 bg-bg-main rounded-lg border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" />
+                <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Target Tanggal (Opsional)</label>
+                <DatePicker :value="form.deadline" @change="form.deadline = $event" dropUp placeholder="dd/mm/yyyy" />
               </div>
-            </div>
 
-            <div>
-              <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest mb-1 block">Target Tanggal (Opsional)</label>
-              <DatePicker :value="form.deadline" @change="form.deadline = $event" dropUp placeholder="dd/mm/yyyy" />
+              <button @click="handleSubmit" :disabled="!form.name || !form.targetAmount" class="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-lg font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 mt-2">
+                {{ editGoal ? 'Simpan Perubahan' : 'Tambah Tujuan' }}
+              </button>
             </div>
-
-            <button @click="handleSubmit" :disabled="!form.name || !form.targetAmount" class="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-lg font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100">
-              {{ editGoal ? 'Simpan Perubahan' : 'Tambah Tujuan' }}
-            </button>
           </div>
         </div>
       </div>
@@ -202,7 +220,7 @@
             </button>
           </div>
           <div class="space-y-4">
-            <input type="text" v-model="savingsAmount" @input="savingsAmount = formatInputNumber(savingsAmount)" placeholder="Masukkan jumlah (Rp)" class="w-full p-3 bg-bg-main rounded-lg border border-border-ui focus:border-accent outline-none text-sm font-bold text-text-primary transition-all" autofocus />
+            <input type="text" v-model="savingsAmount" @input="savingsAmount = formatInputNumber(savingsAmount)" placeholder="Masukkan jumlah (Rp)" class="w-full py-3 outline-none text-sm font-bold text-text-primary" autofocus />
             <button @click="handleAddSavings" :disabled="!savingsAmount || Number(parseInputNumber(savingsAmount)) <= 0" class="w-full py-3 bg-gradient-to-r from-accent to-secondary text-white rounded-lg font-black text-sm shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all disabled:opacity-50">
               Tambah {{ savingsAmount ? formatCurrency(Number(parseInputNumber(savingsAmount))) : '' }}
             </button>
@@ -218,7 +236,7 @@ import { ref, computed } from 'vue';
 import { 
   Target, Plus, Trash2, Edit2, X, CheckCircle2, PiggyBank,
   Home, Car, Plane, Smartphone, GraduationCap, HeartPulse, ShoppingBag, Gamepad2, Camera, Globe, Briefcase, Coffee,
-  ArrowUpRight
+  ArrowUpRight, ChevronLeft
 } from '@lucide/vue';
 import type { Goal } from '../types';
 import { formatCurrency, formatInputNumber, parseInputNumber } from '../lib/utils';

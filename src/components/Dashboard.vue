@@ -35,11 +35,11 @@
                 <Moon v-else class="w-4 h-4 text-white/80" />
               </button>
               <button
-                @click.stop="$emit('bellClick')"
+                @click.stop="openNotificationPanel()"
                 class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/15 active:scale-90 transition-all relative"
               >
                 <Bell class="w-4 h-4 text-white/80" />
-                <span v-if="notificationCount > 0" class="absolute top-2 right-2 w-2 h-2 bg-rose-400 rounded-full border border-[#1A2C5B] animate-pulse" />
+                <span v-if="notifCount > 0" class="absolute top-2 right-2 w-2 h-2 bg-rose-400 rounded-full border border-[#1A2C5B] animate-pulse" />
               </button>
               <button
                 @click="$emit('navigateToProfile')"
@@ -580,6 +580,7 @@ import type { Transaction, Budget, Goal } from '../types';
 import { formatCurrency } from '../lib/utils';
 import { isToday, isYesterday, isThisMonth, isThisWeek, format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
+import { useNotifications } from '../composables/useNotifications';
 
 interface Props {
   transactions: Transaction[];
@@ -588,12 +589,10 @@ interface Props {
   isDark?: boolean;
   userName?: string;
   userPhotoUrl?: string;
-  notificationCount?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   goals: () => [],
-  notificationCount: 0,
 });
 
 defineEmits<{
@@ -603,8 +602,9 @@ defineEmits<{
   navigateToGoals: [];
   navigateToProfile: [];
   toggleTheme: [];
-  bellClick: [];
 }>();
+
+const { unreadCount: notifCount, openPanel: openNotificationPanel } = useNotifications();
 
 type FilterPeriod = 'today' | 'week' | 'month' | 'all';
 type TxFilter = 'all' | 'Income' | 'Expense';

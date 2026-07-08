@@ -42,142 +42,144 @@
         </div>
       </div>
 
-      <!-- Filter & Settings Modal -->
+      <!-- Filter & Settings Modal (Full Screen) -->
       <Teleport to="body">
-        <div v-if="showFilters" class="fixed inset-0 z-[60] flex p-4 overflow-y-auto items-center justify-center">
-          <div @click="showFilters = false" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" />
-          <div class="relative w-full min-h-full sm:min-h-0 sm:max-w-2xl bg-bg-main sm:rounded-2xl p-6 md:p-8 shadow-lg border-0 z-10 my-auto">
-            <div class="flex justify-between items-center mb-6">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
-                  <FilterIcon class="w-4 h-4" />
+        <div v-if="showFilters" class="fixed inset-0 z-[9999] bg-bg-main flex flex-col overflow-hidden">
+          <!-- Modal Header -->
+          <div
+            class="relative pt-6 pb-6 text-white overflow-hidden shrink-0"
+            style="background: linear-gradient(160deg, #0f1f4b 0%, #1A2C5B 45%, #1e3a8a 100%)"
+          >
+            <div class="absolute top-0 right-0 w-56 h-56 bg-blue-400/8 rounded-full blur-3xl pointer-events-none" />
+            <div class="absolute -bottom-12 -left-10 w-44 h-44 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div class="relative z-10 w-full max-w-xl mx-auto px-5">
+              <div class="flex items-center gap-3">
+                <button @click="showFilters = false" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/15 active:scale-90 transition-all">
+                  <ChevronLeft class="w-5 h-5 stroke-[2.5] text-white" />
+                </button>
+                <div>
+                  <h1 class="text-[20px] font-black text-white tracking-tight leading-none">Filter &amp; Opsi</h1>
+                  <p class="text-[9.5px] font-semibold text-white/45 uppercase tracking-[0.2em] mt-1">Atur Tampilan &amp; Transaksi</p>
                 </div>
-                <h3 class="text-lg font-black text-text-primary">Filter &amp; Opsi</h3>
-              </div>
-              <button @click="showFilters = false" class="p-2 hover:bg-bg-main rounded-lg transition-colors">
-                <X class="w-5 h-5 text-text-secondary" />
-              </button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-              <!-- View Mode Toggle -->
-              <div class="space-y-3">
-                <label class="block text-[10px] font-black text-text-secondary uppercase tracking-widest px-1">Tampilan</label>
-                <div class="flex bg-bg-main p-1 rounded-lg border-0">
-                  <button
-                    @click="viewMode = 'list'"
-                    :class="[
-                      'flex-1 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border-0',
-                      viewMode === 'list' ? 'bg-card-bg text-accent shadow-none' : 'text-text-secondary'
-                    ]"
-                  >
-                    <ListIcon class="w-4 h-4" /> Daftar
-                  </button>
-                  <button
-                    @click="viewMode = 'calendar'"
-                    :class="[
-                      'flex-1 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border-0',
-                      viewMode === 'calendar' ? 'bg-card-bg text-accent shadow-none' : 'text-text-secondary'
-                    ]"
-                  >
-                    <CalendarIcon class="w-4 h-4" /> Kalender
-                  </button>
-                </div>
-              </div>
-
-              <!-- Type Filter -->
-              <div class="space-y-3">
-                <label class="block text-[10px] font-black text-text-secondary uppercase tracking-widest px-1">Tipe Transaksi</label>
-                <div class="grid grid-cols-3 gap-2">
-                  <button
-                    v-for="t in [
-                      { id: 'All', label: 'Semua' },
-                      { id: 'Income', label: 'Masuk' },
-                      { id: 'Expense', label: 'Keluar' }
-                    ]"
-                    :key="t.id"
-                    @click="filterType = t.id"
-                    :class="[
-                      'py-2.5 rounded-lg text-[10px] font-bold border transition-all',
-                      filterType === t.id
-                        ? 'bg-accent/10 text-accent border-0'
-                        : 'bg-bg-main text-text-secondary border-0'
-                    ]"
-                  >
-                    {{ t.label }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Sort Order -->
-              <div class="space-y-3">
-                <label class="block text-[10px] font-black text-text-secondary uppercase tracking-widest px-1">Urutkan</label>
-                <div class="grid grid-cols-2 gap-2">
-                  <button
-                    v-for="s in [
-                      { id: 'date-desc', label: 'Terbaru', icon: ArrowUpDown },
-                      { id: 'date-asc', label: 'Terlama', icon: ArrowUpDown },
-                      { id: 'amount-desc', label: 'Terbesar', icon: TrendingUp },
-                      { id: 'amount-asc', label: 'Terkecil', icon: TrendingUp }
-                    ]"
-                    :key="s.id"
-                    @click="sortOrder = s.id"
-                    :class="[
-                      'py-2.5 px-3 rounded-lg text-[10px] font-bold border transition-all flex items-center gap-2',
-                      sortOrder === s.id
-                        ? 'bg-accent/10 text-accent border-0'
-                        : 'bg-bg-main text-text-secondary border-0'
-                    ]"
-                  >
-                    <component :is="s.icon" class="w-3 h-3 opacity-50" />
-                    {{ s.label }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- Category Filter -->
-              <div class="space-y-3">
-                <label class="block text-[10px] font-black text-text-secondary uppercase tracking-widest px-1">Kategori</label>
-                <CustomSelect
-                  :value="filterCategory"
-                  @change="filterCategory = $event"
-                  :options="allAvailableCategories"
-                  placeholder="Semua Kategori"
-                  className="rounded-lg border-border-ui"
-                />
               </div>
             </div>
+          </div>
 
-            <div class="space-y-6 pt-6 border-t border-border-ui mt-6">
-              <!-- Export/Import Buttons -->
-              <div class="grid grid-cols-2 gap-3">
+          <div class="flex-1 relative z-10 overflow-y-auto no-scrollbar bg-bg-main text-text-primary border-0">
+            <div class="w-full max-w-xl mx-auto min-h-full px-5 pt-6 pb-12 flex flex-col justify-between">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <!-- View Mode Toggle -->
+                <div class="space-y-3">
+                  <label class="block text-[10px] font-black text-text-secondary uppercase tracking-widest px-1">Tampilan</label>
+                  <div class="flex bg-bg-main p-1 rounded-lg border-0">
+                    <button
+                      @click="viewMode = 'list'"
+                      :class="[
+                        'flex-1 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border-0',
+                        viewMode === 'list' ? 'bg-card-bg text-accent shadow-none' : 'text-text-secondary'
+                      ]"
+                    >
+                      <ListIcon class="w-4 h-4" /> Daftar
+                    </button>
+                    <button
+                      @click="viewMode = 'calendar'"
+                      :class="[
+                        'flex-1 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border-0',
+                        viewMode === 'calendar' ? 'bg-card-bg text-accent shadow-none' : 'text-text-secondary'
+                      ]"
+                    >
+                      <CalendarIcon class="w-4 h-4" /> Kalender
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Type Filter -->
+                <div class="space-y-3">
+                  <label class="block text-[10px] font-black text-text-secondary uppercase tracking-widest px-1">Tipe Transaksi</label>
+                  <div class="grid grid-cols-3 gap-2">
+                    <button
+                      v-for="t in [
+                        { id: 'All', label: 'Semua' },
+                        { id: 'Income', label: 'Masuk' },
+                        { id: 'Expense', label: 'Keluar' }
+                      ]"
+                      :key="t.id"
+                      @click="filterType = t.id"
+                      :class="[
+                        'py-2.5 rounded-lg text-[10px] font-bold border transition-all',
+                        filterType === t.id
+                          ? 'bg-accent/10 text-accent border-0'
+                          : 'bg-bg-main text-text-secondary border-0'
+                      ]"
+                    >
+                      {{ t.label }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Sort Order -->
+                <div class="space-y-3">
+                  <label class="block text-[10px] font-black text-text-secondary uppercase tracking-widest px-1">Urutkan</label>
+                  <div class="grid grid-cols-2 gap-2">
+                    <button
+                      v-for="s in [
+                        { id: 'date-desc', label: 'Terbaru', icon: ArrowUpDown },
+                        { id: 'date-asc', label: 'Terlama', icon: ArrowUpDown },
+                        { id: 'amount-desc', label: 'Terbesar', icon: TrendingUp },
+                        { id: 'amount-asc', label: 'Terkecil', icon: TrendingUp }
+                      ]"
+                      :key="s.id"
+                      @click="sortOrder = s.id"
+                      :class="[
+                        'py-2.5 px-3 rounded-lg text-[10px] font-bold border transition-all flex items-center gap-2',
+                        sortOrder === s.id
+                          ? 'bg-accent/10 text-accent border-0'
+                          : 'bg-bg-main text-text-secondary border-0'
+                      ]"
+                    >
+                      <component :is="s.icon" class="w-3 h-3 opacity-50" />
+                      {{ s.label }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="space-y-3">
+                  <label class="block text-[10px] font-black text-text-secondary uppercase tracking-widest px-1">Kategori</label>
+                  <CustomSelect
+                    :value="filterCategory"
+                    @change="filterCategory = $event"
+                    :options="allAvailableCategories"
+                    placeholder="Semua Kategori"
+                    className="rounded-lg border-border-ui"
+                  />
+                </div>
+              </div>
+
+              <div class="space-y-6 pt-6 border-t border-border-ui mt-6">
+                <!-- Export/Import Button -->
                 <button
+                  type="button"
                   @click="triggerExport"
-                  class="flex items-center justify-center gap-2 py-3 bg-bg-main border-0 rounded-lg text-[10px] font-black text-text-primary hover:bg-border-ui transition-all"
+                  class="w-full flex items-center justify-center gap-2 py-3 bg-bg-main border-0 rounded-lg text-[10px] font-black text-text-primary hover:bg-border-ui transition-all"
                 >
-                  <FileDown class="w-4 h-4 text-accent" /> EXPORT
+                  <FileDown class="w-4 h-4 text-accent" /> EXPORT / IMPORT DATA
                 </button>
-                <button
-                  @click="triggerImport"
-                  class="flex items-center justify-center gap-2 py-3 bg-bg-main border-0 rounded-lg text-[10px] font-black text-text-primary hover:bg-border-ui transition-all"
-                >
-                  <FileUp class="w-4 h-4 text-secondary" /> IMPORT
-                </button>
-              </div>
- 
-              <div class="flex gap-2">
-                <button
-                  @click="clearFilters"
-                  class="flex-1 py-4 bg-bg-main text-text-secondary rounded-lg text-xs font-black hover:bg-danger/5 hover:text-danger transition-all border-0"
-                >
-                  RESET
-                </button>
-                <button
-                  @click="showFilters = false"
-                  class="flex-[2] py-4 bg-gradient-to-r from-accent to-secondary text-white rounded-lg text-xs font-black shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all"
-                >
-                  TERAPKAN
-                </button>
+   
+                <div class="flex gap-2">
+                  <button
+                    @click="clearFilters"
+                    class="flex-1 py-4 bg-bg-main text-text-secondary rounded-lg text-xs font-black hover:bg-danger/5 hover:text-danger transition-all border-0"
+                  >
+                    RESET
+                  </button>
+                  <button
+                    @click="showFilters = false"
+                    class="flex-[2] py-4 bg-gradient-to-r from-accent to-secondary text-white rounded-lg text-xs font-black shadow-lg shadow-accent/20 hover:scale-[1.02] transition-all"
+                  >
+                    TERAPKAN
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -402,15 +404,15 @@
       <div v-if="showAddModal" class="fixed inset-0 z-[9999] bg-bg-main flex flex-col overflow-hidden">
         <!-- Modal Header -->
         <div
-          class="relative pt-4 pb-12 px-5 text-white overflow-hidden shrink-0"
+          class="relative pt-6 pb-6 text-white overflow-hidden shrink-0"
           style="background: linear-gradient(160deg, #0f1f4b 0%, #1A2C5B 45%, #1e3a8a 100%)"
         >
           <div class="absolute top-0 right-0 w-56 h-56 bg-blue-400/8 rounded-full blur-3xl pointer-events-none" />
           <div class="absolute -bottom-12 -left-10 w-44 h-44 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div class="relative z-10">
+          <div class="relative z-10 w-full max-w-xl mx-auto px-5">
             <div class="flex items-center gap-3">
               <button @click="handleCloseModal" class="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 border border-white/15 active:scale-90 transition-all">
-                <ArrowLeft class="w-5 h-5 stroke-[2.5] text-white" />
+                <ChevronLeft class="w-5 h-5 stroke-[2.5] text-white" />
               </button>
               <div>
                 <h1 class="text-[20px] font-black text-white tracking-tight leading-none">
@@ -427,8 +429,8 @@
           </div>
         </div>
 
-        <div class="flex-1 mt-[-28px] relative z-10 pt-0 px-2.5 pb-[192px] md:pb-12 overflow-y-auto no-scrollbar rounded-t-[10px] bg-bg-main text-text-primary border-0">
-          <div class="w-full max-w-xl mx-auto min-h-full flex flex-col justify-between">
+        <div class="flex-1 relative z-10 overflow-y-auto no-scrollbar bg-bg-main text-text-primary border-0">
+          <div class="w-full max-w-xl mx-auto min-h-full px-5 pt-6 pb-[192px] md:pb-12 flex flex-col justify-between">
             <div v-if="notify" :class="['flex items-start justify-between gap-3 px-4 py-3 mb-4 rounded-xl border-0', notify.type === 'error' ? 'bg-red-500/8 text-red-500' : 'bg-accent/8 text-accent']">
               <div class="flex items-center gap-2.5 flex-1 min-w-0">
                 <div :class="['w-1.5 h-1.5 rounded-full shrink-0 mt-0.5', notify.type === 'error' ? 'bg-red-500' : 'bg-accent']" />
@@ -445,14 +447,14 @@
                   <button
                     type="button"
                     @click="type = 'Expense'"
-                    :class="['flex-1 py-3 transition-all items-center justify-center gap-2 flex h-[50px] rounded-[8px] text-[12px] font-[900]', type === 'Expense' ? 'bg-danger/10 text-danger border border-danger shadow-none' : 'text-text-secondary hover:text-text-primary border border-transparent']"
+                    :class="['flex-1 py-3 transition-all items-center justify-center gap-2 flex h-[50px] rounded-[8px] text-[12px] font-[900]', type === 'Expense' ? 'bg-danger/10 text-danger border-2 border-danger shadow-none' : 'text-text-secondary hover:text-text-primary border-2 border-border-ui/50']"
                   >
                     <ArrowDownRight class="w-4 h-4" /> Pengeluaran
                   </button>
                   <button
                     type="button"
                     @click="type = 'Income'"
-                    :class="['flex-1 py-3 transition-all items-center justify-center gap-2 flex h-[50px] rounded-[8px] text-[12px] font-[900]', type === 'Income' ? 'bg-success/10 text-success border border-success shadow-none' : 'text-text-secondary hover:text-text-primary border border-transparent']"
+                    :class="['flex-1 py-3 transition-all items-center justify-center gap-2 flex h-[50px] rounded-[8px] text-[12px] font-[900]', type === 'Income' ? 'bg-success/10 text-success border-2 border-success shadow-none' : 'text-text-secondary hover:text-text-primary border-2 border-border-ui/50']"
                   >
                     <ArrowUpRight class="w-4 h-4" /> Pemasukan
                   </button>
@@ -474,7 +476,7 @@
                         type="text"
                         required
                         v-model="customCategory"
-                        class="w-full h-[52px] px-4 rounded-lg border-0 bg-bg-main text-text-primary outline-none text-sm transition-all shadow-none"
+                        class="w-full h-[52px] py-2 text-text-primary outline-none text-sm"
                         placeholder="Ketik kategori kustom..."
                         ref="customCategoryInput"
                       />
@@ -490,7 +492,7 @@
                         required
                         v-model="amount"
                         @input="amount = formatInputNumber(amount)"
-                        class="w-full h-[52px] pl-10 pr-4 rounded-lg border-0 bg-bg-main text-text-primary font-bold outline-none text-sm transition-all shadow-none"
+                        class="w-full h-[52px] pl-10 text-text-primary font-bold outline-none text-sm"
                         placeholder="0"
                         inputmode="decimal"
                       />
@@ -513,7 +515,7 @@
                     <input
                       type="text"
                       v-model="note"
-                      class="w-full h-[52px] px-4 rounded-lg border-0 bg-bg-main text-text-primary outline-none text-sm transition-all shadow-none"
+                      class="w-full h-[52px] py-2 text-text-primary outline-none text-sm"
                       placeholder="Contoh: Belanja bulanan ke pasar"
                     />
                   </div>
@@ -673,11 +675,11 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import {
-  Plus, Trash2, X, Filter as FilterIcon, Search, Edit2,
+  Plus, Trash2, X, Search, Edit2,
   Calendar as CalendarIcon, List as ListIcon, ChevronLeft, ChevronRight,
   ArrowUpRight, ArrowDownRight, Utensils, Car, ShoppingBag, Receipt,
-  Gamepad2, HeartPulse, Wallet, SlidersHorizontal, ArrowUpDown, FileDown, FileUp,
-  TrendingUp, Mic, Camera, Loader2, ArrowLeft, Paperclip, Eye
+  Gamepad2, HeartPulse, Wallet, SlidersHorizontal, ArrowUpDown, FileDown,
+  TrendingUp, Mic, Camera, Loader2, Paperclip, Eye
 } from '@lucide/vue';
 import { aiService } from '../lib/ai';
 import { uploadToCloudinary } from '../lib/cloudinary';
@@ -858,11 +860,6 @@ const handleCloseModal = () => {
 };
 
 const triggerExport = () => {
-  showExportModal.value = true;
-  showFilters.value = false;
-};
-
-const triggerImport = () => {
   showExportModal.value = true;
   showFilters.value = false;
 };
