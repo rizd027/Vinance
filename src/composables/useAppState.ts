@@ -48,6 +48,29 @@ const appSettings = ref({
   language: 'id'
 });
 
+interface OpenModal {
+  name: string;
+  close: () => void;
+}
+const openModalsStack = ref<OpenModal[]>([]);
+let ignoreNextPopstate = false;
+
+export function registerModal(name: string, close: () => void) {
+  if (openModalsStack.value.some(m => m.name === name)) return;
+  openModalsStack.value.push({ name, close });
+  const currentState = window.history.state || {};
+  window.history.pushState({ ...currentState, isModal: true, modalName: name }, '');
+}
+
+export function unregisterModal(name: string) {
+  const index = openModalsStack.value.findIndex(m => m.name === name);
+  if (index !== -1) {
+    openModalsStack.value.splice(index, 1);
+    ignoreNextPopstate = true;
+    window.history.back();
+  }
+}
+
 export function useAppState() {
   const { addNotif, purgeExpired } = useNotifications();
 
@@ -92,6 +115,21 @@ export function useAppState() {
     }
     // Purge any notifications older than 1 day
     purgeExpired();
+
+    // Listen to popstate for back button modal closing
+    window.addEventListener('popstate', () => {
+      if (ignoreNextPopstate) {
+        ignoreNextPopstate = false;
+        return;
+      }
+
+      if (openModalsStack.value.length > 0) {
+        const topModal = openModalsStack.value.pop();
+        if (topModal) {
+          topModal.close();
+        }
+      }
+    });
   };
 
   // --- Watchers & Helpers ---
@@ -106,6 +144,34 @@ export function useAppState() {
   };
 
   watch(isDark, applyTheme);
+
+  watch(activeDialog, (newVal) => {
+    if (newVal) {
+      registerModal('global-dialog', () => {
+        if (activeDialog.value) {
+          activeDialog.value.onCancel();
+        }
+      });
+    } else {
+      unregisterModal('global-dialog');
+    }
+  });
+
+  watch(showExportModal, (newVal) => {
+    if (newVal) {
+      registerModal('global-export', () => { showExportModal.value = false; });
+    } else {
+      unregisterModal('global-export');
+    }
+  });
+
+  watch(isSettingPin, (newVal) => {
+    if (newVal) {
+      registerModal('global-pin-setup', () => { isSettingPin.value = false; });
+    } else {
+      unregisterModal('global-pin-setup');
+    }
+  });
 
 
 
@@ -253,6 +319,8 @@ export function useAppState() {
     appPin.value = null;
     isDark.value = false;
     activeTab.value = 'home';
+    openModalsStack.value = [];
+    window.location.replace('/');
   };
 
   const handleAddTransaction = async (t: Omit<Transaction, 'id'>) => {
@@ -542,6 +610,8 @@ export function useAppState() {
     handleDeleteNote,
     handleTogglePin,
     handleFinishPinSetup,
-    handleClearAllData
+    handleClearAllData,
+    registerModal,
+    unregisterModal
   };
 }

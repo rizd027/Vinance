@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 pb-10">
+  <div class="space-y-6 pb-4">
     <!-- Header Title (Desktop only) -->
     <div class="hidden lg:flex flex-col gap-1 mb-2">
       <h2 class="text-2xl font-black text-text-primary tracking-tight leading-none">Eksplorasi Fitur</h2>

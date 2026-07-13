@@ -41,6 +41,7 @@
   >
     <Dashboard
       v-if="activeTab === 'home'"
+      :loading="loading"
       :transactions="data.transactions"
       :budgets="data.budgets"
       :goals="data.goals"
@@ -57,6 +58,7 @@
 
     <Transactions
       v-show="activeTab === 'transactions'"
+      :loading="loading"
       :transactions="data.transactions"
       :budgets="data.budgets"
       :user-id="user.id"
@@ -154,6 +156,7 @@ const {
   user,
   data,
   syncing,
+  loading,
   isDark,
   appPin,
   isUnlocked,
@@ -182,6 +185,8 @@ const {
   handleTogglePin,
   handleFinishPinSetup,
   handleClearAllData,
+  registerModal,
+  unregisterModal,
 } = useAppState();
 
 const activeTab = ref('home');
@@ -215,12 +220,8 @@ onMounted(() => {
 
   window.addEventListener('popstate', (event: PopStateEvent) => {
     const state = event.state;
-    if (state) {
-      if (showAddModal.value && !state.modal) {
-        showAddModal.value = false;
-      } else if (state.tab) {
-        activeTab.value = state.tab;
-      }
+    if (state && state.tab) {
+      activeTab.value = state.tab;
     }
   });
 
@@ -236,7 +237,9 @@ onMounted(() => {
 
 watch(showAddModal, (val) => {
   if (val) {
-    window.history.pushState({ tab: activeTab.value, modal: true }, '');
+    registerModal('add-transaction', () => { showAddModal.value = false; });
+  } else {
+    unregisterModal('add-transaction');
   }
 });
 

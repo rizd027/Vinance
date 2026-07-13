@@ -64,7 +64,10 @@
     </aside>
 
     <!-- ── Main Content Area ── -->
-    <div class="flex-1 flex flex-col h-[100dvh] overflow-y-auto pb-[62px] lg:pb-0 min-w-0 no-scrollbar sm:custom-scrollbar relative transition-colors">
+    <div
+      class="flex-1 flex flex-col h-[100dvh] overflow-y-auto lg:pb-0 min-w-0 no-scrollbar sm:custom-scrollbar relative transition-colors"
+      :style="isMobile ? { paddingBottom: 'calc(62px + env(safe-area-inset-bottom))' } : {}"
+    >
 
 
 
@@ -216,7 +219,7 @@
             </div>
 
             <!-- ══ Content Sheet ══ -->
-            <div class="bg-bg-main rounded-t-[10px] mt-[-28px] relative z-10 px-4 pt-6 pb-20 min-h-[calc(100dvh-120px)]">
+            <div class="bg-bg-main rounded-t-[10px] mt-[-28px] relative z-10 px-4 pt-6 pb-8 min-h-[calc(100dvh-120px)]">
               <slot />
             </div>
           </div>
@@ -391,7 +394,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { registerModal, unregisterModal } from '../composables/useAppState';
 import { isToday, isYesterday, format, formatDistanceToNow } from 'date-fns';
 import { id as dateFnsLocaleId } from 'date-fns/locale';
 import { useI18n } from 'vue-i18n';
@@ -450,6 +454,14 @@ const activeTabDef = computed(() => allTabs.value.find(t => t.id === props.activ
 
 const { notifications, removeNotif, clearAll: clearAllNotifs, isPanelOpen: showNotifications } = useNotifications();
 const notifCount = computed(() => notifications.value.length);
+
+watch(showNotifications, (newVal) => {
+  if (newVal) {
+    registerModal('notifications', () => { showNotifications.value = false; });
+  } else {
+    unregisterModal('notifications');
+  }
+});
 const notificationCount = computed(() => notifCount.value);
 
 const notifClass = (type: string) => {

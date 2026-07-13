@@ -203,7 +203,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { registerModal, unregisterModal } from '../composables/useAppState';
 import { Plus, Trash2, StickyNote, Pin, Edit2, ChevronLeft } from '@lucide/vue';
 import type { Note } from '../types';
 import { format } from 'date-fns';
@@ -225,6 +226,22 @@ const newContent = ref('');
 const newColor = ref('violet');
 const editContent = ref('');
 const editingNote = ref<Note | null>(null);
+
+watch(showAdd, (newVal) => {
+  if (newVal) {
+    registerModal('notes-add', () => { showAdd.value = false; });
+  } else {
+    unregisterModal('notes-add');
+  }
+});
+
+watch(editingNote, (newVal) => {
+  if (newVal) {
+    registerModal('notes-edit', () => { editingNote.value = null; });
+  } else {
+    unregisterModal('notes-edit');
+  }
+});
 
 const NOTE_COLORS = [
   { bg: 'bg-card-bg border-violet-500/40', text: 'text-text-primary', value: 'violet', accent: '#8b5cf6' },

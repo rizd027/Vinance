@@ -427,6 +427,7 @@ import {
   Gamepad2, HeartPulse, LayoutGrid
 } from '@lucide/vue';
 import type { Budget, Transaction } from '../types';
+import { registerModal, unregisterModal } from '../composables/useAppState';
 import { formatCurrency, formatInputNumber, parseInputNumber } from '../lib/utils';
 
 interface Props {
@@ -446,6 +447,22 @@ const showAddModal = ref(false);
 const showInfoModal = ref(false);
 const customCategory = ref('');
 const isMobile = ref(false);
+
+watch(showAddModal, (newVal) => {
+  if (newVal) {
+    registerModal('budgets-add', () => { showAddModal.value = false; });
+  } else {
+    unregisterModal('budgets-add');
+  }
+});
+
+watch(showInfoModal, (newVal) => {
+  if (newVal) {
+    registerModal('budgets-info', () => { showInfoModal.value = false; });
+  } else {
+    unregisterModal('budgets-info');
+  }
+});
 
 const defaultCategories = ['Makanan', 'Transportasi', 'Belanja', 'Tagihan', 'Hiburan', 'Kesehatan', 'Lainnya'];
 

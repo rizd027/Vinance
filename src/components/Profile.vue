@@ -48,7 +48,7 @@
               <input
                 type="text"
                 v-model="editName"
-                class="w-full pl-11 py-3.5 outline-none text-sm font-bold text-text-primary placeholder:font-normal placeholder:text-text-secondary/50"
+                class="w-full !pl-11 py-3.5 outline-none text-sm font-bold text-text-primary placeholder:font-normal placeholder:text-text-secondary/50"
                 placeholder="Masukkan nama lengkap"
               />
             </div>
@@ -69,7 +69,7 @@
                   type="email"
                   :value="user.email"
                   readonly
-                  class="w-full pl-11 pr-20 py-3.5 outline-none text-sm font-bold text-text-secondary cursor-not-allowed opacity-50"
+                  class="w-full !pl-11 pr-20 py-3.5 outline-none text-sm font-bold text-text-secondary cursor-not-allowed opacity-50"
                 />
                 <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-text-secondary/50 uppercase tracking-widest bg-border-ui/70 px-2 py-0.5 rounded-full">Aktif</span>
               </div>
@@ -78,7 +78,7 @@
                 <input
                   type="email"
                   v-model="editNewEmail"
-                  class="w-full pl-11 py-3.5 outline-none text-sm font-bold text-text-primary placeholder:font-normal placeholder:text-text-secondary/50"
+                  class="w-full !pl-11 py-3.5 outline-none text-sm font-bold text-text-primary placeholder:font-normal placeholder:text-text-secondary/50"
                   placeholder="Masukkan email baru"
                 />
               </div>
@@ -100,7 +100,7 @@
                   type="password"
                   v-model="editPassword"
                   :class="[
-                    'w-full pl-11 py-3.5 outline-none text-sm font-bold text-text-primary placeholder:font-normal placeholder:text-text-secondary/50',
+                    'w-full !pl-11 py-3.5 outline-none text-sm font-bold text-text-primary placeholder:font-normal placeholder:text-text-secondary/50',
                     isSensitiveChange && !editPassword && 'border-b-rose-500'
                   ]"
                   placeholder="Masukkan password lama"
@@ -111,7 +111,7 @@
                 <input
                   type="password"
                   v-model="editNewPassword"
-                  class="w-full pl-11 py-3.5 outline-none text-sm font-bold text-text-primary placeholder:font-normal placeholder:text-text-secondary/50"
+                  class="w-full !pl-11 py-3.5 outline-none text-sm font-bold text-text-primary placeholder:font-normal placeholder:text-text-secondary/50"
                   placeholder="Masukkan password baru"
                 />
               </div>
@@ -217,7 +217,7 @@
     </div>
 
     <!-- MAIN VIEW -->
-    <div v-else class="space-y-8 pb-10">
+    <div v-else class="space-y-8 pb-4">
       <!-- Title Header (Desktop only) -->
       <div class="hidden lg:flex flex-col gap-1 mb-2">
         <h2 class="text-2xl font-black text-text-primary tracking-tight leading-none">Manajemen Akun</h2>
@@ -322,7 +322,6 @@
               <p class="text-[10px] text-text-secondary font-medium mt-0.5">{{ $t('languageDesc') }}</p>
             </div>
             <div class="flex items-center gap-1.5 bg-bg-main border-0 px-3 py-1 rounded-full text-[10px] font-bold text-text-secondary">
-              <span>{{ languages.find(l => l.code === appSettings.language)?.flag }}</span>
               <span>{{ languages.find(l => l.code === appSettings.language)?.code.toUpperCase() }}</span>
             </div>
           </button>
@@ -339,7 +338,7 @@
                   : 'hover:bg-bg-main text-text-secondary hover:text-text-primary'
               ]"
             >
-              <span class="text-base">{{ lang.flag }}</span>
+              <Globe class="w-3.5 h-3.5 opacity-60 text-text-secondary" />
               <span>{{ lang.label }}</span>
               <Check v-if="appSettings.language === lang.code" class="w-3.5 h-3.5 ml-auto text-indigo-500" />
             </button>
@@ -481,7 +480,7 @@
                 <img src="/cat-sticker.png" alt="Cat" class="w-full h-full object-cover" />
               </div>
               <div>
-                <h4 class="text-sm font-black text-text-primary leading-none">Traktir Eskrim 🍦</h4>
+                <h4 class="text-sm font-black text-text-primary leading-none">Dukung Developer</h4>
                 <p class="text-[9px] text-text-secondary font-black uppercase tracking-widest mt-1">Dukung Developer Lokal</p>
               </div>
             </div>
@@ -587,7 +586,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { registerModal, unregisterModal } from '../composables/useAppState';
 import { useI18n } from 'vue-i18n';
 import {
   LogOut, Palette, ExternalLink, Info, X, Copy, Check, Lock, ShieldCheck,
@@ -620,10 +620,10 @@ useI18n();
 const showLangPicker = ref(false);
 
 const languages = [
-  { code: 'id', label: 'Bahasa Indonesia', flag: '🇮🇩' },
-  { code: 'en', label: 'English', flag: '🇺🇸' },
-  { code: 'zh', label: '中文 (Simplified)', flag: '🇨🇳' },
-  { code: 'ja', label: '日本語', flag: '🇯🇵' },
+  { code: 'id', label: 'Bahasa Indonesia' },
+  { code: 'en', label: 'English' },
+  { code: 'zh', label: '中文 (Simplified)' },
+  { code: 'ja', label: '日本語' },
 ];
 
 const setLanguage = (code: string) => {
@@ -651,6 +651,14 @@ const showScriptInfo = ref(false);
 const showSetupGuide = ref(false);
 const copied = ref(false);
 const testingConnection = ref(false);
+
+watch(showSetupGuide, (newVal) => {
+  if (newVal) {
+    registerModal('profile-setup-guide', () => { showSetupGuide.value = false; });
+  } else {
+    unregisterModal('profile-setup-guide');
+  }
+});
 
 
 

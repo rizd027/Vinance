@@ -1,10 +1,76 @@
 <template>
   <div class="space-y-5 pb-4">
 
-    <!-- ══════════════════════════════════════════
-         MOBILE VIEW (lg:hidden)
-        ══════════════════════════════════════════ -->
-    <div class="lg:hidden">
+    <!-- ══ Skeleton Loader ══ -->
+    <div v-if="loading" class="space-y-6">
+      <!-- Mobile Hero Skeleton -->
+      <div class="lg:hidden rounded-2xl bg-slate-200/50 dark:bg-white/5 h-48 w-full animate-pulse p-5 flex flex-col justify-between">
+        <div class="flex justify-between items-center">
+          <div class="h-6 w-32 bg-slate-300 dark:bg-white/10 rounded-lg"></div>
+          <div class="h-8 w-8 bg-slate-300 dark:bg-white/10 rounded-full"></div>
+        </div>
+        <div class="h-10 w-48 bg-slate-300 dark:bg-white/10 rounded-lg mx-auto"></div>
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div class="h-12 bg-slate-300 dark:bg-white/10 rounded-xl"></div>
+          <div class="h-12 bg-slate-300 dark:bg-white/10 rounded-xl"></div>
+        </div>
+      </div>
+
+      <!-- Desktop Hero & Grid Skeleton -->
+      <div class="hidden lg:grid grid-cols-3 gap-6 animate-pulse">
+        <div class="col-span-2 bg-slate-200/50 dark:bg-white/5 rounded-2xl h-56 p-5 flex flex-col justify-between">
+          <div class="h-8 w-40 bg-slate-300 dark:bg-white/10 rounded-lg"></div>
+          <div class="h-12 w-64 bg-slate-300 dark:bg-white/10 rounded-lg"></div>
+          <div class="grid grid-cols-3 gap-4">
+            <div class="h-10 bg-slate-300 dark:bg-white/10 rounded-xl"></div>
+            <div class="h-10 bg-slate-300 dark:bg-white/10 rounded-xl"></div>
+            <div class="h-10 bg-slate-300 dark:bg-white/10 rounded-xl"></div>
+          </div>
+        </div>
+        <div class="bg-slate-200/50 dark:bg-white/5 rounded-2xl h-56 p-5 flex flex-col justify-between">
+          <div class="h-6 w-24 bg-slate-300 dark:bg-white/10 rounded-lg"></div>
+          <div class="h-12 bg-slate-300 dark:bg-white/10 rounded-full w-12 mx-auto"></div>
+          <div class="h-6 w-32 bg-slate-300 dark:bg-white/10 rounded-lg mx-auto"></div>
+        </div>
+      </div>
+
+      <!-- Budgets / Savings Section Skeleton -->
+      <div class="space-y-3 animate-pulse">
+        <div class="h-6 w-32 bg-slate-200/50 dark:bg-white/5 rounded-lg"></div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div v-for="i in 4" :key="i" class="h-28 bg-slate-200/50 dark:bg-white/5 rounded-2xl p-4 flex flex-col justify-between">
+            <div class="h-5 w-16 bg-slate-300 dark:bg-white/10 rounded-lg"></div>
+            <div class="h-3 w-full bg-slate-300 dark:bg-white/10 rounded-full mt-2"></div>
+            <div class="h-4 w-12 bg-slate-300 dark:bg-white/10 rounded-lg mt-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions List Skeleton -->
+      <div class="space-y-3 animate-pulse">
+        <div class="flex justify-between items-center">
+          <div class="h-6 w-40 bg-slate-200/50 dark:bg-white/5 rounded-lg"></div>
+          <div class="h-6 w-16 bg-slate-200/50 dark:bg-white/5 rounded-full"></div>
+        </div>
+        <div class="bg-slate-200/50 dark:bg-white/5 rounded-2xl divide-y divide-slate-300/20 dark:divide-white/5">
+          <div v-for="i in 5" :key="i" class="flex items-center gap-3 p-4">
+            <div class="w-10 h-10 rounded-full bg-slate-300 dark:bg-white/10 shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 w-24 bg-slate-300 dark:bg-white/10 rounded-lg"></div>
+              <div class="h-3 w-32 bg-slate-300 dark:bg-white/10 rounded-lg"></div>
+            </div>
+            <div class="h-5 w-16 bg-slate-300 dark:bg-white/10 rounded-lg text-right"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Main Content ══ -->
+    <div v-show="!loading" class="space-y-5">
+      <!-- ══════════════════════════════════════════
+           MOBILE VIEW (lg:hidden)
+           ══════════════════════════════════════════ -->
+      <div class="lg:hidden">
       <!-- ══ Premium Hero Card ══ -->
       <div
         class="relative pt-5 pb-14 px-5 text-white overflow-hidden"
@@ -564,6 +630,7 @@
         </div>
       </div>
     </Teleport>
+    </div>
   </div>
 </template>
 
@@ -589,10 +656,12 @@ interface Props {
   isDark?: boolean;
   userName?: string;
   userPhotoUrl?: string;
+  loading?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   goals: () => [],
+  loading: false,
 });
 
 defineEmits<{

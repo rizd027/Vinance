@@ -11,16 +11,16 @@
     </button>
 
     <!-- Background blobs -->
-    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-      <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-accent/10 rounded-full blur-[120px] animate-pulse" />
-      <div class="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 1s" />
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-accent/5 rounded-full blur-[150px]" />
+    <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      <!-- Glow meshes -->
+      <div class="absolute -top-[20%] -left-[10%] w-[55%] h-[55%] bg-accent/15 rounded-full blur-[140px] animate-blob" />
+      <div class="absolute -bottom-[20%] -right-[10%] w-[55%] h-[55%] bg-secondary/15 rounded-full blur-[140px] animate-blob-delayed" />
+      <div class="absolute top-[35%] left-[25%] w-[45%] h-[45%] bg-[#7c3aed]/10 rounded-full blur-[160px] animate-blob-slow" />
     </div>
 
-    <!-- Doodle Art Pattern Overlay -->
+    <!-- Fine grid pattern overlay -->
     <div
-      class="absolute inset-0 z-0 opacity-[0.06] dark:opacity-[0.03] pointer-events-none"
-      style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%233b82f6' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 30 h35 a5 5 0 0 1 5 5 v20 a5 5 0 0 1 -5 5 h-35 a5 5 0 0 1 -5 -5 v-20 a5 5 0 0 1 5 -5 z'/%3E%3Cpath d='M15 42 h45'/%3E%3Cpath d='M48 40 h8 v8 h-8 z'/%3E%3Ccircle cx='150' cy='40' r='12'/%3E%3Cpath d='M150 33 v14 M147 37 c0-2 6-2 6 0 c0 3-6 3-6 6 c0 2 6 2 6 0'/%3E%3Cpath d='M30 140 l20 -20 l15 15 l30 -30'/%3E%3Cpath d='M85 105 h10 v10'/%3E%3Cpath d='M25 150 h80 M25 100 v50'/%3E%3Ccircle cx='160' cy='115' r='3'/%3E%3Ccircle cx='175' cy='130' r='3'/%3E%3Cpath d='M178 112 l-22 22'/%3E%3Crect x='110' y='150' width='40' height='26' rx='4'/%3E%3Cpath d='M110 157 h40'/%3E%3Crect x='116' y='165' width='8' height='6' rx='1'/%3E%3Cpath d='M95 30 l3 -3 l3 3 l-3 3 z'/%3E%3Cpath d='M40 85 l2 -2 l2 2 l-2 2 z'/%3E%3Cpath d='M120 85 l4 -4 l4 4 l-4 4 z'/%3E%3Cpath d='M80 170 q 15 -10, 30 0'/%3E%3C/g%3E%3C/svg%3E&quot;); background-repeat: repeat; background-size: 160px 160px;"
+      class="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.015] pointer-events-none bg-[radial-gradient(#2d4db5_1px,transparent_1px)] [background-size:24px_24px]"
     />
 
     <div class="w-full max-w-5xl grid lg:grid-cols-2 gap-8 items-center z-10 py-6">
@@ -65,7 +65,7 @@
 
       <!-- Right panel (auth card) -->
       <div class="w-full flex flex-col items-center justify-center">
-        <div class="w-full max-w-[390px] bg-transparent sm:bg-card-bg rounded-2xl border-0 sm:border border-border-ui/30 dark:border-border-ui/20 shadow-none sm:shadow-2xl overflow-hidden flex flex-col">
+        <div class="w-full max-w-[390px] bg-card-bg/50 backdrop-blur-xl rounded-2xl border border-border-ui/15 dark:border-border-ui/10 shadow-xl sm:shadow-2xl overflow-hidden flex flex-col transition-all duration-500 hover:shadow-accent/5">
           <!-- Mobile logo header -->
           <div class="lg:hidden p-5 pb-0 flex flex-col items-center text-center">
             <div class="w-11 h-11 bg-white dark:bg-slate-50 rounded-2xl flex items-center justify-center mb-3 shadow-md border border-border-ui/10 p-2">
@@ -81,7 +81,7 @@
 
           <div class="p-5 sm:p-6 flex flex-col">
             <!-- Tab switcher -->
-            <div class="flex p-0.5 bg-bg-main/80 dark:bg-bg-main/20 rounded-xl mb-4 border border-border-ui/30">
+            <div class="flex p-1 bg-bg-main/80 dark:bg-bg-main/20 rounded-xl mb-5 border border-border-ui/30">
               <button
                 type="button"
                 @click="isLogin = true"
@@ -110,7 +110,7 @@
                   <UserIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary group-focus-within:text-accent transition-colors duration-300" />
                   <input
                     type="text" required v-model="name"
-                    class="w-full pl-11 pr-4 py-3 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs transition-all duration-300 rounded-xl shadow-sm"
+                    class="w-full !pl-11 pr-4 py-3 bg-bg-main/30 dark:bg-bg-main/10 focus:bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs transition-all duration-300 rounded-xl shadow-xs focus:ring-4 focus:ring-accent/10"
                     placeholder="Masukkan nama lengkap"
                   />
                 </div>
@@ -142,7 +142,7 @@
                         @input="handleOtpInput($event, idx)"
                         @keydown="handleOtpKeyDown($event, idx)"
                         @paste="handleOtpPaste($event)"
-                        class="w-9 h-10 text-center font-bold text-sm border border-border-ui/30 focus:border-accent bg-card-bg text-text-primary outline-none transition-all duration-300 rounded-lg shadow-sm"
+                        class="w-9 h-10 p-0 text-center font-bold text-sm border border-border-ui/30 focus:border-accent bg-card-bg text-text-primary outline-none transition-all duration-300 rounded-lg shadow-sm"
                         placeholder="•"
                       />
                     </div>
@@ -159,7 +159,7 @@
                     <MailIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary group-focus-within:text-accent transition-colors duration-300" />
                     <input
                       type="email" required v-model="email"
-                      class="w-full pl-11 pr-4 py-3 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs transition-all duration-300 rounded-xl shadow-sm"
+                      class="w-full !pl-11 pr-4 py-3 bg-bg-main/30 dark:bg-bg-main/10 focus:bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs transition-all duration-300 rounded-xl shadow-xs focus:ring-4 focus:ring-accent/10"
                       placeholder="email@contoh.com"
                     />
                   </div>
@@ -173,7 +173,7 @@
                     <LockIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary group-focus-within:text-accent transition-colors duration-300" />
                     <input
                       :type="showPassword ? 'text' : 'password'" required v-model="password"
-                      class="w-full pl-11 pr-10 py-3 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs transition-all duration-300 rounded-xl shadow-sm"
+                      class="w-full !pl-11 pr-10 py-3 bg-bg-main/30 dark:bg-bg-main/10 focus:bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs transition-all duration-300 rounded-xl shadow-xs focus:ring-4 focus:ring-accent/10"
                       placeholder="••••••••"
                     />
                     <button type="button" @click="showPassword = !showPassword" class="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-text-secondary hover:text-accent cursor-pointer">
@@ -194,7 +194,7 @@
 
               <button
                 type="submit" :disabled="loading"
-                class="w-full py-3 bg-accent hover:bg-accent/90 text-white font-bold rounded-xl shadow-md hover:shadow-lg hover:shadow-accent/20 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 text-xs mt-2 cursor-pointer"
+                class="w-full py-3.5 bg-gradient-to-r from-accent to-secondary hover:opacity-95 text-white font-bold rounded-xl shadow-md shadow-accent/15 hover:shadow-lg hover:shadow-accent/30 hover:scale-[1.01] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 text-xs mt-2 cursor-pointer"
               >
                 {{ loading ? 'Memproses...' : (isLogin ? 'Masuk' : (regStep === 1 ? 'Lanjutkan' : 'Verifikasi & Daftar')) }}
               </button>
@@ -234,7 +234,7 @@
           <form v-if="forgotStep === 1" @submit.prevent="handleSendResetCode" class="space-y-4">
             <div class="relative group text-left">
               <MailIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary group-focus-within:text-accent transition-colors duration-300" />
-              <input type="email" required v-model="forgotEmail" class="w-full pl-11 pr-4 py-3 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs transition-all duration-300 rounded-xl shadow-sm" placeholder="Masukkan email Anda" />
+              <input type="email" required v-model="forgotEmail" class="w-full !pl-11 pr-4 py-3 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs transition-all duration-300 rounded-xl shadow-sm" placeholder="Masukkan email Anda" />
             </div>
             <p v-if="forgotError" class="text-[10px] text-rose-500 font-bold text-left px-1">{{ forgotError }}</p>
             <button type="submit" :disabled="forgotLoading" class="w-full py-3.5 bg-gradient-to-r from-accent to-secondary text-white font-bold rounded-xl shadow-lg disabled:opacity-50 flex items-center justify-center gap-2">
@@ -247,11 +247,11 @@
             <div class="space-y-3">
               <div class="relative group text-left">
                 <ShieldCheck class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary group-focus-within:text-accent transition-colors duration-300" />
-                <input type="text" required :maxlength="6" v-model="forgotCode" @input="forgotCode = forgotCode.replace(/\D/g, '')" class="w-full pl-11 pr-4 py-3 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs tracking-[0.5em] font-bold rounded-xl shadow-sm" placeholder="XXXXXX" />
+                <input type="text" required :maxlength="6" v-model="forgotCode" @input="forgotCode = forgotCode.replace(/\D/g, '')" class="w-full !pl-11 pr-4 py-3 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs tracking-[0.5em] font-bold rounded-xl shadow-sm" placeholder="XXXXXX" />
               </div>
               <div class="relative group text-left">
                 <LockIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary group-focus-within:text-accent transition-colors duration-300" />
-                <input :type="showPassword ? 'text' : 'password'" required v-model="newResetPassword" class="w-full pl-11 pr-10 py-3 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs rounded-xl shadow-sm" placeholder="Kata sandi baru" />
+                <input :type="showPassword ? 'text' : 'password'" required v-model="newResetPassword" class="w-full !pl-11 pr-10 py-3 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary outline-none text-xs rounded-xl shadow-sm" placeholder="Kata sandi baru" />
                 <button type="button" @click="showPassword = !showPassword" class="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-text-secondary hover:text-accent cursor-pointer">
                   <EyeOff v-if="showPassword" class="w-4 h-4" />
                   <Eye v-else class="w-4 h-4" />
@@ -305,9 +305,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue';
+import { ref, computed, nextTick, watch } from 'vue';
 import { api } from '../lib/api';
 import type { User } from '../types';
+import { registerModal, unregisterModal } from '../composables/useAppState';
 import {
   Wallet, ShieldCheck, Mail as MailIcon, Lock as LockIcon,
   User as UserIcon, Sparkles, Sun, Moon, X, Eye, EyeOff, AlertCircle
@@ -345,6 +346,22 @@ const forgotLoading = ref(false);
 const forgotError = ref('');
 const regStep = ref(1);
 const otpDigits = ref(['', '', '', '', '', '']);
+
+watch(showForgotModal, (newVal) => {
+  if (newVal) {
+    registerModal('auth-forgot', () => { showForgotModal.value = false; });
+  } else {
+    unregisterModal('auth-forgot');
+  }
+});
+
+watch(showTermsModal, (newVal) => {
+  if (newVal) {
+    registerModal('auth-terms', () => { showTermsModal.value = false; });
+  } else {
+    unregisterModal('auth-terms');
+  }
+});
 
 const regCode = computed({
   get: () => otpDigits.value.join(''),
@@ -501,3 +518,31 @@ const handleSubmit = async () => {
   }
 };
 </script>
+
+<style scoped>
+@keyframes float-blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.08);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+.animate-blob {
+  animation: float-blob 20s infinite alternate ease-in-out;
+}
+.animate-blob-delayed {
+  animation: float-blob 20s infinite alternate-reverse ease-in-out;
+  animation-delay: 3s;
+}
+.animate-blob-slow {
+  animation: float-blob 28s infinite alternate ease-in-out;
+  animation-delay: 6s;
+}
+</style>

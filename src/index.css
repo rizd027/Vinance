@@ -294,7 +294,7 @@ body {
 /* 
  * Global Inputs & Textareas — Modern Boxed Style
  */
-input[type="text"],
+:where(input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="number"],
@@ -302,84 +302,91 @@ input[type="tel"],
 input[type="url"],
 input[type="date"],
 select,
-textarea {
-  background-color: var(--color-card-bg) !important;
-  border: 1.5px solid rgba(148, 163, 184, 0.3) !important;
-  border-radius: 12px !important;
-  font-size: 13.5px !important;
-  font-weight: 600 !important;
-  color: var(--color-text-primary) !important;
-  outline: none !important;
-  box-shadow: var(--shadow-sm) !important;
-  padding-top: 12px !important;
-  padding-bottom: 12px !important;
+textarea) {
+  background-color: var(--color-card-bg);
+  border: 1.5px solid rgba(148, 163, 184, 0.3);
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  outline: none;
+  box-shadow: var(--shadow-sm);
+  padding-top: 12px;
+  padding-bottom: 12px;
   padding-left: 14px;
   padding-right: 14px;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Exclude hidden file inputs & PIN inputs */
-input[type="file"],
+:where(input[type="file"],
 input[type="checkbox"],
 input[type="radio"],
 input[type="range"],
 input[type="submit"],
-input[type="button"] {
-  border: none !important;
-  background-color: unset !important;
-  border-radius: unset !important;
-  box-shadow: none !important;
-  padding: unset !important;
+input[type="button"]) {
+  border: none;
+  background-color: unset;
+  border-radius: unset;
+  box-shadow: none;
+  padding: unset;
 }
 
-input[type="text"]::placeholder,
-input[type="email"]::placeholder,
-input[type="password"]::placeholder,
-input[type="number"]::placeholder,
-input[type="tel"]::placeholder,
-input[type="url"]::placeholder,
-textarea::placeholder {
-  color: var(--color-text-secondary) !important;
-  opacity: 0.5 !important;
-  font-weight: 400 !important;
+:where(input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+textarea)::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+  font-weight: 400;
 }
 
 /* Hover: slightly more visible border */
-input[type="text"]:hover,
-input[type="email"]:hover,
-input[type="password"]:hover,
-input[type="number"]:hover,
-input[type="tel"]:hover,
-input[type="url"]:hover,
-input[type="date"]:hover,
-select:hover,
-textarea:hover {
-  border-color: rgba(148, 163, 184, 0.6) !important;
+:where(input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="date"],
+select,
+textarea):hover {
+  border-color: rgba(148, 163, 184, 0.6);
 }
 
 /* Focus: accent border and ring shadow */
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="number"]:focus,
-input[type="tel"]:focus,
-input[type="url"]:focus,
-input[type="date"]:focus,
-select:focus,
-textarea:focus {
-  border-color: var(--color-accent) !important;
-  box-shadow: 0 0 0 1.5px var(--color-accent) !important;
+:where(input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="date"],
+select,
+textarea):focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1.5px var(--color-accent);
 }
 
-/* Autofill override for underline style */
+/* Autofill override to match theme */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
-  transition: background-color 5000s ease-in-out 0s;
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-card-bg) inset !important;
   -webkit-text-fill-color: var(--color-text-primary) !important;
-  background-color: transparent !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* ══ Mobile Native App Utilities ══ */

@@ -26,7 +26,9 @@
 
     <!-- Goals Grid -->
     <div v-if="!goals || goals.length === 0" class="flex flex-col items-center justify-center py-24 gap-4">
-      <div class="w-20 h-20 rounded-lg bg-accent/10 flex items-center justify-center text-4xl shadow-inner">🎯</div>
+      <div class="w-20 h-20 rounded-lg bg-accent/10 flex items-center justify-center text-accent shadow-inner">
+        <Target class="w-10 h-10" />
+      </div>
       <p class="text-sm font-bold text-text-secondary">Belum ada tujuan tabungan</p>
       <button @click="openAdd" class="px-6 py-3 bg-accent text-white rounded-lg text-xs font-black shadow-lg shadow-accent/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
         + Buat Tujuan Pertama
@@ -87,9 +89,14 @@
 
         <!-- Sisa target + Tambah Tabungan Button -->
         <div class="mt-4 flex items-center justify-between gap-4">
-          <span class="text-[9px] text-text-secondary">
-            Sisa Target: <span class="font-bold text-warning currency-font">{{ formatCurrency(getRemaining(goal)) }}</span>
-          </span>
+          <div class="flex flex-col">
+            <span class="text-[9px] text-text-secondary">
+              Sisa Target: <span class="font-bold text-warning currency-font">{{ formatCurrency(getRemaining(goal)) }}</span>
+            </span>
+            <span v-if="!isComplete(goal) && getRemaining(goal) > 0 && getDaysLeft(goal) && getDaysLeft(goal)! > 0" class="text-[9px] text-accent mt-0.5 font-bold">
+              Kebutuhan: <span class="currency-font">{{ formatCurrency(Math.ceil(getRemaining(goal) / getDaysLeft(goal)!)) }}</span> / hari
+            </span>
+          </div>
           <button
             v-if="!isComplete(goal)"
             @click="showSavingsModal = goal"
@@ -232,7 +239,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { registerModal, unregisterModal } from '../composables/useAppState';
 import { 
   Target, Plus, Trash2, Edit2, X, CheckCircle2, PiggyBank,
   Home, Car, Plane, Smartphone, GraduationCap, HeartPulse, ShoppingBag, Gamepad2, Camera, Globe, Briefcase, Coffee,
@@ -260,6 +268,22 @@ const showModal = ref(false);
 const showSavingsModal = ref<Goal | null>(null);
 const editGoal = ref<Goal | null>(null);
 const savingsAmount = ref('');
+
+watch(showModal, (newVal) => {
+  if (newVal) {
+    registerModal('goals-add-edit', () => { showModal.value = false; });
+  } else {
+    unregisterModal('goals-add-edit');
+  }
+});
+
+watch(showSavingsModal, (newVal) => {
+  if (newVal) {
+    registerModal('goals-savings', () => { showSavingsModal.value = null; });
+  } else {
+    unregisterModal('goals-savings');
+  }
+});
 
 const form = ref({
   name: '', targetAmount: '', savedAmount: '0', deadline: '', icon: 'home', color: '#8b5cf6',

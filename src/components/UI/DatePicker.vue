@@ -104,7 +104,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { registerModal, unregisterModal } from '../../composables/useAppState';
 import { 
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronDown
 } from '@lucide/vue';
@@ -135,6 +136,14 @@ const emit = defineEmits<{
 type PickerMode = 'calendar' | 'month' | 'year';
 
 const show = ref(false);
+
+watch(show, (newVal) => {
+  if (newVal) {
+    registerModal('datepicker', () => { show.value = false; });
+  } else {
+    unregisterModal('datepicker');
+  }
+});
 const mode = ref<PickerMode>('calendar');
 const viewDate = ref(props.value ? parseISO(props.value) : new Date());
 

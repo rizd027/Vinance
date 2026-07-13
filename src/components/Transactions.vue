@@ -16,7 +16,7 @@
             type="text"
             placeholder="Cari transaksi..."
             v-model="searchQuery"
-            class="w-full pl-9 pr-4 py-2.5 rounded-lg border-0 bg-bg-main text-xs text-text-primary outline-none placeholder:text-text-secondary/50 shadow-none"
+            class="w-full !pl-10 pr-4 py-2.5 rounded-lg border-0 bg-bg-main text-xs text-text-primary outline-none placeholder:text-text-secondary/50 shadow-none focus:ring-2 focus:ring-accent/10 focus:bg-card-bg transition-all duration-300"
           />
         </div>
         <div class="flex gap-2">
@@ -208,7 +208,30 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-border-ui/35">
-            <tr v-if="filteredTransactions.length === 0">
+            <template v-if="loading">
+              <tr v-for="i in 8" :key="i" class="animate-pulse">
+                <td class="px-4 py-3.5">
+                  <div class="h-4 w-20 bg-slate-200 dark:bg-white/5 rounded animate-pulse"></div>
+                  <div class="h-3 w-12 bg-slate-200 dark:bg-white/5 rounded mt-1 animate-pulse"></div>
+                </td>
+                <td class="px-4 py-3.5">
+                  <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-slate-200 dark:bg-white/5 animate-pulse"></div>
+                    <div class="h-4 w-16 bg-slate-200 dark:bg-white/5 rounded animate-pulse"></div>
+                  </div>
+                </td>
+                <td class="px-4 py-3.5">
+                  <div class="h-4 w-28 bg-slate-200 dark:bg-white/5 rounded animate-pulse"></div>
+                </td>
+                <td class="px-4 py-3.5 text-right">
+                  <div class="h-4 w-24 bg-slate-200 dark:bg-white/5 rounded ml-auto animate-pulse"></div>
+                </td>
+                <td class="px-4 py-3.5 text-center">
+                  <div class="w-6 h-6 bg-slate-200 dark:bg-white/5 rounded-md mx-auto animate-pulse"></div>
+                </td>
+              </tr>
+            </template>
+            <tr v-else-if="filteredTransactions.length === 0">
               <td colSpan="5" class="px-6 py-12 text-center">
                 <div class="flex flex-col items-center gap-3">
                   <div class="w-12 h-12 bg-bg-main rounded-lg flex items-center justify-center text-text-secondary/30">
@@ -443,7 +466,7 @@
  
             <form @submit.prevent="handleSubmit" class="flex-1 flex flex-col justify-between mt-2">
               <div class="space-y-5 md:space-y-8 flex-1">
-                <div class="flex bg-bg-main p-1.5 rounded-lg border-0">
+                <div class="flex gap-3 bg-bg-main p-1.5 rounded-lg border-0">
                   <button
                     type="button"
                     @click="type = 'Expense'"
@@ -492,7 +515,7 @@
                         required
                         v-model="amount"
                         @input="amount = formatInputNumber(amount)"
-                        class="w-full h-[52px] pl-10 pr-4 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary font-bold outline-none text-sm rounded-xl shadow-sm transition-all duration-300"
+                        class="w-full h-[52px] !pl-11 pr-4 bg-card-bg border border-border-ui/30 focus:border-accent text-text-primary font-bold outline-none text-sm rounded-xl shadow-sm transition-all duration-300"
                         placeholder="0"
                         inputmode="decimal"
                       />
@@ -684,6 +707,7 @@ import {
 import { aiService } from '../lib/ai';
 import { uploadToCloudinary } from '../lib/cloudinary';
 import type { Transaction, Budget } from '../types';
+import { registerModal, unregisterModal } from '../composables/useAppState';
 import { formatCurrency, formatInputNumber, parseInputNumber } from '../lib/utils';
 import CustomSelect from './UI/CustomSelect.vue';
 import DatePicker from './UI/DatePicker.vue';
@@ -699,9 +723,12 @@ interface Props {
   budgets: Budget[];
   userId: string;
   showAddModal: boolean;
+  loading?: boolean;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  loading: false,
+});
 const emit = defineEmits<{
   add: [t: Omit<Transaction, 'id'>];
   update: [t: Transaction];
@@ -738,6 +765,30 @@ const receiptPreviewUrl = ref('');
 const receiptUploadInputRef = ref<HTMLInputElement | null>(null);
 const showLightbox = ref(false);
 const lightboxImageUrl = ref('');
+
+watch(showExportModal, (newVal) => {
+  if (newVal) {
+    registerModal('transactions-export', () => { showExportModal.value = false; });
+  } else {
+    unregisterModal('transactions-export');
+  }
+});
+
+watch(showFilters, (newVal) => {
+  if (newVal) {
+    registerModal('transactions-filters', () => { showFilters.value = false; });
+  } else {
+    unregisterModal('transactions-filters');
+  }
+});
+
+watch(showLightbox, (newVal) => {
+  if (newVal) {
+    registerModal('transactions-lightbox', () => { showLightbox.value = false; });
+  } else {
+    unregisterModal('transactions-lightbox');
+  }
+});
 
 
 const isListening = ref(false);
