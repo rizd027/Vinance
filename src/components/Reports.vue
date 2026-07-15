@@ -99,7 +99,7 @@
 
     <!-- Stats Grid -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-transparent p-0 border-0 flex flex-col justify-between min-h-[90px]">
+      <div class="bg-card-bg p-4 sm:p-5 rounded-2xl border-0 flex flex-col justify-between min-h-[95px] sm:min-h-[110px] shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.01]">
         <div class="flex justify-between items-start mb-3">
           <div class="p-1.5 bg-bg-main rounded-lg group-hover:scale-110 transition-transform">
             <Wallet class="w-4 h-4" />
@@ -116,7 +116,7 @@
         </div>
       </div>
 
-      <div class="bg-transparent p-0 border-0 flex flex-col justify-between min-h-[90px]">
+      <div class="bg-card-bg p-4 sm:p-5 rounded-2xl border-0 flex flex-col justify-between min-h-[95px] sm:min-h-[110px] shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.01]">
         <div class="flex justify-between items-start mb-3">
           <div class="p-1.5 bg-bg-main rounded-lg group-hover:scale-110 transition-transform">
             <ArrowUpRight class="w-4 h-4" />
@@ -130,7 +130,7 @@
         </div>
       </div>
 
-      <div class="bg-transparent p-0 border-0 flex flex-col justify-between min-h-[90px]">
+      <div class="bg-card-bg p-4 sm:p-5 rounded-2xl border-0 flex flex-col justify-between min-h-[95px] sm:min-h-[110px] shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.01]">
         <div class="flex justify-between items-start mb-3">
           <div class="p-1.5 bg-bg-main rounded-lg group-hover:scale-110 transition-transform">
             <ArrowDownRight class="w-4 h-4" />
@@ -144,7 +144,7 @@
         </div>
       </div>
 
-      <div class="bg-transparent p-0 border-0 flex flex-col justify-between min-h-[90px]">
+      <div class="bg-card-bg p-4 sm:p-5 rounded-2xl border-0 flex flex-col justify-between min-h-[95px] sm:min-h-[110px] shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.01]">
         <div class="flex justify-between items-start mb-3">
           <div class="p-1.5 bg-bg-main rounded-lg group-hover:scale-110 transition-transform">
             <TrendingUp class="w-4 h-4" />
@@ -160,7 +160,7 @@
     </div>
 
     <!-- Cash Flow Trend Area Chart -->
-    <div class="bg-transparent p-0 border-0">
+    <div class="bg-card-bg p-5 sm:p-6 rounded-2xl border-0 shadow-sm">
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-xs font-black text-text-primary uppercase tracking-wider flex items-center gap-2">
           <TrendingUp class="w-4 h-4 text-accent" />
@@ -186,7 +186,7 @@
 
     <!-- 2-column Chart Area -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="bg-transparent p-0 border-0">
+      <div class="bg-card-bg p-5 sm:p-6 rounded-2xl border-0 shadow-sm">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h3 class="text-xs font-black text-text-primary uppercase tracking-wider flex items-center gap-2">
             <BarChart2 class="w-4 h-4 text-accent" />
@@ -199,8 +199,8 @@
         </div>
       </div>
 
-      <div class="bg-transparent p-0 border-0 flex flex-col">
-        <h3 class="text-xs font-black text-text-primary uppercase tracking-wider mb-4 flex items-center gap-2">
+      <div class="bg-card-bg p-5 sm:p-6 rounded-2xl border-0 shadow-sm flex flex-col">
+        <h3 class="text-xs font-black text-text-primary uppercase tracking-wider mb-6 flex items-center gap-2">
           <PieIcon class="w-4 h-4 text-secondary" />
           Alokasi Biaya
         </h3>
@@ -234,7 +234,7 @@
 
     <!-- Bottom Row: Financial Health + Top Expenses -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="bg-transparent p-0 border-0">
+      <div class="bg-card-bg p-5 sm:p-6 rounded-2xl border-0 shadow-sm">
         <h3 class="text-xs font-black text-text-primary uppercase tracking-wider mb-6 flex items-center gap-2">
           <ShieldCheck class="w-4 h-4 text-success" />
           Kesehatan Finansial
@@ -263,7 +263,7 @@
         </div>
       </div>
 
-      <div class="bg-transparent p-0 border-0">
+      <div class="bg-card-bg p-5 sm:p-6 rounded-2xl border-0 shadow-sm">
         <h3 class="text-xs font-black text-text-primary uppercase tracking-wider mb-6 flex items-center gap-2">
           <Award class="w-4 h-4 text-warning" />
           Top Pengeluaran

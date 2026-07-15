@@ -14,7 +14,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
       <div class="lg:col-span-3 space-y-6">
         <!-- Main Budget Card -->
-        <div class="bg-transparent p-0 relative overflow-hidden">
+        <div class="bg-card-bg p-5 sm:p-6 rounded-2xl border-0 shadow-sm relative overflow-hidden">
           <div class="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-bl-full -z-10" />
           <div class="flex flex-col sm:flex-row justify-between gap-6">
             <div class="space-y-4">
@@ -61,7 +61,7 @@
         </div>
 
         <!-- 50/30/20 Health Check -->
-        <div class="bg-transparent p-0 space-y-4 relative z-10">
+        <div class="bg-card-bg p-5 sm:p-6 rounded-2xl border-0 shadow-sm space-y-4 relative z-10">
           <div class="flex items-center justify-between">
             <h4 class="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
               <ShieldCheck class="w-4 h-4 text-success" />
@@ -125,7 +125,7 @@
       </div>
 
       <!-- Allocation Chart -->
-      <div class="lg:col-span-2 bg-transparent p-0 flex flex-col items-center border-0">
+      <div class="lg:col-span-2 bg-card-bg p-5 sm:p-6 rounded-2xl border-0 shadow-sm flex flex-col items-center">
         <h3 class="text-xs font-bold text-text-primary uppercase tracking-wider mb-4 self-start flex items-center gap-2">
           <PieIcon class="w-4 h-4 text-accent" />
           Distribusi Anggaran
@@ -144,7 +144,7 @@
 
     <!-- Budget Reminders -->
     <div v-if="alertStatus.critical.length > 0 || alertStatus.warning.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div v-if="alertStatus.critical.length > 0" class="bg-danger/5 p-4 rounded-lg flex items-start gap-3 border-0">
+      <div v-if="alertStatus.critical.length > 0" class="bg-danger/5 p-4 rounded-2xl flex items-start gap-3 border-0 shadow-sm">
         <div class="w-10 h-10 bg-danger/10 rounded-lg flex items-center justify-center shrink-0">
           <AlertCircle class="w-5 h-5 text-danger" />
         </div>
@@ -157,7 +157,7 @@
           </div>
         </div>
       </div>
-      <div v-if="alertStatus.warning.length > 0" class="bg-warning/5 p-4 rounded-lg flex items-start gap-3 border-0">
+      <div v-if="alertStatus.warning.length > 0" class="bg-warning/5 p-4 rounded-2xl flex items-start gap-3 border-0 shadow-sm">
         <div class="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center shrink-0">
           <Info class="w-5 h-5 text-warning" />
         </div>
@@ -172,102 +172,111 @@
       </div>
     </div>
 
-    <!-- categories List -->
-    <div class="space-y-1">
-      <div
-        v-for="cat in allCategories"
-        :key="cat"
-        class="py-4 border-b border-border-ui/35 transition-all group flex flex-col gap-3"
-      >
-        <div class="flex justify-between items-center">
-          <div class="flex items-center gap-3">
-            <div :class="[
-              'p-2 rounded-lg transition-colors',
-              isOver(cat) ? 'bg-danger/10 text-danger' : 'bg-bg-main text-accent group-hover:bg-accent/10'
-            ]">
-              <component :is="getCategoryIcon(cat)" class="w-4 h-4" />
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <h4 class="font-bold text-text-primary tracking-tight leading-none text-sm">{{ cat }}</h4>
-                <span v-if="isOver(cat)" class="text-[9px] font-black text-danger uppercase tracking-wider bg-danger/10 px-2 py-0.5 rounded-full">Over Limit</span>
-                <span v-else-if="isWarning(cat)" class="text-[9px] font-black text-warning uppercase tracking-wider bg-warning/10 px-2 py-0.5 rounded-full">Mendekati Limit</span>
+    <!-- Categories Card -->
+    <div class="bg-card-bg p-5 sm:p-6 rounded-2xl border-0 shadow-sm space-y-4">
+      <div class="flex items-center justify-between border-b border-border-ui/10 pb-4">
+        <h3 class="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
+          <LayoutGrid class="w-4 h-4 text-accent" />
+          Detail Anggaran per Kategori
+        </h3>
+      </div>
+      
+      <div class="divide-y divide-border-ui/20">
+        <div
+          v-for="cat in allCategories"
+          :key="cat"
+          class="py-4 first:pt-0 last:pb-0 transition-all group flex flex-col gap-3"
+        >
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-3">
+              <div :class="[
+                'p-2 rounded-lg transition-colors',
+                isOver(cat) ? 'bg-danger/10 text-danger' : 'bg-bg-main text-accent group-hover:bg-accent/10'
+              ]">
+                <component :is="getCategoryIcon(cat)" class="w-4 h-4" />
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h4 class="font-bold text-text-primary tracking-tight leading-none text-sm">{{ cat }}</h4>
+                  <span v-if="isOver(cat)" class="text-[9px] font-black text-danger uppercase tracking-wider bg-danger/10 px-2 py-0.5 rounded-full">Over Limit</span>
+                  <span v-else-if="isWarning(cat)" class="text-[9px] font-black text-warning uppercase tracking-wider bg-warning/10 px-2 py-0.5 rounded-full">Mendekati Limit</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="flex gap-1">
-            <button
-              @click="startEdit(cat)"
-              class="p-2 text-text-secondary hover:text-accent rounded-lg transition-colors"
-              title="Edit Limit"
-            >
-              <Edit2 class="w-4 h-4" />
-            </button>
-            <button
-              @click="$emit('delete', cat)"
-              class="p-2 text-text-secondary hover:text-danger rounded-lg transition-colors"
-              title="Hapus Kategori"
-            >
-              <Trash2 class="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        <!-- Budget progress & metrics -->
-        <div class="space-y-2">
-          <div class="flex justify-between text-xs">
-            <div class="flex flex-col">
-              <span class="text-[9px] text-text-secondary uppercase tracking-widest font-medium">Terpakai</span>
-              <span :class="['font-bold currency-font', isOver(cat) ? 'text-danger' : 'text-text-primary']">{{ formatCurrency(getSpent(cat)) }}</span>
-            </div>
-            <div class="flex flex-col text-right">
-              <span class="text-[9px] text-text-secondary uppercase tracking-widest font-medium">Limit</span>
-              <span class="font-bold text-text-primary currency-font">{{ formatCurrency(getLimit(cat)) }}</span>
+            <div class="flex gap-1">
+              <button
+                @click="startEdit(cat)"
+                class="p-2 text-text-secondary hover:text-accent rounded-lg transition-colors"
+                title="Edit Limit"
+              >
+                <Edit2 class="w-4 h-4" />
+              </button>
+              <button
+                @click="$emit('delete', cat)"
+                class="p-2 text-text-secondary hover:text-danger rounded-lg transition-colors"
+                title="Hapus Kategori"
+              >
+                <Trash2 class="w-4 h-4" />
+              </button>
             </div>
           </div>
 
-          <div class="h-1.5 bg-bg-main rounded-full overflow-hidden">
-            <div
-              :class="[
-                'h-full rounded-full transition-all duration-500',
-                isOver(cat) ? 'bg-danger' : isWarning(cat) ? 'bg-warning' : 'bg-accent'
-              ]"
-              :style="{ width: `${Math.min((getSpent(cat) / getLimit(cat)) * 100, 100)}%` }"
+          <!-- Budget progress & metrics -->
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs">
+              <div class="flex flex-col">
+                <span class="text-[9px] text-text-secondary uppercase tracking-widest font-medium">Terpakai</span>
+                <span :class="['font-bold currency-font', isOver(cat) ? 'text-danger' : 'text-text-primary']">{{ formatCurrency(getSpent(cat)) }}</span>
+              </div>
+              <div class="flex flex-col text-right">
+                <span class="text-[9px] text-text-secondary uppercase tracking-widest font-medium">Limit</span>
+                <span class="font-bold text-text-primary currency-font">{{ formatCurrency(getLimit(cat)) }}</span>
+              </div>
+            </div>
+
+            <div class="h-1.5 bg-bg-main rounded-full overflow-hidden">
+              <div
+                :class="[
+                  'h-full rounded-full transition-all duration-500',
+                  isOver(cat) ? 'bg-danger' : isWarning(cat) ? 'bg-warning' : 'bg-accent'
+                ]"
+                :style="{ width: `${Math.min((getSpent(cat) / getLimit(cat)) * 100, 100)}%` }"
+              />
+            </div>
+
+            <div class="flex justify-between items-center text-[10px]">
+              <span v-if="getLimit(cat) - getSpent(cat) >= 0" class="text-text-secondary">
+                Sisa Limit: <span class="font-bold text-success currency-font">{{ formatCurrency(getLimit(cat) - getSpent(cat)) }}</span>
+              </span>
+              <span class="text-danger font-bold" v-else>Over Limit!</span>
+              
+              <span class="text-text-secondary font-bold currency-font">
+                {{ Math.round((getSpent(cat) / getLimit(cat)) * 100) }}%
+              </span>
+            </div>
+          </div>
+
+          <div v-if="editing === cat" class="mt-2 p-3 bg-bg-main rounded-lg space-y-3">
+            <input
+              type="text"
+              v-model="newLimit"
+              @input="newLimit = formatInputNumber(newLimit)"
+              class="w-full py-2 text-text-primary outline-none text-xs"
+              placeholder="Limit Anggaran"
+              autofocus
             />
-          </div>
-
-          <div class="flex justify-between items-center text-[10px]">
-            <span v-if="getLimit(cat) - getSpent(cat) >= 0" class="text-text-secondary">
-              Sisa Limit: <span class="font-bold text-success currency-font">{{ formatCurrency(getLimit(cat) - getSpent(cat)) }}</span>
-            </span>
-            <span class="text-danger font-bold" v-else>Over Limit!</span>
-            
-            <span class="text-text-secondary font-bold currency-font">
-              {{ Math.round((getSpent(cat) / getLimit(cat)) * 100) }}%
-            </span>
-          </div>
-        </div>
-
-        <div v-if="editing === cat" class="mt-2 p-3 bg-bg-main rounded-lg space-y-3">
-          <input
-            type="text"
-            v-model="newLimit"
-            @input="newLimit = formatInputNumber(newLimit)"
-            class="w-full py-2 text-text-primary outline-none text-xs"
-            placeholder="Limit Anggaran"
-            autofocus
-          />
-          <div class="flex gap-2">
-            <button
-              @click="saveEdit(cat)"
-              class="flex-1 bg-gradient-to-r from-accent to-secondary text-white py-2 rounded-lg text-[10px] font-bold shadow-lg shadow-accent/20"
-            >
-              SIMPAN
-            </button>
-            <button @click="editing = null" class="flex-1 bg-danger/10 text-danger py-2 rounded-lg text-[10px] font-bold">
-              BATAL
-            </button>
+            <div class="flex gap-2">
+              <button
+                @click="saveEdit(cat)"
+                class="flex-1 bg-gradient-to-r from-accent to-secondary text-white py-2 rounded-lg text-[10px] font-bold shadow-lg shadow-accent/20"
+              >
+                SIMPAN
+              </button>
+              <button @click="editing = null" class="flex-1 bg-danger/10 text-danger py-2 rounded-lg text-[10px] font-bold">
+                BATAL
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -401,7 +410,7 @@
     </Teleport>
 
     <!-- Tips Section -->
-    <div class="bg-transparent p-0 flex flex-col md:flex-row gap-6 items-center border-0 relative z-10">
+    <div class="bg-card-bg p-5 sm:p-6 rounded-2xl border-0 shadow-sm flex flex-col md:flex-row gap-6 items-center relative z-10">
       <div class="w-16 h-16 bg-accent/10 rounded-lg flex items-center justify-center text-accent">
         <TrendingUp class="w-8 h-8" />
       </div>
